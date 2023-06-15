@@ -43,6 +43,4 @@ int maxIndex(const VectorXd& v, mt19937_64& generator)
 		int index = d(generator);
 		return bestIndices[index];
 	}
-
-	// We should never get here!
 }
