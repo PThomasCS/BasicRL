@@ -1,0 +1,20 @@
+TODO:
+1. Run many lifetimes, print the necessary information to plot a learning curve.
+2. Multithread the lifetimes.
+3. Debug!
+
+Alexandra TODO while Phil is gone:
+1. Implement Sarsa(lambda) again, Q(lambda), Actor-Critic, Gridworld 687, CartPole, MountainCar
+2. Look into tile coding.
+3. Try to find hyperparmaeters that work well for each environment-agent pair.
+
+Random C++ Notes
+1. We try to avoid "using namespace" in header (.h and .hpp) files, since doing so forces all files including the header to use the same namespaces.
+2. The Agent and Environment classes are "abstract". They use "virtual" functions - functions that child classes can overwrite. The virtual functions with " = 0"" in their declaration *must* be overwritten by children classes.
+3. Because the Agent and Environment classes are abstract, you cannot create an Agent or Environment object - but you can create instantiations of subclasses (like Sarsa and Gridworld).
+4. Although you cannot have an object that is just an Agent or Environment, you *can* pass pointers to Environment and Agent objects. 
+5. We place all of our includes in stdafx.hpp (the name comes from old C++ reasons), and files then only need to include "stdafx.hpp" to get all of the includes.
+6. "#pragma once" tells the compiler to only ever copy-paste the file contents a single time when the file is first #include-ed.
+7. & means "by reference". We use it with function arguments to say "pass the actual object, not a copy."
+8. An int* or Object* is a "pointer" to an integer or Object. This is just the address in memory.
+9. For an object X you would write X.functionName(). If P is a pointer to X, you would write P->functionName();
