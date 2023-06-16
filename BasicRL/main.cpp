@@ -113,8 +113,20 @@ VectorXd runLifetime(Agent* agent, Environment* env, int numEpisodes, int maxEpi
 	return result;
 }
 
+void sandbox()
+{
+	cout << "Running other experiments/code." << endl;
+	//sandboxJune16_2023();
+	sandboxJune16_2023();
+	cout << "Done running other experiments/code. Hit enter to continue." << endl;
+	(void)getchar();
+}
+
 int main(int argc, char* argv[])
 {
+	// Comment out the line below if you don't want to run other random experiments first!
+	sandbox();
+	
 	// Set hyperparameters and RNG
 	double  alpha = 0.01, lambda = 0.8, epsilon = 0.05;
 	int iOrder = 0, dOrder = 0;
