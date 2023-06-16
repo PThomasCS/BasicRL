@@ -18,6 +18,7 @@
 #include <vector>					// For vector data structures - not for linear algebra
 #include <string>					// For using strings as opposed to char* (the old C++ way).
 #include <math.h>					// For some math terms like M_PI
+#include <fstream>					// For reading from and printing to files, just like with cout/cin.
 
 ////////////////////////////////////////////////////////////////
 // Additional libraries
