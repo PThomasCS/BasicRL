@@ -41,6 +41,7 @@
 ////////////////////////////////////////////////////////////////
 #include "Environment.hpp"			// Environment specification
 #include "Gridworld.hpp"			// A simple gridworld for initial testing
+#include "AlGridworld687.hpp"         // 5x5 Gridworld with obstacles and water state
 
 ////////////////////////////////////////////////////////////////
 // Agent files

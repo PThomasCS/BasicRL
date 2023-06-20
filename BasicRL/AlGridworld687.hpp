@@ -2,13 +2,13 @@
 
 #include "stdafx.hpp"
 
-class Gridworld687 : public Environment
+class AlGridworld687 : public Environment
 {
 public:
     ////////////////////////////////////////////////////////////////
     // Constructor
     ////////////////////////////////////////////////////////////////
-    Gridworld687();			// Default
+    AlGridworld687();			// Default
 
     ////////////////////////////////////////////////////////////////
     // Functions for getting properties of the environment

@@ -5,65 +5,65 @@ using namespace Eigen;
 
 // TO-DO: add custom size, water, obstacle, and goal states.
 
-Gridworld687::Gridworld687()
+AlGridworld687::AlGridworld687()
 {
     size = 5;			// Default to a size of 5
     x = y = 0;
 }
 
-int Gridworld687::getObservationDimension() const
+int AlGridworld687::getObservationDimension() const
 {
     return size*size-1;	// A one-hot encoding of the state (ignoring the goal state)
 }
 
-int Gridworld687::getNumActions() const
+int AlGridworld687::getNumActions() const
 {
     return 4;
 }
 
-double Gridworld687::getGamma() const
+double AlGridworld687::getGamma() const
 {
     return 0.9;
 }
 
-int Gridworld687::getRecommendedEpisodeLength() const
+int AlGridworld687::getRecommendedEpisodeLength() const
 {
     return 10000;
 }
 
-int Gridworld687::getRecommendedMaxEpisodes() const
+int AlGridworld687::getRecommendedMaxEpisodes() const
 {
     return 1000;
 }
 
-string Gridworld687::getName() const
+string AlGridworld687::getName() const
 {
-    return "Gridworld687";
+    return "AlGridworld687";
 }
 
-VectorXd Gridworld687::getObservationLowerBound() const
+VectorXd AlGridworld687::getObservationLowerBound() const
 {
     return VectorXd::Zero(size * size - 1);
 }
 
-VectorXd Gridworld687::getObservationUpperBound() const
+VectorXd AlGridworld687::getObservationUpperBound() const
 {
     return VectorXd::Ones(size * size - 1);
 }
 
-void Gridworld687::newEpisode(mt19937_64& generator)
+void AlGridworld687::newEpisode(mt19937_64& generator)
 {
     x = y = 0;
 }
 
-void Gridworld687::getObservation(mt19937_64& generator, VectorXd& buff) const
+void AlGridworld687::getObservation(mt19937_64& generator, VectorXd& buff) const
 {
     buff = VectorXd::Zero(size * size - 1);
     buff(y * size + x) = 1.0;
 }
 
 // Checks if the agent will end up in an obstacle state
-bool Gridworld687::hitObstacle(int realAction) const
+bool AlGridworld687::hitObstacle(int realAction) const
 {
     if (realAction == 0 && ((x == 2) && (y == 4)))
         return true;
@@ -79,7 +79,7 @@ bool Gridworld687::hitObstacle(int realAction) const
     }
 }
 
-double Gridworld687::step(int action, mt19937_64& generator) {
+double AlGridworld687::step(int action, mt19937_64& generator) {
     // Handle the action
     int numActions = 4;
     int realAction;
@@ -120,7 +120,7 @@ double Gridworld687::step(int action, mt19937_64& generator) {
     else {
         // TO-DO: write another error message
 //        assert(false);
-//        errorExit("Error in Gridworld687::step. Unrecognized action.");
+//        errorExit("Error in AlGridworld687::step. Unrecognized action.");
     }
 
     // TO-DO: try using the same logic as for obstacle states (don't move if you'll hit the wall)
@@ -139,7 +139,7 @@ double Gridworld687::step(int action, mt19937_64& generator) {
     }
  }
 
-bool Gridworld687::episodeOver(mt19937_64& generator) const
+bool AlGridworld687::episodeOver(mt19937_64& generator) const
 {
     return ((x == 4) && (y == 4));
 }
