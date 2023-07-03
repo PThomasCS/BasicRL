@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 # If the agent is learning, the graph should have an increasing slope
 def plot():
     x = []
-    y = []
 
     # x-axis data showing cumulative actions taken
     with open('cmake-build-debug/actions.txt', 'r') as f:

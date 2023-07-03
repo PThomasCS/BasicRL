@@ -1,4 +1,4 @@
-#pragma once	// Avoid recurive #include issues. Put this at the top of every header (.h and .hpp) file.
+#pragma once	// Avoid recursive #include issues. Put this at the top of every header (.h and .hpp) file.
 
 /*
 * This file has all of our include statements in it (and definitions).
@@ -41,7 +41,8 @@
 ////////////////////////////////////////////////////////////////
 #include "Environment.hpp"			// Environment specification
 #include "Gridworld.hpp"			// A simple gridworld for initial testing
-#include "AlGridworld687.hpp"         // 5x5 Gridworld with obstacles and water state
+#include "AlGridworld687.hpp"       // 5x5 Gridworld with obstacles and water state
+#include "AlMountainCar.hpp"    // Mountain Car
 
 ////////////////////////////////////////////////////////////////
 // Agent files
