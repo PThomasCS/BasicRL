@@ -18,10 +18,31 @@ def plot():
     y = list(range(1, len(x) + 1))
 
     plt.plot(x, y)
+    plt.ticklabel_format(style='plain')
     plt.xlabel('# Actions Taken')
     plt.ylabel('# Episodes')
     plt.show()
 
 
+def plot_mc():
+    y = []
+
+    # y-axis data showing the number of steps needed by the agent to reach the goal state
+    with open('cmake-build-debug/returns.txt', 'r') as f:
+        for line in f:
+            data = line.strip()  # Strip whitespace
+            y.append(float(data) * (-1))  # Convert to float
+
+    # x-axis data showing number of episodes
+    x = list(range(1, len(y) + 1))
+
+    plt.plot(x, y)
+    plt.ticklabel_format(style='plain')
+    plt.xlabel('# Episodes')
+    plt.ylabel('# Steps to reach goal')
+    plt.show()
+
+
 if __name__ == "__main__":
-    plot()
+    # plot()
+    plot_mc()

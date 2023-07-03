@@ -8,7 +8,9 @@ using namespace Eigen;
 VectorXd runLifetime(Agent* agent, Environment* env, int numEpisodes, int maxEpisodeLength, mt19937_64 & generator)
 {
 	VectorXd result(numEpisodes);	// Create the array where we will return the resulting returns (G).
-	double gamma = env->getGamma(); 
+    VectorXd actionsTaken(numEpisodes); // Create the array where we will return the total number of steps taken across all episodes up to that moment in time.
+	double gamma = env->getGamma();
+    int actCount = 0;
 
 	// Loop over episodes
 	for (int epCount = 0; epCount < numEpisodes; epCount++)
@@ -32,6 +34,7 @@ VectorXd runLifetime(Agent* agent, Environment* env, int numEpisodes, int maxEpi
 			{
 				// Get action from the agent
 				act = agent->getAction(curObs, generator);
+                actCount++; // Increment action count
 
 				// Take the action, observe resulting reward
 				reward = env->step(act, generator);
@@ -60,6 +63,7 @@ VectorXd runLifetime(Agent* agent, Environment* env, int numEpisodes, int maxEpi
 				curObs = newObs;
 			}
 			result[epCount] = G;
+            actionsTaken[epCount] = actCount;
 		}
 		else
 		{
@@ -72,6 +76,7 @@ VectorXd runLifetime(Agent* agent, Environment* env, int numEpisodes, int maxEpi
 			// Get the initial observation and action
 			env->getObservation(generator, curObs); // Writes the observation into curObs
 			curAct = agent->getAction(curObs, generator);
+            actCount++; // Increment action count
 			// Loop over time steps
 			for (int t = 0; t < maxEpisodeLength; t++) // After maxEpisodeLength the episode doesn't "end", we just stop simulating it - so we don't do a terminal update
 			{
@@ -97,6 +102,7 @@ VectorXd runLifetime(Agent* agent, Environment* env, int numEpisodes, int maxEpi
 
 				// Get next action from the agent
 				newAct = agent->getAction(newObs, generator);
+                actCount++; // Increment action count
 
 				// Train
 				agent->train(curObs, curAct, reward, newObs, newAct, generator);
@@ -106,8 +112,14 @@ VectorXd runLifetime(Agent* agent, Environment* env, int numEpisodes, int maxEpi
 				curObs = newObs;
 			}
 			result[epCount] = G;
+            actionsTaken[epCount] = actCount;
 		}		
 	}
+
+    // Print the actions taken to file
+    ofstream out("actions.txt");
+    out << fixed << actionsTaken << endl;
+    out.close();
 
 	// Return the results that we computed
 	return result;
@@ -125,15 +137,20 @@ void sandbox()
 int main(int argc, char* argv[])
 {
 	// Comment out the line below if you don't want to run other random experiments first!
-	sandbox();
+//	sandbox();
 	
 	// Set hyperparameters and RNG
-	double  alpha = 0.01, lambda = 0.8, epsilon = 0.05;
-	int iOrder = 0, dOrder = 0;
+    double  alpha = 0.001, lambda = 0.9, epsilon = 0.0;
+//	double  alpha = 0.01, lambda = 0.8, epsilon = 0.05;
+//	double  alpha = 0.1, lambda = 0.8, epsilon = 0.05;
+
+	int iOrder = 3, dOrder = 0;
 	mt19937_64 generator;	// If you don't seed it, it has some fixed seed that is the same every time.
 
 	// Create the environment
-	Gridworld env(5);
+//	Gridworld env(5);
+//    AlGridworld687 env;
+    AlMountainCar env;
 
 	// Get parameters of the environment
 	int observationDimension = env.getObservationDimension(), numActions = env.getNumActions(),
@@ -147,14 +164,20 @@ int main(int argc, char* argv[])
 
 	// Create the agent
 	SarsaLambda agent(observationDimension, numActions, alpha, lambda, epsilon, gamma, &phi); // The &phi means "the memory location of phi". Notice the constructor takes a pointer FeatureGenerator*.
+//    AlQLambda agent(observationDimension, numActions, alpha, lambda, epsilon, gamma, &phi); // The &phi means "the memory location of phi". Notice the constructor takes a pointer FeatureGenerator*.
 
 	// Run the agent on the environment
 	VectorXd returns = runLifetime(&agent, &env, maxEpisodes, maxEpisodeLength, generator);
 
 	// Print the returns
 	cout << "Returns:" << endl << returns << endl;
-	
-	// Print message indicating that the program has finished
+
+    // Print the returns to a file
+    ofstream out("returns.txt");
+    out << returns << endl;
+    out.close();
+
+    // Print message indicating that the program has finished
 	cout << "Done. Press enter to exit." << endl;
 	return 0; // No error.
 }
