@@ -144,13 +144,13 @@ int main(int argc, char* argv[])
 //	double  alpha = 0.01, lambda = 0.8, epsilon = 0.05;
 //	double  alpha = 0.1, lambda = 0.8, epsilon = 0.05;
 
-	int iOrder = 0, dOrder = 0;
+	int iOrder = 3, dOrder = 3;
 	mt19937_64 generator;	// If you don't seed it, it has some fixed seed that is the same every time.
 
 	// Create the environment
-	Gridworld env(5);
+//	Gridworld env(4);
 //  AlGridworld687 env;
-//  AlMountainCar env;
+  AlMountainCar env;
 
 	// Get parameters of the environment
 	int observationDimension = env.getObservationDimension(), numActions = env.getNumActions(),
@@ -163,8 +163,9 @@ int main(int argc, char* argv[])
 	FourierBasis phi(observationDimension, observationLowerBound, observationUpperBound, iOrder, dOrder);
 
 	// Create the agent
-	SarsaLambda agent(observationDimension, numActions, alpha, lambda, epsilon, gamma, &phi); // The &phi means "the memory location of phi". Notice the constructor takes a pointer FeatureGenerator*.
+//	SarsaLambda agent(observationDimension, numActions, alpha, lambda, epsilon, gamma, &phi); // The &phi means "the memory location of phi". Notice the constructor takes a pointer FeatureGenerator*.
 //    AlQLambda agent(observationDimension, numActions, alpha, lambda, epsilon, gamma, &phi); // The &phi means "the memory location of phi". Notice the constructor takes a pointer FeatureGenerator*.
+    AlActorCritic agent(observationDimension, numActions, alpha, lambda, epsilon, gamma, &phi); // The &phi means "the memory location of phi". Notice the constructor takes a pointer FeatureGenerator*.
 
 	// Run the agent on the environment
 	VectorXd returns = runLifetime(&agent, &env, maxEpisodes, maxEpisodeLength, generator);
