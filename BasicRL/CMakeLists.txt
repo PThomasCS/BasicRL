@@ -380,4 +380,4 @@ add_executable(BasicRL
         main.cpp
         SarsaLambda.cpp
         SarsaLambda.hpp
-        stdafx.hpp AlQLambda.hpp AlQLambda.cpp AlMountainCar.hpp AlMountainCar.cpp cmake-build-debug/AlActorCritic.hpp cmake-build-debug/AlActorCritic.cpp)
+        stdafx.hpp AlQLambda.hpp AlQLambda.cpp AlMountainCar.hpp AlMountainCar.cpp AlActorCritic.hpp AlActorCritic.cpp)
