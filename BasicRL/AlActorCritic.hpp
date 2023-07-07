@@ -8,7 +8,7 @@ public:
     ////////////////////////////////////////////////////////////////
     // Constructor
     ////////////////////////////////////////////////////////////////
-    ActorCritic(int observationDimension, int numActions, double alpha, double lambda, double epsilon, double gamma, FeatureGenerator* phi);
+    AlActorCritic(int observationDimension, int numActions, double alpha, double lambda, double epsilon, double gamma, FeatureGenerator* phi);
 
     ////////////////////////////////////////////////////////////////
     // Functions for getting properties of the agent
@@ -26,7 +26,7 @@ public:
     ////////////////////////////////////////////////////////////////
     // Training functions. One of the following must be implemented
     ////////////////////////////////////////////////////////////////
-    void train(const Eigen::VectorXd& observation, const int curAction, const double reward, const Eigen::VectorXd& newObservation, const int newAction, std::mt19937_64& generator) override;
+    void train(const Eigen::VectorXd& observation, const int curAction, const double reward, const Eigen::VectorXd& newObservation, std::mt19937_64& generator) override;
 
 public:
     int observationDimension;
@@ -37,8 +37,12 @@ public:
     double gamma;
     FeatureGenerator* phi;
 
-    Eigen::MatrixXd w;	// Weights for the q-approximation
-    Eigen::MatrixXd e;	// Eligibility traces
+    Eigen::VectorXd w;	    // Weights for the v-approximation
+    Eigen::MatrixXd eV;	    // Eligibility traces
+
+    Eigen::MatrixXd theta;	// Weights for the policy
+    Eigen::MatrixXd eTheta;	// Eligibility traces
+    Eigen::VectorXd pSAs;   // Policy
 
     Eigen::VectorXd curFeatures;
     Eigen::VectorXd newFeatures;

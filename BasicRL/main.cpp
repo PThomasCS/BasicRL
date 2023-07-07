@@ -144,13 +144,13 @@ int main(int argc, char* argv[])
 //	double  alpha = 0.01, lambda = 0.8, epsilon = 0.05;
 //	double  alpha = 0.1, lambda = 0.8, epsilon = 0.05;
 
-	int iOrder = 2, dOrder = 2;
+	int iOrder = 0, dOrder = 0;
 	mt19937_64 generator;	// If you don't seed it, it has some fixed seed that is the same every time.
 
 	// Create the environment
-//	Gridworld env(5);
-//    AlGridworld687 env;
-    AlMountainCar env;
+	Gridworld env(5);
+//  AlGridworld687 env;
+//  AlMountainCar env;
 
 	// Get parameters of the environment
 	int observationDimension = env.getObservationDimension(), numActions = env.getNumActions(),
