@@ -144,7 +144,7 @@ int main(int argc, char* argv[])
 //	double  alpha = 0.01, lambda = 0.8, epsilon = 0.05;
 //	double  alpha = 0.1, lambda = 0.8, epsilon = 0.05;
 
-	int iOrder = 3, dOrder = 0;
+	int iOrder = 2, dOrder = 2;
 	mt19937_64 generator;	// If you don't seed it, it has some fixed seed that is the same every time.
 
 	// Create the environment

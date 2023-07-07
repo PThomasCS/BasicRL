@@ -50,6 +50,7 @@
 #include "Agent.hpp"				// Agent specification
 #include "SarsaLambda.hpp"			// Linear Sarsa(lambda)
 #include "AlQLambda.hpp"			// Q(lambda)
+#include "AlActorCritic.hpp"        // Actor-Critic
 
 ////////////////////////////////////////////////////////////////
 // Sandbox / Experiments not necessarily related to RL
