@@ -6,7 +6,7 @@ using namespace Eigen;
 AlMountainCar::AlMountainCar()
 {
     x = v = 0;
-    randomStart = false;
+    randomStart = false; // Default deterministic start at (-0.5, 0).
 }
 
 AlMountainCar::AlMountainCar(bool randomStart)

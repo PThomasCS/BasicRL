@@ -33,7 +33,7 @@ public:
     virtual bool episodeOver(std::mt19937_64& generator) const override;		                        // query whether the episode is over (only call once per time step).
 
 private:
-    double x;
-    double v;
+    double x;         // Position
+    double v;         // Velocity
     bool randomStart;
 };

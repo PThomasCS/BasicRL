@@ -1,4 +1,4 @@
-#pragma once	// Avoid recurive #include issues
+#pragma once	// Avoid recursive #include issues
 
 #include "stdafx.hpp"
 

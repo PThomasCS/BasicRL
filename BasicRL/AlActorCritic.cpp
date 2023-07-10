@@ -12,7 +12,7 @@ AlActorCritic::AlActorCritic(int observationDimension, int numActions, double al
     this->beta = beta;
     this->lambda = lambda;
     this->gamma = gamma;
-    this->sigma = sigma;
+    this->sigma = sigma; // For softmax (sigma -> 0, action selection is more stochastic; sigma -> inf, action selection is more deterministic)
     this->phi = phi;
 
     // Indicate that we have not loaded curFeatures
