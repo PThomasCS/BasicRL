@@ -132,6 +132,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Agent.hpp" />
+    <ClInclude Include="AlActorCritic.hpp" />
+    <ClInclude Include="AlGridworld687.hpp" />
+    <ClInclude Include="AlMountainCar.hpp" />
+    <ClInclude Include="AlQLambda.hpp" />
     <ClInclude Include="common.hpp" />
     <ClInclude Include="Environment.hpp" />
     <ClInclude Include="FeatureGenerator.hpp" />
@@ -142,6 +146,10 @@
     <ClInclude Include="stdafx.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AlActorCritic.cpp" />
+    <ClCompile Include="AlGridworld687.cpp" />
+    <ClCompile Include="AlMountainCar.cpp" />
+    <ClCompile Include="AlQLambda.cpp" />
     <ClCompile Include="common.cpp" />
     <ClCompile Include="FourierBasis.cpp" />
     <ClCompile Include="Gridworld.cpp" />
