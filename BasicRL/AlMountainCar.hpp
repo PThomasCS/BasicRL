@@ -8,7 +8,9 @@ public:
     ////////////////////////////////////////////////////////////////
     // Constructor
     ////////////////////////////////////////////////////////////////
-    AlMountainCar();
+    AlMountainCar();                    // Default deterministic initial state (-0.5, 0)
+    AlMountainCar(bool randomStart);	// Random initial state (uniformly at random (x, v) withing range)
+
 
     ////////////////////////////////////////////////////////////////
     // Functions for getting properties of the environment
@@ -33,4 +35,5 @@ public:
 private:
     double x;
     double v;
+    bool randomStart;
 };

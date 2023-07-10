@@ -3,15 +3,16 @@
 using namespace std;
 using namespace Eigen;
 
-AlActorCritic::AlActorCritic(int observationDimension, int numActions, double alpha, double lambda, double epsilon, double gamma, FeatureGenerator * phi)
+AlActorCritic::AlActorCritic(int observationDimension, int numActions, double alpha, double beta, double lambda, double gamma, double sigma, FeatureGenerator * phi)
 {
     // Copy over arguments
     this->observationDimension = observationDimension;
     this->numActions = numActions;
     this->alpha = alpha;
+    this->beta = beta;
     this->lambda = lambda;
-    this->epsilon = epsilon;
     this->gamma = gamma;
+    this->sigma = sigma;
     this->phi = phi;
 
     // Indicate that we have not loaded curFeatures
@@ -21,8 +22,8 @@ AlActorCritic::AlActorCritic(int observationDimension, int numActions, double al
     eTheta = theta = MatrixXd::Zero(numActions, phi->getNumOutputs());
     eV = w = VectorXd::Zero(phi->getNumOutputs());
 
-    // Intitialize the policy vector
-    pSAs = VectorXd::Zero(numActions);
+    // Initialize the policy vector
+    actor = VectorXd::Zero(numActions);
 }
 
 string AlActorCritic::getName() const
@@ -32,7 +33,7 @@ string AlActorCritic::getName() const
 
 bool AlActorCritic::trainBeforeAPrime() const
 {
-    return true; // SHOULD BE TRUE!
+    return true;
 }
 
 void AlActorCritic::newEpisode(std::mt19937_64& generator)
@@ -45,7 +46,6 @@ void AlActorCritic::newEpisode(std::mt19937_64& generator)
 int AlActorCritic::getAction(const Eigen::VectorXd& observation, std::mt19937_64& generator)
 {
     // Handle softmax action selection
-    // Add sigma?
     // Fix double compute of new features
 
     if (!curFeaturesInit)	// If we have not initialized curFeatures, use them
@@ -53,9 +53,9 @@ int AlActorCritic::getAction(const Eigen::VectorXd& observation, std::mt19937_64
         phi->generateFeatures(observation, curFeatures);
         for (int i = 0; i < numActions; i++) {
             // exp(theta(s, a) = exp(dot product of theta.row(s) and phi(s)) => real number
-            double expThetaSA = exp(theta.row(i).dot(curFeatures));
-            // Assign computed exp(theta(s, a) to pSAs at idx a
-            pSAs(i) = expThetaSA;
+            double expThetaSA = exp(sigma * theta.row(i).dot(curFeatures));
+            // Assign computed exp(theta(s, a) to actor at idx a
+            actor(i) = expThetaSA;
             curFeaturesInit = true;
         }
     }
@@ -65,16 +65,16 @@ int AlActorCritic::getAction(const Eigen::VectorXd& observation, std::mt19937_64
         phi->generateFeatures(observation, newFeatures);
         for (int i = 0; i < numActions; i++) {
             // exp(theta(s, a) = exp(dot product of theta.row(s) and phi(s)) => real number
-            double expThetaSA = exp(theta.row(i).dot(curFeatures));
-            // Assign computed exp(theta(s, a) to pSAs at idx a
-            pSAs(i) = expThetaSA;
+            double expThetaSA = exp(sigma * theta.row(i).dot(curFeatures));
+            // Assign computed exp(theta(s, a) to actor at idx a
+            actor(i) = expThetaSA;
         }
     }
 
     // Normalize
-    pSAs /= pSAs.sum();
+    actor /= actor.sum();
 
-    discrete_distribution<> distPSAs(pSAs.data(), pSAs.data() + pSAs.size());
+    discrete_distribution<> distPSAs(actor.data(), actor.data() + actor.size());
 
     return distPSAs(generator);
 }
@@ -97,17 +97,17 @@ void AlActorCritic::trainEpisodeEnd(const Eigen::VectorXd& observation, const in
     for (int i = 0; i < numActions; i++)
     {
         if (i == action) {
-            eTheta.row(i) = gamma * lambda * eTheta.row(i).transpose() + ((1.0 - pSAs(i)) * curFeatures);
+            eTheta.row(i) = gamma * lambda * eTheta.row(i).transpose() + ((1.0 - actor(i)) * curFeatures);
         }
         else
         {
-            eTheta.row(i) = gamma * lambda * eTheta.row(i).transpose()  + (-1.0 * pSAs(i)) * curFeatures;
+            eTheta.row(i) = gamma * lambda * eTheta.row(i).transpose()  + (-1.0 * actor(i)) * curFeatures;
         }
     }
 
     // Update the weights for the actor
     // Add beta?
-    theta = theta + alpha * delta * eTheta;
+    theta = theta + beta * delta * eTheta;
 }
 
 void AlActorCritic::train(const Eigen::VectorXd& observation, const int curAction, const double reward, const Eigen::VectorXd& newObservation, std::mt19937_64& generator)
@@ -132,17 +132,16 @@ void AlActorCritic::train(const Eigen::VectorXd& observation, const int curActio
     for (int i = 0; i < numActions; i++)
     {
         if (i == curAction) {
-            eTheta.row(i) = gamma * lambda * eTheta.row(i).transpose() + ((1.0 - pSAs(i)) * curFeatures);
+            eTheta.row(i) = gamma * lambda * eTheta.row(i).transpose() + ((1.0 - actor(i)) * curFeatures);
         }
         else
         {
-            eTheta.row(i) = gamma * lambda * eTheta.row(i).transpose()  + (-1.0 * pSAs(i)) * curFeatures;
+            eTheta.row(i) = gamma * lambda * eTheta.row(i).transpose()  + (-1.0 * actor(i)) * curFeatures;
         }
     }
 
     // Update the weights for the actor
-    // Add beta?
-    theta = theta + alpha * delta * eTheta;
+    theta = theta + beta * delta * eTheta;
 
     // Move newFeatures into curFeatures
     curFeatures = newFeatures;

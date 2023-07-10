@@ -140,10 +140,10 @@ int main(int argc, char* argv[])
 //	sandbox();
 	
 	// Set hyperparameters and RNG
-    double  alpha = 0.01, lambda = 0.9, epsilon = 0.0;
+    double  alpha = 0.001, beta = 0.001, lambda = 0.9, epsilon = 0.0, sigma = 0.1;
 //    double  alpha = 0.001, lambda = 0.9, epsilon = 0.0;
 //	double  alpha = 0.01, lambda = 0.8, epsilon = 0.05;
-//	double  alpha = 0.1, lambda = 0.8, epsilon = 0.05;
+//	double  alpha = 0.1, beta = 0.1, lambda = 0.8, epsilon = 0.05, sigma = 0.1;
 
 	int iOrder = 5, dOrder = 5;
 	mt19937_64 generator;	// If you don't seed it, it has some fixed seed that is the same every time.
@@ -151,7 +151,8 @@ int main(int argc, char* argv[])
 	// Create the environment
 //	Gridworld env(4);
 //  AlGridworld687 env;
-  AlMountainCar env;
+//  AlMountainCar env;
+    AlMountainCar env(false);
 
 	// Get parameters of the environment
 	int observationDimension = env.getObservationDimension(), numActions = env.getNumActions(),
@@ -166,7 +167,7 @@ int main(int argc, char* argv[])
 	// Create the agent
 //	SarsaLambda agent(observationDimension, numActions, alpha, lambda, epsilon, gamma, &phi); // The &phi means "the memory location of phi". Notice the constructor takes a pointer FeatureGenerator*.
 //    AlQLambda agent(observationDimension, numActions, alpha, lambda, epsilon, gamma, &phi); // The &phi means "the memory location of phi". Notice the constructor takes a pointer FeatureGenerator*.
-    AlActorCritic agent(observationDimension, numActions, alpha, lambda, epsilon, gamma, &phi); // The &phi means "the memory location of phi". Notice the constructor takes a pointer FeatureGenerator*.
+    AlActorCritic agent(observationDimension, numActions, alpha, beta, lambda, gamma, sigma, &phi); // The &phi means "the memory location of phi". Notice the constructor takes a pointer FeatureGenerator*.
 
 	// Run the agent on the environment
 	VectorXd returns = runLifetime(&agent, &env, maxEpisodes, maxEpisodeLength, generator);

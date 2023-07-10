@@ -8,7 +8,7 @@ public:
     ////////////////////////////////////////////////////////////////
     // Constructor
     ////////////////////////////////////////////////////////////////
-    AlActorCritic(int observationDimension, int numActions, double alpha, double lambda, double epsilon, double gamma, FeatureGenerator* phi);
+    AlActorCritic(int observationDimension, int numActions, double alpha, double lambda, double epsilon, double gamma, double sigma, FeatureGenerator* phi);
 
     ////////////////////////////////////////////////////////////////
     // Functions for getting properties of the agent
@@ -32,9 +32,10 @@ public:
     int observationDimension;
     int numActions;
     double alpha;
+    double beta;
     double lambda;
-    double epsilon;
     double gamma;
+    double sigma;
     FeatureGenerator* phi;
 
     Eigen::VectorXd w;	    // Weights for the v-approximation
@@ -42,7 +43,7 @@ public:
 
     Eigen::MatrixXd theta;	// Weights for the policy
     Eigen::MatrixXd eTheta;	// Eligibility traces
-    Eigen::VectorXd pSAs;   // Policy
+    Eigen::VectorXd actor;  // Policy
 
     Eigen::VectorXd curFeatures;
     Eigen::VectorXd newFeatures;
