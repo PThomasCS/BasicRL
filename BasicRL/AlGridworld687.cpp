@@ -3,17 +3,14 @@
 using namespace std;
 using namespace Eigen;
 
-// TO-DO: add custom size, water, obstacle, and goal states.
-
 AlGridworld687::AlGridworld687()
 {
-    size = 5;			// Default to a size of 5
     x = y = 0;
 }
 
 int AlGridworld687::getObservationDimension() const
 {
-    return size*size-1;	// A one-hot encoding of the state (ignoring the goal state)
+    return 24;	// A one-hot encoding of the state (ignoring the goal state)
 }
 
 int AlGridworld687::getNumActions() const
@@ -38,17 +35,17 @@ int AlGridworld687::getRecommendedMaxEpisodes() const
 
 string AlGridworld687::getName() const
 {
-    return "AlGridworld687";
+    return "Alexandra Gridworld687";
 }
 
 VectorXd AlGridworld687::getObservationLowerBound() const
 {
-    return VectorXd::Zero(size * size - 1);
+    return VectorXd::Zero(24);
 }
 
 VectorXd AlGridworld687::getObservationUpperBound() const
 {
-    return VectorXd::Ones(size * size - 1);
+    return VectorXd::Ones(24);
 }
 
 void AlGridworld687::newEpisode(mt19937_64& generator)
@@ -58,8 +55,8 @@ void AlGridworld687::newEpisode(mt19937_64& generator)
 
 void AlGridworld687::getObservation(mt19937_64& generator, VectorXd& buff) const
 {
-    buff = VectorXd::Zero(size * size - 1);
-    buff(y * size + x) = 1.0;
+    buff = VectorXd::Zero(24);
+    buff(y*5 + x) = 1.0;
 }
 
 // Checks if the agent will end up in an obstacle state
@@ -73,29 +70,32 @@ bool AlGridworld687::hitObstacle(int realAction) const
         return true;
     else if (realAction == 3 && ((x == 3) && ((y == 2) || (y == 3))))
         return true;
-    else
-    {
-        return false;
-    }
+    return false;
 }
 
 double AlGridworld687::step(int action, mt19937_64& generator) {
+    // Make sure the action is legal
+    if ((action < 0) || (action > 3))
+    {
+        assert(false);
+        errorExit("Error in AlGridworld687::step. Unrecognized action.");
+    }
+
     // Handle the action
     int numActions = 4;
     int realAction;
-    bool willHitObstacle = false;
+    bool willHitObstacle;
     bool brokeDown = false;
 
-    uniform_real_distribution<> uniformActionResultDistribution(0.0, 1.0);
-    double result = uniformActionResultDistribution(generator);
+    double randNum = uniform_real_distribution<double>(0.0, 1.0)(generator);
 
     // Transform intended action into real action
-    if (result < 0.8)                                           // Move in the specified direction
+    if (randNum < 0.8)                                           // Move in the specified direction
         realAction = action;
-    else if (result < 0.85)
+    else if (randNum < 0.85)
         realAction = (action + 1) % numActions;                 // Veer Right of intended direction
-    else if (result < 0.9)
-        realAction = (action - 1) % numActions;                 // Veer Left of intended direction
+    else if (randNum < 0.9)
+        realAction = (action == 0 ? 3 : action - 1);            // Veer Left of intended direction
     else {
         realAction = action;
         brokeDown = true;                                       // Break down
@@ -105,22 +105,16 @@ double AlGridworld687::step(int action, mt19937_64& generator) {
 
     // Execute real action
     // TO-DO: handle obstacle states in less complicated way (?); make it work with custom obstacle states
-    if (brokeDown)
+    if ((!brokeDown) && (!willHitObstacle))
     {
-        // Do nothing
-    }
-    else if ((realAction == 0) && (willHitObstacle == false))   // Move UP unless will enter an obstacle state
-        y--;
-    else if ((realAction == 1) && (willHitObstacle == false))   // Move RIGHT unless will enter an obstacle state
-        x++;
-    else if ((realAction == 2) && (willHitObstacle == false))   // Move Down unless will enter an obstacle state
-        y++;
-    else if ((realAction == 3) && (willHitObstacle == false))   // Move LEFT  unless will enter an obstacle state
-        x--;
-    else {
-        // TO-DO: write another error message
-//        assert(false);
-//        errorExit("Error in AlGridworld687::step. Unrecognized action.");
+        if (realAction == 0)   // Move UP
+            y--;
+        else if (realAction == 1)   // Move RIGHT
+            x++;
+        else if (realAction == 2)   // Move Down
+            y++;
+        else if (realAction == 3)   // Move LEFT  unless will enter an obstacle state
+            x--;
     }
 
     // TO-DO: try using the same logic as for obstacle states (don't move if you'll hit the wall)
@@ -133,10 +127,7 @@ double AlGridworld687::step(int action, mt19937_64& generator) {
         return -10.0;
     else if ((x == 4) && (y == 4)) // Goal state
         return 10.0;
-    else
-    {
-        return 0.0;
-    }
+    return 0.0;
  }
 
 bool AlGridworld687::episodeOver(mt19937_64& generator) const

@@ -137,12 +137,18 @@ int main(int argc, char* argv[])
 //	sandbox();
 	
 	// Set hyperparameters and RNG
-    double  alpha = 0.001, beta = 0.001, lambda = 0.9, epsilon = 0.0, sigma = 0.5; // mc
+    //double  alpha = 0.001, beta = 0.001, lambda = 0.9, epsilon = 0.0, sigma = 0.5; // mc
+	//double  alpha = 0.0001, beta = 0.0001, lambda = 0.8; // Phil mc
+
+	double  alpha = 0.0001, beta = 0.0001, lambda = 0.8; // Phil mc 2
+
 //    double  alpha = 0.001, lambda = 0.9, epsilon = 0.0;
 //	double  alpha = 0.01, beta = 0.01, lambda = 0.8, epsilon = 0.05, sigma = 0.1; // Qlambda, Actor-Critic, gr687
 //	double  alpha = 0.1, beta = 0.1, lambda = 0.8, epsilon = 0.05, sigma = 0.1;
 
-	int iOrder = 5, dOrder = 5; // mc 5, 5
+	//int iOrder = 5, dOrder = 5; // mc 5, 5
+	//int iOrder = 3, dOrder = 3; // Phil's attempt at MC
+	int iOrder = 7, dOrder = 7; // Phil's attempt at MC 2
 	mt19937_64 generator;	// If you don't seed it, it has some fixed seed that is the same every time.
 
 	// Create the environment
@@ -164,7 +170,7 @@ int main(int argc, char* argv[])
 	// Create the agent
 //	SarsaLambda agent(observationDimension, numActions, alpha, lambda, epsilon, gamma, &phi); // The &phi means "the memory location of phi". Notice the constructor takes a pointer FeatureGenerator*.
 //    AlQLambda agent(observationDimension, numActions, alpha, lambda, epsilon, gamma, &phi); // The &phi means "the memory location of phi". Notice the constructor takes a pointer FeatureGenerator*.
-    AlActorCritic agent(observationDimension, numActions, alpha, beta, lambda, gamma, sigma, &phi); // The &phi means "the memory location of phi". Notice the constructor takes a pointer FeatureGenerator*.
+    AlActorCritic agent(observationDimension, numActions, alpha, beta, lambda, gamma, &phi); // The &phi means "the memory location of phi". Notice the constructor takes a pointer FeatureGenerator*.
 
 	// Run the agent on the environment
 	VectorXd totalTimeStepsAtEpisodeEnds;	// runLifetime will store the total number of timesteps that have passed when each episode ends. It will store it in this array.
@@ -185,7 +191,12 @@ int main(int argc, char* argv[])
 	cout << "Returns:" << endl << returns << endl;
 
     // Print the returns to a file
-    ofstream outReturns("returns.txt");
+#ifdef _MSC_VER	// Check if the compiler is a Microsoft compiler.
+	filePath = "out/returns.txt";	// If so, use this path
+#else
+	filePath = "../out/returns.txt";	// Otherwise, use this path
+#endif
+    ofstream outReturns(filePath);
 	outReturns << returns << endl;
 	outReturns.close();
 

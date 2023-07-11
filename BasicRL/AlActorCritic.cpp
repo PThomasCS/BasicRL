@@ -3,7 +3,8 @@
 using namespace std;
 using namespace Eigen;
 
-AlActorCritic::AlActorCritic(int observationDimension, int numActions, double alpha, double beta, double lambda, double gamma, double sigma, FeatureGenerator * phi)
+AlActorCritic::AlActorCritic(int observationDimension, int numActions, double alpha, double beta,
+    double lambda, double gamma, FeatureGenerator * phi)
 {
     // Copy over arguments
     this->observationDimension = observationDimension;
@@ -12,7 +13,6 @@ AlActorCritic::AlActorCritic(int observationDimension, int numActions, double al
     this->beta = beta;
     this->lambda = lambda;
     this->gamma = gamma;
-    this->sigma = sigma; // For softmax (sigma -> 0, action selection is more stochastic; sigma -> inf, action selection is more deterministic)
     this->phi = phi;
 
     // Indicate that we have not loaded curFeatures
@@ -20,15 +20,15 @@ AlActorCritic::AlActorCritic(int observationDimension, int numActions, double al
 
     // Initialize the e-traces and weights for the critic and actor
     eTheta = theta = MatrixXd::Zero(numActions, phi->getNumOutputs());
-    eV = w = VectorXd::Zero(phi->getNumOutputs());
+    ew = w = VectorXd::Zero(phi->getNumOutputs());
 
     // Initialize the policy vector
-    actor = VectorXd::Zero(numActions);
+    actionProbabilities.resize(numActions);
 }
 
 string AlActorCritic::getName() const
 {
-    return "Actor-Critic with lambda = " + to_string(lambda);
+    return "Alexandra Actor-Critic with lambda = " + to_string(lambda);
 }
 
 bool AlActorCritic::trainBeforeAPrime() const
@@ -39,7 +39,7 @@ bool AlActorCritic::trainBeforeAPrime() const
 void AlActorCritic::newEpisode(std::mt19937_64& generator)
 {
     curFeaturesInit = false;	// We have not loaded curFeatures when the next train call happens.
-    eV.setZero();				// Clear the eligibility traces for the critic
+    ew.setZero();				// Clear the eligibility traces for the critic
     eTheta.setZero();		    // Clear the eligibility traces for the actor
 }
 
@@ -52,18 +52,12 @@ int AlActorCritic::getAction(const Eigen::VectorXd& observation, std::mt19937_64
         curFeaturesInit = true;
     }
 
-    for (int i = 0; i < numActions; i++)
-    { // exp(theta(s, a) = exp(dot product of theta.row(s) and phi(s)) => real number
-        double expThetaSA = exp(sigma * theta.row(i).dot(curFeatures));
-        // Assign computed exp(theta(s, a) to actor at idx a
-        actor(i) = expThetaSA;
-    }
+    actionProbabilities = (theta*curFeatures).array().exp();
 
     // Normalize
-    actor /= actor.sum();
+    actionProbabilities /= actionProbabilities.sum();
 
-    discrete_distribution<> distPSAs(actor.data(), actor.data() + actor.size());
-
+    discrete_distribution<int> distPSAs(actionProbabilities.data(), actionProbabilities.data() + actionProbabilities.size());
     return distPSAs(generator);
 }
 
@@ -71,27 +65,26 @@ void AlActorCritic::trainEpisodeEnd(const Eigen::VectorXd& observation, const in
 {
     // Critic update
     // Update the e-traces for the critic
-    eV = gamma * lambda * eV + curFeatures;
+    ew = gamma * lambda * ew + curFeatures;
 
     // Compute the TD-error
     double delta = reward - w.dot(curFeatures);	// We already computed the features for "curObservation" at a getAction call and stored them in curFeatures, and newObservation-->newFeatures
 
     // Update the weights for the critic
-    w = w + alpha * delta * eV;
+    w = w + alpha * delta * ew;
 
     // Actor update
     // Update the e-traces for the actor
-
+    eTheta = gamma * lambda * eTheta;
     for (int i = 0; i < numActions; i++)
     {
+        eTheta.row(i) += (((i == action ? 1.0 : 0.0) - actionProbabilities(i)) * curFeatures);
+        /*
         if (i == action)
-        {
-            eTheta.row(i) = gamma * lambda * eTheta.row(i).transpose() + ((1.0 - actor(i)) * curFeatures);
-        }
+            eTheta.row(i) += ((1.0 - actionProbabilities(i)) * curFeatures);
         else
-        {
-            eTheta.row(i) = gamma * lambda * eTheta.row(i).transpose()  + (-1.0 * actor(i)) * curFeatures;
-        }
+            eTheta.row(i) += (-actionProbabilities(i)) * curFeatures;
+        */
     }
 
     // Update the weights for the actor
@@ -106,30 +99,21 @@ void AlActorCritic::train(const Eigen::VectorXd& observation, const int curActio
     // Critic update
     // Update the e-traces for the critic
 
-    eV = gamma * lambda * eV + curFeatures;
+    ew = gamma * lambda * ew + curFeatures;
 
     // Compute the TD-error
     double delta = reward + gamma * w.dot(newFeatures) - w.dot(curFeatures);	// We already computed the features for "curObservation" at a getAction call and stored them in curFeatures, and newObservation-->newFeatures
 
 
     // Update the weights for the critic
-    w = w + alpha * delta * eV;
+    w = w + alpha * delta * ew;
 
     // Actor update
     // Update the e-traces for the actor
-
+    eTheta = gamma * lambda * eTheta;
     for (int i = 0; i < numActions; i++)
-    {
-        if (i == curAction)
-        {
-            eTheta.row(i) = gamma * lambda * eTheta.row(i).transpose() + ((1.0 - actor(i)) * curFeatures);
-        }
-        else
-        {
-            eTheta.row(i) = gamma * lambda * eTheta.row(i).transpose()  + (-1.0 * actor(i)) * curFeatures;
-        }
-    }
-
+        eTheta.row(i) +=  (((i == curAction ? 1.0 : 0.0) - actionProbabilities(i)) * curFeatures);
+    
     // Update the weights for the actor
     theta = theta + beta * delta * eTheta;
 

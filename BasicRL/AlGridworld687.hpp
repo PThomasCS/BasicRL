@@ -32,7 +32,6 @@ public:
     bool episodeOver(std::mt19937_64& generator) const override;	// query whether the episode is over (only call once per time step).
 
 private:
-    int size;
     int x;
     int y;
 };

@@ -3,12 +3,7 @@
 using namespace std;
 using namespace Eigen;
 
-AlMountainCar::AlMountainCar()
-{
-    x = v = 0;
-    randomStart = false; // Default deterministic start at (-0.5, 0).
-}
-
+// Random initial state (uniformly at random (x, v) withing range) or a default deterministic initial state (-0.5, 0)
 AlMountainCar::AlMountainCar(bool randomStart)
 {
     x = v = 0;
@@ -32,17 +27,17 @@ double AlMountainCar::getGamma() const
 
 int AlMountainCar::getRecommendedEpisodeLength() const
 {
-    return 1000;
+    return 20000;
 }
 
 int AlMountainCar::getRecommendedMaxEpisodes() const
 {
-    return 500;
+    return 5000;
 }
 
 string AlMountainCar::getName() const
 {
-    return "Mountain Car";
+    return "Alexandra Mountain Car";
 }
 
 VectorXd AlMountainCar::getObservationLowerBound() const
@@ -63,10 +58,11 @@ void AlMountainCar::newEpisode(mt19937_64& generator)
 {
     if (randomStart) // Restart with initial state (x, v), where x and v are drawn uniformly at random from the range
     {
-        uniform_real_distribution<> uniformX(-1.2, 0.5);
-        uniform_real_distribution<> uniformV(-0.07, 0.07);
-        x = uniformX(generator);
-        v = uniformV(generator);
+        x = uniform_real_distribution<double>(-1.2, 0.5)(generator);
+        // The line above is equivalent to the two lines below.
+        //uniform_real_distribution<double> uniformX(-1.2, 0.5);
+        //x = uniformX(generator);
+        v = uniform_real_distribution<double>(-0.07, 0.07)(generator);
     }
     else
     {
@@ -77,7 +73,7 @@ void AlMountainCar::newEpisode(mt19937_64& generator)
 
 void AlMountainCar::getObservation(mt19937_64& generator, VectorXd& buff) const
 {
-    buff = VectorXd::Zero(2);
+    buff.resize(2); // After this line, the contents of buff(0) and buff(1) could be anything. We don't waste the time loading with zeros, because we are about to overwrite both entries
     buff(0) = x;
     buff(1) = v;
 }
@@ -87,14 +83,14 @@ double AlMountainCar::step(int action, mt19937_64& generator)
     if (action < 0 || action > 2)
     {
         assert(false);
-        errorExit("Error in Mountain Car::step. Unrecognized action.");
+        errorExit("Error in AlMountainCar::step. Unrecognized action.");
     }
 
     // Shift action from 0, 1, 2 to -1, 0, 1
     double transition = double(action) - 1.0;
 
     // Handle the action
-     v = v + 0.001 * transition - 0.0025 * cos(3 * x);
+     v = v + 0.001 * transition - 0.0025 * cos(3.0 * x);
      x = x + v;
 
     // Make sure x stays in [-1.2, 0.5] and v is in [-0.7, 0.7].

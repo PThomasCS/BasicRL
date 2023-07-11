@@ -3,7 +3,8 @@
 using namespace std;
 using namespace Eigen;
 
-AlQLambda::AlQLambda(int observationDimension, int numActions, double alpha, double lambda, double epsilon, double gamma, FeatureGenerator * phi)
+AlQLambda::AlQLambda(int observationDimension, int numActions, double alpha, double lambda, 
+    double epsilon, double gamma, FeatureGenerator * phi)
 {
     // Copy over arguments
     this->observationDimension = observationDimension;
@@ -23,7 +24,7 @@ AlQLambda::AlQLambda(int observationDimension, int numActions, double alpha, dou
 
 string AlQLambda::getName() const
 {
-    return "Q(Lambda) with lambda = " + to_string(lambda);
+    return "Alexandra Q(Lambda) with lambda = " + to_string(lambda);
 }
 
 bool AlQLambda::trainBeforeAPrime() const
@@ -40,15 +41,9 @@ void AlQLambda::newEpisode(std::mt19937_64& generator)
 int AlQLambda::getAction(const Eigen::VectorXd& observation, std::mt19937_64& generator)
 {
     // Handle epsilon greedy exploration
-    bernoulli_distribution explorationDistribution(epsilon);
-    bool explore = explorationDistribution(generator);
-    if (explore)
-    {
-        uniform_int_distribution<int> uniformActionDistribution(0, numActions - 1);
-        int result = uniformActionDistribution(generator);
-        return result;
-    }
-
+    if (bernoulli_distribution(epsilon)(generator)) // Check if we should explore
+        return uniform_int_distribution<int>(0, numActions - 1)(generator);
+    
     // If we get here, we're not exploring. Get the q-values
     VectorXd qValues(numActions); // Deleted features var
 
@@ -60,23 +55,12 @@ int AlQLambda::getAction(const Eigen::VectorXd& observation, std::mt19937_64& ge
 
     qValues = w * curFeatures;
 
-//    if (!curFeaturesInit)	// If we have not initialized curFeatures, use them
-//    {
-//        phi->generateFeatures(observation, curFeatures);
-//        qValues = w * curFeatures;
-//        curFeaturesInit = true;	// We have now loaded curFeatures
-//    }
-//    else
-//    {
-//        phi->generateFeatures(observation, newFeatures);
-//        qValues = w * newFeatures;
-//    }
-
     // Return an action that achieves the maximum q-value
     return maxIndex(qValues, generator);
 }
 
-void AlQLambda::trainEpisodeEnd(const Eigen::VectorXd& observation, const int action, const double reward, std::mt19937_64& generator)
+void AlQLambda::trainEpisodeEnd(const Eigen::VectorXd& observation, const int action,
+    const double reward, std::mt19937_64& generator)
 {
     // Compute the TD-error
     double delta = reward - w.row(action).dot(curFeatures);	// We already computed the features for "observation" at a getAction call and stored them in curFeatures
