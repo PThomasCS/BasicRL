@@ -83,6 +83,7 @@ void AlQLambda::trainEpisodeEnd(const Eigen::VectorXd& observation, const int ac
 
 void AlQLambda::train(const Eigen::VectorXd& observation, const int curAction, const double reward, const Eigen::VectorXd& newObservation, std::mt19937_64& generator)
 {
+    phi->generateFeatures(newObservation, newFeatures);
 
     // Compute the TD-error
     double delta = reward + gamma * (w * newFeatures).maxCoeff() - w.row(curAction).dot(curFeatures);	// We already computed the features for "curObservation" at a getAction call and stored them in curFeatures, and newObservation-->newFeatures
