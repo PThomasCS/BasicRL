@@ -5,10 +5,12 @@ using namespace Eigen;
 
 // Takes as input an agent and an environment, runs the agent on the environment for one agent lifetime.
 // Returns the vector of returns from each episode.
-VectorXd runLifetime(Agent* agent, Environment* env, int numEpisodes, int maxEpisodeLength, mt19937_64 & generator)
+VectorXd runLifetime(Agent* agent, Environment* env, int numEpisodes, int maxEpisodeLength, 
+	mt19937_64 & generator, VectorXd & totalTimeStepsAtEpisodeEndsBuff)	// Buff means "buffer" - we are going to return values in this object.
 {
 	VectorXd result(numEpisodes);	// Create the array where we will return the resulting returns (G).
-    VectorXd actionsTaken(numEpisodes); // Create the array where we will return the total number of steps taken across all episodes up to that moment in time.
+	totalTimeStepsAtEpisodeEndsBuff.resize(numEpisodes);
+    VectorXd episodeLengths(numEpisodes); // Create the array where we will store the total number of steps taken across all episodes up to that moment in time.
 	double gamma = env->getGamma();
     int actCount = 0;
 
@@ -63,7 +65,7 @@ VectorXd runLifetime(Agent* agent, Environment* env, int numEpisodes, int maxEpi
 				curObs = newObs;
 			}
 			result[epCount] = G;
-            actionsTaken[epCount] = actCount;
+			totalTimeStepsAtEpisodeEndsBuff[epCount] = actCount;
 		}
 		else
 		{
@@ -112,16 +114,11 @@ VectorXd runLifetime(Agent* agent, Environment* env, int numEpisodes, int maxEpi
 				curObs = newObs;
 			}
 			result[epCount] = G;
-            actionsTaken[epCount] = actCount;
+			totalTimeStepsAtEpisodeEndsBuff[epCount] = actCount;
 		}		
 	}
 
-    // Print the actions taken to file
-    ofstream out("actions.txt");
-    out << fixed << actionsTaken << endl;
-    out.close();
-
-	// Return the results that we computed
+    // Return the results that we computed
 	return result;
 }
 
@@ -170,15 +167,27 @@ int main(int argc, char* argv[])
     AlActorCritic agent(observationDimension, numActions, alpha, beta, lambda, gamma, sigma, &phi); // The &phi means "the memory location of phi". Notice the constructor takes a pointer FeatureGenerator*.
 
 	// Run the agent on the environment
-	VectorXd returns = runLifetime(&agent, &env, maxEpisodes, maxEpisodeLength, generator);
+	VectorXd totalTimeStepsAtEpisodeEnds;	// runLifetime will store the total number of timesteps that have passed when each episode ends. It will store it in this array.
+	VectorXd returns = runLifetime(&agent, &env, maxEpisodes, maxEpisodeLength, generator, totalTimeStepsAtEpisodeEnds);
+
+	// Print totalTimeStepsAtEpisodeEnds to file
+	
+#ifdef _MSC_VER	// Check if the compiler is a Microsoft compiler.
+	string filePath = "out/totalTimeStepsAtEpisodeEnds.txt";	// If so, use this path
+#else
+	string filePath = "../out/totalTimeStepsAtEpisodeEnds.txt";	// Otherwise, use this path
+#endif
+	ofstream outTimeSteps(filePath);
+	outTimeSteps << fixed << totalTimeStepsAtEpisodeEnds << endl;
+	outTimeSteps.close();
 
 	// Print the returns
 	cout << "Returns:" << endl << returns << endl;
 
     // Print the returns to a file
-    ofstream out("returns.txt");
-    out << returns << endl;
-    out.close();
+    ofstream outReturns("returns.txt");
+	outReturns << returns << endl;
+	outReturns.close();
 
     // Print message indicating that the program has finished
 	cout << "Done. Press enter to exit." << endl;
