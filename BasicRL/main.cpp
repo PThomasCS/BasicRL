@@ -399,6 +399,14 @@ int main(int argc, char* argv[])
 	outResults.close();
 	cout << "\tResults printed." << endl;
 
+	// Clean up memory. Everything that we called "new" for, we need to call "delete" for.
+	for (int i = 0; i < numTrials; i++)
+	{
+		delete environments[i];
+		delete phis[i];
+		delete agents[i];
+	}
+
 	// Print message indicating that the program has finished
 	cout << "Done. Press enter to exit." << endl;
 	return 0; // No error.
