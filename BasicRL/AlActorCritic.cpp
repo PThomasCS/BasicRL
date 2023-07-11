@@ -46,29 +46,17 @@ void AlActorCritic::newEpisode(std::mt19937_64& generator)
 int AlActorCritic::getAction(const Eigen::VectorXd& observation, std::mt19937_64& generator)
 {
     // Handle softmax action selection
-    // Fix double compute of new features
-
     if (!curFeaturesInit)	// If we have not initialized curFeatures, use them
     {
         phi->generateFeatures(observation, curFeatures);
-        for (int i = 0; i < numActions; i++) {
-            // exp(theta(s, a) = exp(dot product of theta.row(s) and phi(s)) => real number
-            double expThetaSA = exp(sigma * theta.row(i).dot(curFeatures));
-            // Assign computed exp(theta(s, a) to actor at idx a
-            actor(i) = expThetaSA;
-            curFeaturesInit = true;
-        }
+        curFeaturesInit = true;
     }
 
-    else
-    {
-        phi->generateFeatures(observation, newFeatures);
-        for (int i = 0; i < numActions; i++) {
-            // exp(theta(s, a) = exp(dot product of theta.row(s) and phi(s)) => real number
-            double expThetaSA = exp(sigma * theta.row(i).dot(curFeatures));
-            // Assign computed exp(theta(s, a) to actor at idx a
-            actor(i) = expThetaSA;
-        }
+    for (int i = 0; i < numActions; i++)
+    { // exp(theta(s, a) = exp(dot product of theta.row(s) and phi(s)) => real number
+        double expThetaSA = exp(sigma * theta.row(i).dot(curFeatures));
+        // Assign computed exp(theta(s, a) to actor at idx a
+        actor(i) = expThetaSA;
     }
 
     // Normalize
@@ -96,7 +84,8 @@ void AlActorCritic::trainEpisodeEnd(const Eigen::VectorXd& observation, const in
 
     for (int i = 0; i < numActions; i++)
     {
-        if (i == action) {
+        if (i == action)
+        {
             eTheta.row(i) = gamma * lambda * eTheta.row(i).transpose() + ((1.0 - actor(i)) * curFeatures);
         }
         else
@@ -131,7 +120,8 @@ void AlActorCritic::train(const Eigen::VectorXd& observation, const int curActio
 
     for (int i = 0; i < numActions; i++)
     {
-        if (i == curAction) {
+        if (i == curAction)
+        {
             eTheta.row(i) = gamma * lambda * eTheta.row(i).transpose() + ((1.0 - actor(i)) * curFeatures);
         }
         else

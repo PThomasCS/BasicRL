@@ -55,14 +55,22 @@ int AlQLambda::getAction(const Eigen::VectorXd& observation, std::mt19937_64& ge
     if (!curFeaturesInit)	// If we have not initialized curFeatures, use them
     {
         phi->generateFeatures(observation, curFeatures);
-        qValues = w * curFeatures;
         curFeaturesInit = true;	// We have now loaded curFeatures
     }
-    else
-    {
-        phi->generateFeatures(observation, newFeatures);
-        qValues = w * newFeatures;
-    }
+
+    qValues = w * curFeatures;
+
+//    if (!curFeaturesInit)	// If we have not initialized curFeatures, use them
+//    {
+//        phi->generateFeatures(observation, curFeatures);
+//        qValues = w * curFeatures;
+//        curFeaturesInit = true;	// We have now loaded curFeatures
+//    }
+//    else
+//    {
+//        phi->generateFeatures(observation, newFeatures);
+//        qValues = w * newFeatures;
+//    }
 
     // Return an action that achieves the maximum q-value
     return maxIndex(qValues, generator);

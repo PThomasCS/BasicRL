@@ -44,5 +44,5 @@ def plot_mc():
 
 
 if __name__ == "__main__":
-    # plot()
-    plot_mc()
+    plot()
+    # plot_mc()

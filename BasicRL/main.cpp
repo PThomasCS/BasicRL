@@ -140,12 +140,12 @@ int main(int argc, char* argv[])
 //	sandbox();
 	
 	// Set hyperparameters and RNG
-    double  alpha = 0.001, beta = 0.001, lambda = 0.9, epsilon = 0.0, sigma = 0.1;
+    double  alpha = 0.001, beta = 0.001, lambda = 0.9, epsilon = 0.0, sigma = 0.5; // mc
 //    double  alpha = 0.001, lambda = 0.9, epsilon = 0.0;
-//	double  alpha = 0.01, lambda = 0.8, epsilon = 0.05;
+//	double  alpha = 0.01, beta = 0.01, lambda = 0.8, epsilon = 0.05, sigma = 0.1; // Qlambda, Actor-Critic, gr687
 //	double  alpha = 0.1, beta = 0.1, lambda = 0.8, epsilon = 0.05, sigma = 0.1;
 
-	int iOrder = 5, dOrder = 5;
+	int iOrder = 5, dOrder = 5; // mc 5, 5
 	mt19937_64 generator;	// If you don't seed it, it has some fixed seed that is the same every time.
 
 	// Create the environment
