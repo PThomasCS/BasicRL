@@ -40,15 +40,18 @@ string CartPole::getName() const
 
 VectorXd CartPole::getObservationLowerBound() const
 {
+    // (x, v, theta, omega)
     VectorXd lb(4);
-    lb << -3.0, -1.0*numeric_limits<float>::infinity(), -M_PI, -1.0*numeric_limits<float>::infinity();
+    lb << -3.0, -10.0, -M_PI / 15.0, -M_PI;
+
     return lb;
 }
 
 VectorXd CartPole::getObservationUpperBound() const
 {
+    // (x, v, theta, omega)
     VectorXd ub(4);
-    ub << 3.0, numeric_limits<float>::infinity(), M_PI, numeric_limits<float>::infinity();
+    ub << 3.0, 10.0, M_PI / 15.0, M_PI;
     return ub;
 }
 
@@ -76,7 +79,7 @@ double CartPole::step(int action, mt19937_64& generator) {
     double F = -10.0;
 
     if (action == 1)
-        F = -10.0;
+        F = 10.0;
 
     // x    : (x     , v   , theta,          omega   )
     // xDot : (xDot=v, vDot, thetaDot=omega, omegaDot)

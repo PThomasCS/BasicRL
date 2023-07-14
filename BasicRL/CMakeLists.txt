@@ -2,6 +2,28 @@ cmake_minimum_required(VERSION 3.25)
 project(BasicRL)
 
 set(CMAKE_CXX_STANDARD 14)
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -openmp")
+
+## Set compilers
+#set(CMAKE_C_COMPILER /opt/homebrew/opt/llvm/bin/clang)
+#set(CMAKE_CXX_COMPILER /opt/homebrew/opt/llvm/bin/clang++)
+#
+## Set the LLVM directories
+#set(LLVM_DIR /opt/homebrew/opt/llvm)
+#
+## Set OpenMP directories
+#set(OPENMP_LIBRARIES ${LLVM_DIR}/lib)
+#set(OPENMP_INCLUDES ${LLVM_DIR}/include)
+#
+## Set OpenMP flags and link libraries
+#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Xpreprocessor -fopenmp -I${OPENMP_INCLUDES}")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Xpreprocessor -fopenmp -I${OPENMP_INCLUDES}")
+#set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L${OPENMP_LIBRARIES} -lomp")
+#
+## Set the location of the linker
+#set(CMAKE_LINKER ${LLVM_DIR}/bin/ld.lld)
 
 include_directories(.)
 include_directories(lib)
@@ -53,7 +75,6 @@ include_directories(lib/Eigen/src/StlSupport)
 include_directories(lib/Eigen/src/SuperLUSupport)
 include_directories(lib/Eigen/src/SVD)
 include_directories(lib/Eigen/src/UmfPackSupport)
-include_directories(out)
 
 add_executable(BasicRL
         lib/Eigen/src/Cholesky/LDLT.h
@@ -363,10 +384,15 @@ add_executable(BasicRL
         lib/Eigen/src/SVD/SVDBase.h
         lib/Eigen/src/SVD/UpperBidiagonalization.h
         lib/Eigen/src/UmfPackSupport/UmfPackSupport.h
-        out/June16_2023_importanceWeights.txt
         Agent.hpp
+        AlActorCritic.cpp
+        AlActorCritic.hpp
         AlGridworld687.cpp
         AlGridworld687.hpp
+        AlMountainCar.cpp
+        AlMountainCar.hpp
+        AlQLambda.cpp
+        AlQLambda.hpp
         common.cpp
         common.hpp
         Environment.hpp
@@ -380,4 +406,4 @@ add_executable(BasicRL
         main.cpp
         SarsaLambda.cpp
         SarsaLambda.hpp
-        stdafx.hpp AlQLambda.hpp AlQLambda.cpp AlMountainCar.hpp AlMountainCar.cpp AlActorCritic.hpp AlActorCritic.cpp AlActorCritic.cpp)
+        stdafx.hpp CartPole.hpp CartPole.cpp)
