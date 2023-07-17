@@ -288,9 +288,9 @@ int main(int argc, char* argv[])
 
 	// Create the environment
 //	Gridworld env(4);
-//  AlGridworld687 env;
-//  AlMountainCar env;
-    AlMountainCar env(false);
+//  Gridworld687 env;
+//  MountainCar env;
+    MountainCar env(false);
 
 	// Get parameters of the environment
 	int observationDimension = env.getObservationDimension(), numActions = env.getNumActions(),
@@ -304,8 +304,8 @@ int main(int argc, char* argv[])
 
 	// Create the agent
 //	SarsaLambda agent(observationDimension, numActions, alpha, lambda, epsilon, gamma, &phi); // The &phi means "the memory location of phi". Notice the constructor takes a pointer FeatureGenerator*.
-//    AlQLambda agent(observationDimension, numActions, alpha, lambda, epsilon, gamma, &phi); // The &phi means "the memory location of phi". Notice the constructor takes a pointer FeatureGenerator*.
-    AlActorCritic agent(observationDimension, numActions, alpha, beta, lambda, gamma, &phi); // The &phi means "the memory location of phi". Notice the constructor takes a pointer FeatureGenerator*.
+//    QLambda agent(observationDimension, numActions, alpha, lambda, epsilon, gamma, &phi); // The &phi means "the memory location of phi". Notice the constructor takes a pointer FeatureGenerator*.
+    ActorCritic agent(observationDimension, numActions, alpha, beta, lambda, gamma, &phi); // The &phi means "the memory location of phi". Notice the constructor takes a pointer FeatureGenerator*.
 
 	// Run the agent on the environment
 	VectorXd totalTimeStepsAtEpisodeEnds;	// runLifetime will store the total number of timesteps that have passed when each episode ends. It will store it in this array.
@@ -365,7 +365,7 @@ int main(int argc, char* argv[])
 	cout << "Creating environments..." << endl;
 	vector<Environment*> environments(numTrials);
 	for (int i = 0; i < numTrials; i++)
-//		environments[i] = new AlMountainCar();
+//		environments[i] = new MountainCar();
       environments[i] = new CartPole();
 //        environments[i] = new Acrobot();
 	cout << "\tEnvironments created." << endl;
@@ -388,19 +388,19 @@ int main(int argc, char* argv[])
 	cout << "Creating agents..." << endl;
 	vector<Agent*> agents(numTrials);
 //    for (int i = 0; i < numTrials; i++)
-//        agents[i] = new AlActorCritic(observationDimension, numActions, alpha, beta, lambda, gamma, phis[i]);
+//        agents[i] = new ActorCritic(observationDimension, numActions, alpha, beta, lambda, gamma, phis[i]);
 
 	if (numTrials != 30) errorExit("Running code that is hard-coded for numTrials=30 without numTrials=30.");
 
     for (int i = 0; i < 10; i++)
-        agents[i] = new AlActorCritic(observationDimension, numActions, alphaAC, betaAC, lambdaAC, gamma, phis[i]);
+        agents[i] = new ActorCritic(observationDimension, numActions, alphaAC, betaAC, lambdaAC, gamma, phis[i]);
     for (int i = 10; i < 20; i++)
         agents[i] = new SarsaLambda(observationDimension, numActions, alphaSarsa, lambdaSarsa, epsilonSarsa, gamma, phis[i]);
     for (int i = 20; i < 30; i++)
-        agents[i] = new AlQLambda(observationDimension, numActions, alphaQ, lambdaQ, epsilonQ, gamma, phis[i]);
+        agents[i] = new QLambda(observationDimension, numActions, alphaQ, lambdaQ, epsilonQ, gamma, phis[i]);
 
 //	for (int i = 0; i < numTrials; i++)
-//		agents[i] = new AlActorCritic(observationDimension, numActions, alpha, beta, lambda, gamma, phis[i]); // The &phi means "the memory location of phi". Notice the constructor takes a pointer FeatureGenerator*.
+//		agents[i] = new ActorCritic(observationDimension, numActions, alpha, beta, lambda, gamma, phis[i]); // The &phi means "the memory location of phi". Notice the constructor takes a pointer FeatureGenerator*.
 ////        agents[i] = new SarsaLambda(observationDimension, numActions, alpha, lambda, epsilon, gamma, phis[i]);
 	cout << "\tAgents created." << endl;
 

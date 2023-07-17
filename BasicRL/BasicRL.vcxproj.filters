@@ -42,16 +42,16 @@
     <ClInclude Include="June16_2023.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AlActorCritic.hpp">
+    <ClInclude Include="ActorCritic.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AlGridworld687.hpp">
+    <ClInclude Include="Gridworld687.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AlMountainCar.hpp">
+    <ClInclude Include="MountainCar.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AlQLambda.hpp">
+    <ClInclude Include="QLambda.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CartPole.hpp">
@@ -80,16 +80,16 @@
     <ClCompile Include="June16_2023.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="AlActorCritic.cpp">
+    <ClCompile Include="ActorCritic.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="AlGridworld687.cpp">
+    <ClCompile Include="Gridworld687.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="AlMountainCar.cpp">
+    <ClCompile Include="MountainCar.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="AlQLambda.cpp">
+    <ClCompile Include="QLambda.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CartPole.cpp">

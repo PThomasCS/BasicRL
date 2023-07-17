@@ -41,18 +41,18 @@
 ////////////////////////////////////////////////////////////////
 #include "Environment.hpp"			// Environment specification
 #include "Gridworld.hpp"			// A simple gridworld for initial testing
-#include "AlGridworld687.hpp"       // 5x5 Gridworld with obstacles and water state
-#include "AlMountainCar.hpp"        // Mountain Car
+#include "Gridworld687.hpp"       // 5x5 Gridworld with obstacles and water state
+#include "MountainCar.hpp"        // Mountain Car
 #include "CartPole.hpp"             // CartPole (from 2019 Course Notes)
-#include "Acrobot.hpp"
+#include "Acrobot.hpp"				// Acrobot domain
 
 ////////////////////////////////////////////////////////////////
 // Agent files
 ////////////////////////////////////////////////////////////////
 #include "Agent.hpp"				// Agent specification
 #include "SarsaLambda.hpp"			// Linear Sarsa(lambda)
-#include "AlQLambda.hpp"			// Q(lambda)
-#include "AlActorCritic.hpp"        // Actor-Critic
+#include "QLambda.hpp"			// Q(lambda)
+#include "ActorCritic.hpp"        // Actor-Critic
 
 ////////////////////////////////////////////////////////////////
 // Sandbox / Experiments not necessarily related to RL
