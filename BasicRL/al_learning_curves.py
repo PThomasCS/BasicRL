@@ -1,4 +1,13 @@
 import matplotlib.pyplot as plt
+import pandas as pd
+
+
+def plot_graph():
+    df = pd.read_csv('out/results.csv')
+    plt.errorbar(df['Episode'], df['Average Discounted Return'], yerr=df['Standard Error'], ecolor='grey')
+    plt.xlabel('Episode')
+    plt.ylabel('Average Discounted Return')
+    plt.show()
 
 
 # TO-DO: add new graphs (e.g., cumulative reward, etc.)
@@ -44,5 +53,5 @@ def plot_mc():
 
 
 if __name__ == "__main__":
-    plot()
+    plot_graph()
     # plot_mc()
