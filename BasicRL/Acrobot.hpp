@@ -55,4 +55,5 @@ private:
     const double g = 9.8;				// Acceleration due to gravity
     const double fmax = 1.0;		    // Maximum (and -minimum) force that can be applied
     const double dt = 0.05;				// Time step duration (CHANGE FROM BOOK)
+    const double numSimSteps = 4;       // Number of steps to simulate, each of length dt
 };
