@@ -40,21 +40,20 @@ void AlQLambda::newEpisode(std::mt19937_64& generator)
 
 int AlQLambda::getAction(const Eigen::VectorXd& observation, std::mt19937_64& generator)
 {
-    // Handle epsilon greedy exploration
-    if (bernoulli_distribution(epsilon)(generator)) // Check if we should explore
-        return uniform_int_distribution<int>(0, numActions - 1)(generator);
-    
-    // If we get here, we're not exploring. Get the q-values
-    VectorXd qValues(numActions); // Deleted features var
-
+    // Handle the loading of curFeatures, regardless of whether or not we explore
     if (!curFeaturesInit)	// If we have not initialized curFeatures, use them
     {
         phi->generateFeatures(observation, curFeatures);
         curFeaturesInit = true;	// We have now loaded curFeatures
     }
 
-    qValues = w * curFeatures;
-
+    // Handle epsilon greedy exploration
+    if (bernoulli_distribution(epsilon)(generator)) // Check if we should explore
+        return uniform_int_distribution<int>(0, numActions - 1)(generator);
+    
+    // If we get here, we're not exploring. Get the q-values
+    VectorXd qValues = w * curFeatures;
+    
     // Return an action that achieves the maximum q-value
     return maxIndex(qValues, generator);
 }

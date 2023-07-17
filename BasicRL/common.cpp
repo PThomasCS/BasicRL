@@ -44,14 +44,3 @@ int maxIndex(const VectorXd& v, mt19937_64& generator)
 		return bestIndices[index];
 	}
 }
-
-double wrapPosNegPI(double& angleRadians);
-
-double wrapPosNegPI(double& angleRadians) {
-    angleRadians = fmod(angleRadians, 2.0 * M_PI);
-    if (angleRadians <= -M_PI)
-        angleRadians += 2.0 * M_PI;
-    else if (angleRadians > M_PI)
-        angleRadians -= 2.0 * M_PI;
-    return angleRadians;
-}

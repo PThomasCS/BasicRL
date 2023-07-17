@@ -8,6 +8,61 @@ void errorExit(const std::string& s);
 
 int maxIndex(const Eigen::VectorXd& v, std::mt19937_64& generator);
 
+/*
+Floating-point modulo:
+The result (the remainder) has same sign as the divisor.
+Similar to matlab's mod(); Not similar to fmod() because:
+Mod(-3,4)= 1
+fmod(-3,4)= -3
+*/
+template <typename Scalar>
+Scalar Mod(const Scalar& x, const Scalar& y) {
+	if (0. == y) return x;
+	Scalar m = x - y * (Scalar)std::floor(x / y);
+	// handle boundary cases resulted from floating-point cut off:
+	if (y > 0) {
+		if (m >= y)
+			return 0;
+		if (m < 0) {
+			if (y + m == y) return 0;
+			else return (y + m);
+		}
+	}
+	else
+	{
+		if (m <= y) return 0;
+		if (m > 0) {
+			if (y + m == y) return 0;
+			else return (y + m);
+		}
+	}
+	return m;
+}
+
+// wrap [rad] angle to [-PI..PI)
+template <typename Scalar>
+Scalar wrapPosNegPI(const Scalar& theta) {
+	return Mod((Scalar)theta + M_PI, (Scalar)2.0 * M_PI) - (Scalar)M_PI;
+}
+
+// wrap [rad] angle to [0..TWO_PI)
+template <typename Scalar>
+Scalar wrapTwoPI(const Scalar& theta) {
+	return Mod((Scalar)theta, (Scalar)(2.0 * M_PI));
+}
+
+// wrap [deg] angle to [-180..180)
+template <typename Scalar>
+Scalar wrapPosNeg180(const Scalar& theta) {
+	return Mod((Scalar)(theta + 180.0), (Scalar)360.0) - (Scalar)180.0;
+}
+
+// wrap [deg] angle to [0..360)
+template <typename Scalar>
+Scalar wrap360(const Scalar& theta) {
+	return Mod((Scalar)theta, (Scalar)360.0);
+}
+
 // Just like the "pow" function (power), but for integers.
 // See this link for details: https://stackoverflow.com/questions/1505675/power-of-an-integer-in-c
 template <typename intType>

@@ -39,19 +39,8 @@ void SarsaLambda::newEpisode(std::mt19937_64& generator)
 
 int SarsaLambda::getAction(const Eigen::VectorXd& observation, std::mt19937_64& generator)
 {
-	// Handle epsilon greedy exploration
-	bernoulli_distribution explorationDistribution(epsilon);
-	bool explore = explorationDistribution(generator);
-	if (explore)
-	{
-		uniform_int_distribution<int> uniformActionDistribution(0, numActions - 1);
-		int result = uniformActionDistribution(generator);
-		return result;
-	}
-
-	// If we get here, we're not exploring. Get the q-values
-	VectorXd qValues(numActions), features;
-
+	// Load curFeatures and newFeatures, even if we are going to explore and not use them. They may be used in training.
+	VectorXd qValues(numActions);
 	if (!curFeaturesInit)	// If we have not initialized curFeatures, use them
 	{
 		phi->generateFeatures(observation, curFeatures);
@@ -64,7 +53,17 @@ int SarsaLambda::getAction(const Eigen::VectorXd& observation, std::mt19937_64& 
 		qValues = w * newFeatures;
 	}
 
-	// Return an action that achieves the maximum q-value
+	// Handle epsilon greedy exploration
+	bernoulli_distribution explorationDistribution(epsilon);
+	bool explore = explorationDistribution(generator);
+	if (explore)
+	{
+		uniform_int_distribution<int> uniformActionDistribution(0, numActions - 1);
+		int result = uniformActionDistribution(generator);
+		return result;
+	}
+
+	// If we get here, we aren't exploring! Return an action that achieves the maximum q-value
 	return maxIndex(qValues, generator);
 }
 
