@@ -350,18 +350,22 @@ int main(int argc, char* argv[])
 	mt19937_64 generator;
 
 	// Hyperparameters
-	int numTrials = 100, iOrder = 3, dOrder = 3; // Added numAlgorithms 
+	int numTrials = 5, iOrder = 3, dOrder = 3;
+//    int numRuns = 2, iOrder = 3, dOrder = 3;
 	double alpha = 0.0001, beta = 0.0001, lambda = 0.8;
+//    double alpha = 0.001, beta = 0.001, lambda = 0.8, epsilon = 0.05;
+//    double alpha = 0.001, lambda = 0.8, epsilon = 0.05;
 
-	//int numTrials = 30, numAlgorithms = 3, numRuns = 10, iOrder = 3, dOrder = 3; // Added numAlgorithms 
-	//numTrials = numRuns * numAlgorithms;
-	//cout << "Testing " << numAlgorithms << " algorithms over " << numRuns << " runs..." << endl;
-
+//    int numAlgorithms = 3;
+//    int numTrials = numRuns * numAlgorithms;
+  // comment
 	// Create the environment objects
 	cout << "Creating environments..." << endl;
 	vector<Environment*> environments(numTrials);
 	for (int i = 0; i < numTrials; i++)
-		environments[i] = new CartPole();
+//		environments[i] = new AlMountainCar();
+      environments[i] = new CartPole();
+//        environments[i] = new Acrobot();
 	cout << "\tEnvironments created." << endl;
 
 	// Get parameters of the environment
@@ -381,25 +385,18 @@ int main(int argc, char* argv[])
 	// Now, actually create the agents
 	cout << "Creating agents..." << endl;
 	vector<Agent*> agents(numTrials);
-	for (int i = 0; i < numTrials; i++)
-		agents[i] = new AlActorCritic(observationDimension, numActions, alpha, beta, lambda, gamma, phis[i]);
-	
-	//for (i = 0; i < numRuns; i++)
-	//{
-	//	agents[i] = new AlActorCritic(observationDimension, numActions, alpha, beta, lambda, gamma, phis[i]); // The &phi means "the memory location of phi". Notice the constructor takes a pointer FeatureGenerator*.
-	//	agents[i + 10] = new SarsaLambda(observationDimension, numActions, alpha, lambda, epsilon, gamma, phis[i + 10]);
-	//	agents[i + 20] = new AlQLambda(observationDimension, numActions, alpha, lambda, epsilon, gamma, phis[i + 20]);
+    for (int i = 0; i < numTrials; i++)
+        agents[i] = new AlActorCritic(observationDimension, numActions, alpha, beta, lambda, gamma, phis[i]);
+//    for (int i = 0; i < 10; i++)
+//        agents[i] = new AlActorCritic(observationDimension, numActions, alpha, beta, lambda, gamma, phis[i]);
+//    for (int i = 10; i < 20; i++)
+//        agents[i] = new SarsaLambda(observationDimension, numActions, alpha, lambda, epsilon, gamma, phis[i]);
+//    for (int i = 20; i < 30; i++)
+//        agents[i] = new AlQLambda(observationDimension, numActions, alpha, lambda, epsilon, gamma, phis[i]);
 
-	//	//agents[i] = new AlActorCritic(observationDimension, numActions, alpha, beta, lambda, gamma, phis[i]);
-	//}
-
-	//for (int i = 0; i < 10; i++)
-	//	agents[i] = new AlActorCritic(observationDimension, numActions, alpha, beta, lambda, gamma, phis[i]);
-	//for (int i = 10; i < 20; i++)
-	//	agents[i] = new SarsaLambda(observationDimension, numActions, alpha, lambda, epsilon, gamma, phis[i]);
-	//for (int i = 20; i < 30; i++)
-	//	agents[i] = new AlQLambda(observationDimension, numActions, alpha, lambda, epsilon, gamma, phis[i]);
-
+//	for (int i = 0; i < numTrials; i++)
+//		agents[i] = new AlActorCritic(observationDimension, numActions, alpha, beta, lambda, gamma, phis[i]); // The &phi means "the memory location of phi". Notice the constructor takes a pointer FeatureGenerator*.
+////        agents[i] = new SarsaLambda(observationDimension, numActions, alpha, lambda, epsilon, gamma, phis[i]);
 	cout << "\tAgents created." << endl;
 
 	// Actually run the trials - this function is threaded!
@@ -421,8 +418,6 @@ int main(int argc, char* argv[])
 	outResults.close();
 	cout << "\tResults printed." << endl;
 
-	system("learning_curves.py");
-
 	// Clean up memory. Everything that we called "new" for, we need to call "delete" for.
 	for (int i = 0; i < numTrials; i++)
 	{
@@ -430,6 +425,8 @@ int main(int argc, char* argv[])
 		delete phis[i];
 		delete agents[i];
 	}
+
+//    system("learning_curves.py");
 
 	// Print message indicating that the program has finished
 	cout << "Done. Press enter to exit." << endl;
