@@ -20,7 +20,7 @@ int maxIndex(const VectorXd& v, mt19937_64& generator)
 	vector<int> bestIndices(1, 0);
 	double bestValue = v[0];
 
-	// Loop over the other elemnts updating our list of bestIndices and the bestValue
+	// Loop over the other elements updating our list of bestIndices and the bestValue
 	for (int i = 1; i < (int)v.size(); i++)
 	{
 		if (v[i] == bestValue)
@@ -43,4 +43,15 @@ int maxIndex(const VectorXd& v, mt19937_64& generator)
 		int index = d(generator);
 		return bestIndices[index];
 	}
+}
+
+double wrapPosNegPI(double& angleRadians);
+
+double wrapPosNegPI(double& angleRadians) {
+    angleRadians = fmod(angleRadians, 2.0 * M_PI);
+    if (angleRadians <= -M_PI)
+        angleRadians += 2.0 * M_PI;
+    else if (angleRadians > M_PI)
+        angleRadians -= 2.0 * M_PI;
+    return angleRadians;
 }
