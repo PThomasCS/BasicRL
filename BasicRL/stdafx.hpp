@@ -44,6 +44,7 @@
 #include "AlGridworld687.hpp"       // 5x5 Gridworld with obstacles and water state
 #include "AlMountainCar.hpp"        // Mountain Car
 #include "CartPole.hpp"             // CartPole (from 2019 Course Notes)
+#include "Acrobot.hpp"
 
 ////////////////////////////////////////////////////////////////
 // Agent files
