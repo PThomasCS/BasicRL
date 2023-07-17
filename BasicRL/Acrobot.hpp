@@ -53,6 +53,6 @@ private:
     const double i1 = 1.0;
     const double i2 = 1.0;
     const double g = 9.8;				// Acceleration due to gravity
-    const double fmax = 1.0;				// Maximum (and -minimum) force that can be applied
+    const double fmax = 1.0;		    // Maximum (and -minimum) force that can be applied
     const double dt = 0.05;				// Time step duration (CHANGE FROM BOOK)
 };

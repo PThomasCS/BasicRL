@@ -30,7 +30,7 @@ int Acrobot::getRecommendedEpisodeLength() const
 
 int Acrobot::getRecommendedMaxEpisodes() const
 {
-    return 500;
+    return 1000;
 }
 
 string Acrobot::getName() const
