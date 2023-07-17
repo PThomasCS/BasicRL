@@ -54,6 +54,9 @@
     <ClInclude Include="AlQLambda.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CartPole.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="common.cpp">
@@ -86,8 +89,14 @@
     <ClCompile Include="AlQLambda.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CartPole.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Notes.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="learning_curves.py" />
   </ItemGroup>
 </Project>

@@ -1,12 +1,15 @@
+# Include "system("learning_curves.py")" in main.cpp
+
 import matplotlib.pyplot as plt
 import pandas as pd
-
+ 
 
 def plot_graph():
-    df = pd.read_csv('out/results.csv')
-    plt.errorbar(df['Episode'], df['Average Discounted Return'], yerr=df['Standard Error'], ecolor='grey')
+    df = pd.read_csv("out/results.csv")
+    plt.errorbar(df['Episode'], df['Average Discounted Return'], yerr=df['Standard Error'], ecolor=['grey'])
     plt.xlabel('Episode')
     plt.ylabel('Average Discounted Return')
+    plt.savefig("out/plot.jpg", format='jpeg')
     plt.show()
 
 
@@ -14,6 +17,7 @@ def plot_graph():
 
 # Plot learning curve showing cumulative actions taken so far on the x-axis and number of episodes on the y-axis
 # If the agent is learning, the graph should have an increasing slope
+
 def plot():
     x = []
 
