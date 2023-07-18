@@ -3,69 +3,48 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
+import os
  
-
-def plot_graph():
-    # df = pd.read_csv("out/results.csv")
-    # plt.errorbar(df['Episode'], df['Average Discounted Return'], yerr=df['Standard Error'], ecolor=['grey'])
-    # plt.xlabel('Episode')
-    # plt.ylabel('Average Discounted Return')
-    # plt.savefig("out/plot.jpg", format='jpeg')
-    # plt.show()
+"""
+def plot():
     df = pd.read_csv("out/results.csv")
     sns.set(style='whitegrid')
     sns.lineplot(data=df, x='Episode', y='Average Discounted Return')
-    plt.fill_between(df['Episode'], df['Average Discounted Return'] - df['Standard Error'], df['Average Discounted Return'] + df['Standard Error'], color='tab:orange', alpha=0.3)
+    plt.fill_between(df['Episode'], df['Average Discounted Return'] - df['Standard Error'], df['Average Discounted Return'] + df['Standard Error'], color='tab:blue', alpha=0.3)
     plt.xlabel('Episode')
     plt.ylabel('Average Discounted Return')
     plt.savefig("out/plot.jpg", format='jpeg')
     plt.show()
+"""
 
-
-#
-# # TO-DO: add new graphs (e.g., cumulative reward, etc.)
-#
-# # Plot learning curve showing cumulative actions taken so far on the x-axis and number of episodes on the y-axis
-# # If the agent is learning, the graph should have an increasing slope
-#
-# def plot():
-#     x = []
-#
-#     # x-axis data showing cumulative actions taken
-#     with open('cmake-build-debug/actions.txt', 'r') as f:
-#         for line in f:
-#             data = line.strip()  # Strip whitespace
-#             x.append(float(data))  # Convert to float
-#
-#     # y-axis data showing number of episodes
-#     y = list(range(1, len(x) + 1))
-#
-#     plt.plot(x, y)
-#     plt.ticklabel_format(style='plain')
-#     plt.xlabel('# Actions Taken')
-#     plt.ylabel('# Episodes')
-#     plt.show()
-#
-#
-# def plot_mc():
-#     y = []
-#
-#     # y-axis data showing the number of steps needed by the agent to reach the goal state
-#     with open('cmake-build-debug/returns.txt', 'r') as f:
-#         for line in f:
-#             data = line.strip()  # Strip whitespace
-#             y.append(float(data) * (-1))  # Convert to float
-#
-#     # x-axis data showing number of episodes
-#     x = list(range(1, len(y) + 1))
-#
-#     plt.plot(x, y)
-#     plt.ticklabel_format(style='plain')
-#     plt.xlabel('# Episodes')
-#     plt.ylabel('# Steps to reach goal')
-#     plt.show()
-
+def plot():
+    csv_dir = 'out/'  # Path to the CSV directory
+    output_dir = 'out/'  # Path to the output directory for plots
+    os.makedirs(output_dir, exist_ok=True)  # Create the output directory if it doesn't exist
+    
+    csv_files = [file for file in os.listdir(csv_dir) if file.endswith('.csv')]
+    
+    for file in csv_files:
+        filename = os.path.splitext(file)[0]  # Extract the filename without extension
+        
+        # Read the CSV file
+        csv_path = os.path.join(csv_dir, file)
+        df = pd.read_csv(csv_path)
+        
+        # Plotting
+        sns.set(style='whitegrid')
+        sns.lineplot(data=df, x='Episode', y='Average Discounted Return')
+        plt.fill_between(df['Episode'], df['Average Discounted Return'] - df['Standard Error'], df['Average Discounted Return'] + df['Standard Error'], color='tab:blue', alpha=0.3)
+        plt.xlabel('Episode')
+        plt.ylabel('Average Discounted Return')
+        
+        # Save the plot as a JPEG file
+        output_path = os.path.join(output_dir, 'plot_{}.jpg'.format(filename))
+        plt.savefig(output_path, format='jpeg')
+        plt.close()  # Close the plot to free up memory
+        
+        print('Plot saved for file:', file)
+    
 
 if __name__ == "__main__":
-    plot_graph()
-    # plot_mc()
+    plot()

@@ -23,7 +23,7 @@ SarsaLambda::SarsaLambda(int observationDimension, int numActions, double alpha,
 
 string SarsaLambda::getName() const
 {
-	return "Linear Sarsa(Lambda) with lambda = " + to_string(lambda);
+	return "Linear Sarsa(Lambda) with lambda = " + to_string(lambda) + ", alpha = " + to_string(alpha) + ", epsilon = " + to_string(epsilon);
 }
 
 bool SarsaLambda::trainBeforeAPrime() const

@@ -350,17 +350,12 @@ int main(int argc, char* argv[])
 	mt19937_64 generator;
 
 	// Hyperparameters
-	int numTrials = 30, iOrder = 3, dOrder = 3;
-//    int numRuns = 2, iOrder = 3, dOrder = 3;
+	int numRuns = 100, numAlgs = 3, numTrials = numRuns * numAlgs;
+	int iOrder = 3, dOrder = 3;
 	double alphaAC = 0.0001, betaAC = 0.0001, lambdaAC = 0.8;
 	double alphaSarsa = 0.0001, lambdaSarsa = 0.8, epsilonSarsa = 0.1;
 	double alphaQ = 0.0001, lambdaQ = 0.8, epsilonQ = 0.1;
-//    double alpha = 0.001, beta = 0.001, lambda = 0.8, epsilon = 0.05;
-//    double alpha = 0.001, lambda = 0.8, epsilon = 0.05;
 
-//    int numAlgorithms = 3;
-//    int numTrials = numRuns * numAlgorithms;
-  // comment
 	// Create the environment objects
 	cout << "Creating environments..." << endl;
 	vector<Environment*> environments(numTrials);
@@ -387,22 +382,23 @@ int main(int argc, char* argv[])
 	// Now, actually create the agents
 	cout << "Creating agents..." << endl;
 	vector<Agent*> agents(numTrials);
-//    for (int i = 0; i < numTrials; i++)
-//        agents[i] = new ActorCritic(observationDimension, numActions, alpha, beta, lambda, gamma, phis[i]);
+	//for (int i = 0; i < numTrials; i++)
+	//{
+	//	//agents[i] = new ActorCritic(observationDimension, numActions, alphaAC, betaAC, lambdaAC, gamma, phis[i]);
+	//	//agents[i] = new SarsaLambda(observationDimension, numActions, alphaSarsa, lambdaSarsa, epsilonSarsa, gamma, phis[i]);
+	//	//agents[i] = new QLambda(observationDimension, numActions, alphaQ, lambdaQ, epsilonQ, gamma, phis[i]);
+	//}
 
-	if (numTrials != 30) errorExit("Running code that is hard-coded for numTrials=30 without numTrials=30.");
-
-    for (int i = 0; i < 10; i++)
-        agents[i] = new ActorCritic(observationDimension, numActions, alphaAC, betaAC, lambdaAC, gamma, phis[i]);
-    for (int i = 10; i < 20; i++)
-        agents[i] = new SarsaLambda(observationDimension, numActions, alphaSarsa, lambdaSarsa, epsilonSarsa, gamma, phis[i]);
-    for (int i = 20; i < 30; i++)
-        agents[i] = new QLambda(observationDimension, numActions, alphaQ, lambdaQ, epsilonQ, gamma, phis[i]);
-
-//	for (int i = 0; i < numTrials; i++)
-//		agents[i] = new ActorCritic(observationDimension, numActions, alpha, beta, lambda, gamma, phis[i]); // The &phi means "the memory location of phi". Notice the constructor takes a pointer FeatureGenerator*.
-////        agents[i] = new SarsaLambda(observationDimension, numActions, alpha, lambda, epsilon, gamma, phis[i]);
+	for (int i = 0; i < numRuns; i++)
+	{
+		agents[i] = new ActorCritic(observationDimension, numActions, alphaAC, betaAC, lambdaAC, gamma, phis[i]);
+		agents[i + numRuns] = new SarsaLambda(observationDimension, numActions, alphaSarsa, lambdaSarsa, epsilonSarsa, gamma, phis[i + numRuns]);
+		agents[i + 2*numRuns] = new QLambda(observationDimension, numActions, alphaQ, lambdaQ, epsilonQ, gamma, phis[i + 2 * numRuns]);
+	}
 	cout << "\tAgents created." << endl;
+
+	// Get names
+	string environmentName = environments[0]->getName();
 
 	// Actually run the trials - this function is threaded!
 	cout << "Running trials..." << endl;
@@ -412,15 +408,56 @@ int main(int argc, char* argv[])
 	// Print the results to a file.
 	cout << "Printing results to out/results.csv..." << endl;
 #ifdef _MSC_VER	// Check if the compiler is a Microsoft compiler.
-	string filePath = "out/results.csv";	// If so, use this path
+	//string filePath = "out/results.csv";	// If so, use this path
+	string path = "out/results-" + to_string(numRuns) + " runs-";	// If so, use this path
 #else
-	string filePath = "../out/results.csv";	// Otherwise, use this path
+	//string filePath = "../out/results.csv";	// Otherwise, use this path
+	string path = "../out/results";	// Otherwise, use this path
 #endif
-	ofstream outResults(filePath);
-	outResults << "Episode,Average Discounted Return,Standard Error" << endl;
-	for (int epCount = 0; epCount < maxEpisodes; epCount++)
-		outResults << epCount << "," << sampleMean(rawResults.col(epCount)) << "," << sampleStandardError(rawResults.col(epCount)) << endl;	// The functions 'sampleMean' and 'sampleStandardError' are defined in common.hpp
-	outResults.close();
+	//ofstream outResults(filePath);
+
+	//outResults << "Episode,Average Discounted Return,Standard Error" << endl;
+	//for (int epCount = 0; epCount < maxEpisodes; epCount++)
+	//	outResults << epCount << "," << sampleMean(rawResults.col(epCount)) << "," << sampleStandardError(rawResults.col(epCount)) << endl;	// The functions 'sampleMean' and 'sampleStandardError' are defined in common.hpp
+	
+	int numSamples = 5;
+
+	for (int algCount = 0; algCount < numAlgs; algCount++)
+	{
+		// Get the name of the algorithm
+		string algName = agents[algCount*numRuns]->getName();
+		string filePath = path + environmentName + " with iO " + to_string(iOrder) + ", dO " + to_string(dOrder) + "-" + algName + ".csv";
+		ofstream outResults(filePath);
+
+		double meanResult, meanStandardError = 0;
+
+		outResults << "Episode,Average Discounted Return,Standard Error" << endl;
+		for (int epCount = 0; epCount < maxEpisodes; epCount++)
+		{   
+			MatrixXd algResult = rawResults.block(algCount*numRuns, 0, numRuns, maxEpisodes);
+			meanResult += sampleMean(algResult.col(epCount));
+			meanStandardError += sampleStandardError(algResult.col(epCount));
+			if ((epCount + 1) % numSamples == 0)
+			{
+				outResults << epCount << "," << sampleMean(algResult.col(epCount)) << "," << sampleStandardError(algResult.col(epCount)) << endl;	// The functions 'sampleMean' and 'sampleStandardError' are defined in common.hpp
+				meanResult, meanStandardError = 0;
+			}
+		}
+		outResults.close();
+	}
+
+	//outResults << "Episode,Average Discounted Return,Standard Error" << endl;
+	//for (int epCount = 0; epCount < maxEpisodes; epCount++)
+	//{
+	//	meanResult += sampleMean(rawResults.col(epCount));
+	//	meanStandardError += sampleStandardError(rawResults.col(epCount));
+	//	if ((epCount + 1) % numSamples == 0)
+	//	{
+	//		outResults << epCount << "," << sampleMean(rawResults.col(epCount)) << "," << sampleStandardError(rawResults.col(epCount)) << endl;	// The functions 'sampleMean' and 'sampleStandardError' are defined in common.hpp
+	//		meanResult, meanStandardError = 0;
+	//	}
+	//}
+	//outResults.close();
 	cout << "\tResults printed." << endl;
 
 	// Clean up memory. Everything that we called "new" for, we need to call "delete" for.
@@ -431,7 +468,7 @@ int main(int argc, char* argv[])
 		delete agents[i];
 	}
 
-//    system("learning_curves.py");
+    system("learning_curves.py");
 
 	// Print message indicating that the program has finished
 	cout << "Done. Press enter to exit." << endl;
