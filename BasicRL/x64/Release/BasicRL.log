@@ -1,7 +1,18 @@
-﻿  main.cpp
+﻿  Acrobot.cpp
+  ActorCritic.cpp
+  CartPole.cpp
+  FourierBasis.cpp
+  Gridworld.cpp
+  Gridworld687.cpp
+  June16_2023.cpp
+  MountainCar.cpp
+  QLambda.cpp
+  SarsaLambda.cpp
+  common.cpp
+  main.cpp
   Generating code
-  1 of 2262 functions (<0.1%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
-    54 functions had inline decision re-evaluated but remain unchanged
+  17 of 2184 functions ( 0.8%) were compiled, the rest were copied from previous compilation.
+    4 functions were new in current compilation
+    107 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
-  BasicRL.vcxproj -> C:\Data\BasicRL\x64\Release\BasicRL.exe
+  BasicRL.vcxproj -> C:\Users\pthomas\Desktop\BasicRL\x64\Release\BasicRL.exe

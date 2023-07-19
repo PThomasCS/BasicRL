@@ -17,8 +17,19 @@ SarsaLambda::SarsaLambda(int observationDimension, int numActions, double alpha,
 	// Indicate that we have not loaded curFeatures
 	curFeaturesInit = false;
 
+	// Allocate memory for cur and newFeatures
+	int numFeatures = phi->getNumOutputs();
+	curFeatures = new VectorXd(numFeatures);
+	newFeatures = new VectorXd(numFeatures);
+
 	// Initialize the weights and e-traces
-	e = w = MatrixXd::Zero(numActions, phi->getNumOutputs());
+	e = w = MatrixXd::Zero(numActions, numFeatures);
+}
+
+SarsaLambda::~SarsaLambda()
+{
+	delete curFeatures;
+	delete newFeatures;
 }
 
 string SarsaLambda::getName() const
@@ -43,14 +54,14 @@ int SarsaLambda::getAction(const Eigen::VectorXd& observation, std::mt19937_64& 
 	VectorXd qValues(numActions);
 	if (!curFeaturesInit)	// If we have not initialized curFeatures, use them
 	{
-		phi->generateFeatures(observation, curFeatures);
-		qValues = w * curFeatures;
+		phi->generateFeatures(observation, *curFeatures);
+		qValues = w * (*curFeatures);
 		curFeaturesInit = true;	// We have now loaded curFeatures
 	}
 	else
 	{
-		phi->generateFeatures(observation, newFeatures);
-		qValues = w * newFeatures;
+		phi->generateFeatures(observation, *newFeatures);
+		qValues = w * (*newFeatures);
 	}
 
 	// Handle epsilon greedy exploration
@@ -70,11 +81,11 @@ int SarsaLambda::getAction(const Eigen::VectorXd& observation, std::mt19937_64& 
 void SarsaLambda::trainEpisodeEnd(const Eigen::VectorXd& observation, const int action, const double reward, std::mt19937_64& generator)
 {
 	// Compute the TD-error
-	double delta = reward - w.row(action).dot(curFeatures);	// We already computed the features for "observation" at a getAction call and stored them in curFeatures
+	double delta = reward - w.row(action).dot(*curFeatures);	// We already computed the features for "observation" at a getAction call and stored them in curFeatures
 
 	// Update the e-traces
 	e = gamma * lambda * e;
-	e.row(action) += curFeatures;
+	e.row(action) += *curFeatures;
 
 	// Update the weights
 	w = w + alpha * delta * e;
@@ -83,15 +94,15 @@ void SarsaLambda::trainEpisodeEnd(const Eigen::VectorXd& observation, const int 
 void SarsaLambda::train(const Eigen::VectorXd& observation, const int curAction, const double reward, const Eigen::VectorXd& newObservation, const int newAction, std::mt19937_64& generator)
 {
 	// Compute the TD-error
-	double delta = reward + gamma * w.row(newAction).dot(newFeatures) - w.row(curAction).dot(curFeatures);	// We already computed the features for "curObservation" at a getAction call and stored them in curFeatures, and newObservation-->newFeatures
+	double delta = reward + gamma * w.row(newAction).dot(*newFeatures) - w.row(curAction).dot(*curFeatures);	// We already computed the features for "curObservation" at a getAction call and stored them in curFeatures, and newObservation-->newFeatures
 
 	// Update the e-traces
 	e = gamma * lambda * e;
-	e.row(curAction) += curFeatures;
+	e.row(curAction) += *curFeatures;
 
 	// Update the weights
 	w = w + alpha * delta * e;
 
 	// Move newFeatures into curFeatures
-	curFeatures = newFeatures;
+	swap(curFeatures, newFeatures);
 }

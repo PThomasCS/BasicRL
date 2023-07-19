@@ -1,12 +1,22 @@
 TODO:
-1. Run many lifetimes, print the necessary information to plot a learning curve.
-2. Multithread the lifetimes.
-3. Debug!
+1. Look into not re-running all agents/environments.
+2. Look into loading hyperparameters from files
+3. Look into running many environments.
+4. Expected Sarsa
+5. REINFORCE
+6. Policy gradient using TD(lambda) to estimate q^pi, and then using the PGT to get an update from q^pi.
+7. Backwards-REINFORCE (after deriving it)
+8. Acrobot - Runge Kutta
+9. Pendulum - dynamics are in this paper (near the end): https://homes.cs.washington.edu/~todorov/courses/amath579/reading/Continuous.pdf
+10. Look into drawing episodes. Put this between #ifdef guards so we can easily remove it.
+	#define _USE_GRAPHICS
+	#ifdef _USE_GRAPHICS
+		code here
+	#endif
 
-Alexandra TODO while Phil is gone:
-1. Implement Sarsa(lambda) again, Q(lambda), Actor-Critic, Gridworld 687, CartPole, MountainCar
-2. Look into tile coding.
-3. Try to find hyperparmaeters that work well for each environment-agent pair.
+	Recommend using cimg: https://cimg.eu/ (should only need one header file in the lib folder!)
+11. Tile coding
+12. Hyperparameter optimiztion
 
 Random C++ Notes
 1. We try to avoid "using namespace" in header (.h and .hpp) files, since doing so forces all files including the header to use the same namespaces.

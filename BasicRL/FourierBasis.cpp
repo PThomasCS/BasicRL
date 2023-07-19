@@ -57,7 +57,7 @@ FourierBasis::FourierBasis(int inputDimension, const Eigen::VectorXd& inputLower
 void FourierBasis::generateFeatures(const Eigen::VectorXd& in, Eigen::VectorXd& outBuff)
 {
 	// Normalize the state
-	VectorXd normalizedInput = (in - inputLowerBound).array() / inputRange;
+	normalizedInput = (in - inputLowerBound).array() / inputRange;
 
 	// If both orders are zero, just pass through the normalized input
 	if ((iOrder == 0) && (dOrder == 0))

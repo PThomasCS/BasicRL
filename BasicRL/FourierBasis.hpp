@@ -25,4 +25,7 @@ private:
 	Eigen::VectorXd inputLowerBound;	// Minimum value for each input element
 	Eigen::VectorXd inputUpperBound;	// Maximum value for each input element
 	Eigen::ArrayXd inputRange;			// inputUpperBound - inputLowerBound. Only computed once for efficiency
+
+	// This variable is used in generateFeatures, which is called frequently. Don't create/allocate it every time.
+	Eigen::VectorXd normalizedInput;
 };

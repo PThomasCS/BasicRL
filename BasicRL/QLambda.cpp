@@ -15,11 +15,24 @@ QLambda::QLambda(int observationDimension, int numActions, double alpha, double 
     this->gamma = gamma;
     this->phi = phi;
 
+    // Allocate memory for curFeatures and newFeatures
+    int numFeatures = phi->getNumOutputs();
+    curFeatures = new VectorXd(numFeatures);
+    newFeatures = new VectorXd(numFeatures);
+
     // Indicate that we have not loaded curFeatures
     curFeaturesInit = false;
 
     // Initialize the weights and e-traces
-    e = w = MatrixXd::Zero(numActions, phi->getNumOutputs());
+    e = w = MatrixXd::Zero(numActions, numFeatures);
+}
+
+// Called automatically when the object is destroyed - do not manually call this function!
+QLambda::~QLambda()
+{
+    // Clean up the memory that we allocated
+    delete curFeatures;
+    delete newFeatures;
 }
 
 string QLambda::getName() const
@@ -41,15 +54,13 @@ void QLambda::newEpisode(std::mt19937_64& generator)
 int QLambda::getAction(const Eigen::VectorXd& observation, std::mt19937_64& generator)
 {
     // Load curFeatures, even if we are going to explore and not use them. They may be used in training.
- 
     if (!curFeaturesInit)	// If we have not initialized curFeatures, use them
     {
-        phi->generateFeatures(observation, curFeatures);
+        phi->generateFeatures(observation, *curFeatures); // *curFeatures means, pass the object that curFeatures points to.
         curFeaturesInit = true;
     }
 
     // Handle epsilon greedy exploration
-
     bernoulli_distribution explorationDistribution(epsilon);
     bool explore = explorationDistribution(generator);
     if (explore)
@@ -60,41 +71,20 @@ int QLambda::getAction(const Eigen::VectorXd& observation, std::mt19937_64& gene
     }
 
     VectorXd qValues(numActions);
-    qValues = w * curFeatures;
+    qValues = w * (*curFeatures);
 
     return maxIndex(qValues, generator);
-
-    //// Load curFeatures and newFeatures, even if we are going to explore and not use them. They may be used in training.
-    //VectorXd qValues(numActions);
-    //if (!curFeaturesInit)	// If we have not initialized curFeatures, use them
-    //{
-    //    phi->generateFeatures(observation, curFeatures);
-    //    qValues = w * newFeatures;
-    //}
-
-    //// Handle epsilon greedy exploration
-    //bernoulli_distribution explorationDistribution(epsilon);
-    //bool explore = explorationDistribution(generator);
-    //if (explore)
-    //{
-    //    uniform_int_distribution<int> uniformActionDistribution(0, numActions - 1);
-    //    int result = uniformActionDistribution(generator);
-    //    return result;
-    //}
-
-    //// If we get here, we aren't exploring! Return an action that achieves the maximum q-value
-    //return maxIndex(qValues, generator);
 }
 
 void QLambda::trainEpisodeEnd(const Eigen::VectorXd& observation, const int action,
     const double reward, std::mt19937_64& generator)
 {
     // Compute the TD-error
-    double delta = reward - w.row(action).dot(curFeatures);	// We already computed the features for "observation" at a getAction call and stored them in curFeatures
+    double delta = reward - w.row(action).dot(*curFeatures);	// We already computed the features for "observation" at a getAction call and stored them in curFeatures
 
     // Update the e-traces
     e = gamma * lambda * e;
-    e.row(action) += curFeatures;
+    e.row(action) += *curFeatures;
 
     // Update the weights
     w = w + alpha * delta * e;
@@ -102,18 +92,18 @@ void QLambda::trainEpisodeEnd(const Eigen::VectorXd& observation, const int acti
 
 void QLambda::train(const Eigen::VectorXd& observation, const int curAction, const double reward, const Eigen::VectorXd& newObservation, std::mt19937_64& generator)
 {
-    phi->generateFeatures(newObservation, newFeatures);
+    phi->generateFeatures(newObservation, *newFeatures);
 
     // Compute the TD-error
-    double delta = reward + gamma * (w * newFeatures).maxCoeff() - w.row(curAction).dot(curFeatures);	// We already computed the features for "curObservation" at a getAction call and stored them in curFeatures, and newObservation-->newFeatures
+    double delta = reward + gamma * (w * (*newFeatures)).maxCoeff() - w.row(curAction).dot(*curFeatures);	// We already computed the features for "curObservation" at a getAction call and stored them in curFeatures, and newObservation-->newFeatures
 
     // Update the e-traces
     e = gamma * lambda * e;
-    e.row(curAction) += curFeatures;
+    e.row(curAction) += *curFeatures;
 
     // Update the weights
     w = w + alpha * delta * e;
 
     // Move newFeatures into curFeatures
-    curFeatures = newFeatures;
+    swap(curFeatures, newFeatures);
 }

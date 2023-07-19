@@ -4,7 +4,7 @@ using namespace std;
 using namespace Eigen;
 
 // Print an error message, wait for the user to press enter, then exit with error code 1.
-void errorExit(const string& s)
+[[noreturn]] void errorExit(const string& s)
 {
 	cerr << s << endl;
 	getchar();
@@ -17,7 +17,7 @@ int maxIndex(const VectorXd& v, mt19937_64& generator)
 	assert((int)v.size() > 0);
 
 	// Initially the first element is best
-	vector<int> bestIndices(1, 0);
+	vector<int> bestIndices(1, 0); // Note: When profiling, this is a surprisingly slow line. If it really matters, you can find ways to not declare this varaible every time this function is called. Be careful about threading though!
 	double bestValue = v[0];
 
 	// Loop over the other elements updating our list of bestIndices and the bestValue

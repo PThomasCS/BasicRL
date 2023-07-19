@@ -10,6 +10,7 @@ public:
     ////////////////////////////////////////////////////////////////
     ActorCritic(int observationDimension, int numActions, double alpha, double beta, double lambda, 
         double gamma, FeatureGenerator* phi);
+    ~ActorCritic();
 
     ////////////////////////////////////////////////////////////////
     // Functions for getting properties of the agent
@@ -45,7 +46,7 @@ public:
     Eigen::MatrixXd eTheta;	// Eligibility traces
     Eigen::VectorXd actionProbabilities;  // Policy
 
-    Eigen::VectorXd curFeatures;
-    Eigen::VectorXd newFeatures;
+    Eigen::VectorXd * curFeatures;
+    Eigen::VectorXd * newFeatures;
     bool curFeaturesInit;
 };

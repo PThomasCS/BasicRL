@@ -8,6 +8,32 @@ void errorExit(const std::string& s);
 
 int maxIndex(const Eigen::VectorXd& v, std::mt19937_64& generator);
 
+// Return random integer based on the provided probabilities
+template <typename VectorType>
+int randp(const VectorType & probabilities, std::mt19937_64 & generator)
+{
+	if (probabilities.size() == 0)
+		errorExit("Error in randp - the provided array is length zero.");
+	
+	std::uniform_real_distribution<double> d(0, 1);
+	double sample = d(generator), sum = 0;
+	int n = (int)probabilities.size();
+	for (int i = 0; i < n; i++)
+	{
+		sum += probabilities[i];
+		if (sample <= sum)
+			return i;
+	}
+	// Let's return the first item with non-zero probability
+	for (int i = 0; i < n; i++)
+		if (probabilities[i] > 0)
+			return i;
+
+	assert(false);	// All probabilities were zero - that shouldn't have happened
+	errorExit("Error in randp - all elements have zero probability");
+}
+
+
 /*
 Floating-point modulo:
 The result (the remainder) has same sign as the divisor.

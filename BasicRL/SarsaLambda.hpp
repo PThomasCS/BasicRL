@@ -9,6 +9,7 @@ public:
 	// Constructor
 	////////////////////////////////////////////////////////////////
 	SarsaLambda(int observationDimension, int numActions, double alpha, double lambda, double epsilon, double gamma, FeatureGenerator* phi);
+	~SarsaLambda();
 	
 	////////////////////////////////////////////////////////////////
 	// Functions for getting properties of the agent
@@ -40,7 +41,7 @@ public:
 	Eigen::MatrixXd w;	// Weights for the q-approximation
 	Eigen::MatrixXd e;	// Eligibility traces
 
-	Eigen::VectorXd curFeatures;
-	Eigen::VectorXd newFeatures;
+	Eigen::VectorXd * curFeatures;
+	Eigen::VectorXd * newFeatures;
 	bool curFeaturesInit;
 };

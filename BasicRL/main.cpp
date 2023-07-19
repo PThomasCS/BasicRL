@@ -259,7 +259,20 @@ void sandbox()
 {
 	cout << "Running other experiments/code." << endl;
 	//sandboxJune16_2023();
-	sandboxJune16_2023();
+	//sandboxJune16_2023();
+
+	mt19937_64 generator;
+	VectorXd observation = VectorXd::Zero(4);
+	while (true)
+	{
+		VectorXd inputLowerBound = VectorXd::Zero(4);
+		VectorXd inputUpperBound = VectorXd::Ones(4);
+		FourierBasis phi(4, inputLowerBound, inputUpperBound, 3, 3);
+		SarsaLambda s(10, 5, 0.01, .8, .1, 1.0, &phi);
+		cout << s.getAction(observation, generator) << endl;
+	}
+
+
 	cout << "Done running other experiments/code. Hit enter to continue." << endl;
 	(void)getchar();
 }
@@ -350,7 +363,7 @@ int main(int argc, char* argv[])
 	mt19937_64 generator;
 
 	// Hyperparameters
-	int numRuns = 100, numAlgs = 3, numTrials = numRuns * numAlgs;
+	int numRuns = 100, numAlgs = 3, numTrials = numRuns * numAlgs;			// @TODO: Reverse variable names. numTrials is the number of times each algorithm/environmnet pair is run, numRuns is the total number of runs that will happen.
 	int numSamples = 5; // How many samples (average) we use for the plot
 	int iOrder = 3, dOrder = 3;
 	double alphaAC = 0.0001, betaAC = 0.0001, lambdaAC = 0.8;
@@ -383,13 +396,6 @@ int main(int argc, char* argv[])
 	// Now, actually create the agents
 	cout << "Creating agents..." << endl;
 	vector<Agent*> agents(numTrials);
-	//for (int i = 0; i < numTrials; i++)
-	//{
-	//	//agents[i] = new ActorCritic(observationDimension, numActions, alphaAC, betaAC, lambdaAC, gamma, phis[i]);
-	//	//agents[i] = new SarsaLambda(observationDimension, numActions, alphaSarsa, lambdaSarsa, epsilonSarsa, gamma, phis[i]);
-	//	//agents[i] = new QLambda(observationDimension, numActions, alphaQ, lambdaQ, epsilonQ, gamma, phis[i]);
-	//}
-
 	for (int i = 0; i < numRuns; i++)
 	{
 		agents[i] = new ActorCritic(observationDimension, numActions, alphaAC, betaAC, lambdaAC, gamma, phis[i]);
@@ -415,11 +421,6 @@ int main(int argc, char* argv[])
 	//string filePath = "../out/results.csv";	// Otherwise, use this path
 	string path = "../out/results";	// Otherwise, use this path
 #endif
-	//ofstream outResults(filePath);
-
-	//outResults << "Episode,Average Discounted Return,Standard Error" << endl;
-	//for (int epCount = 0; epCount < maxEpisodes; epCount++)
-	//	outResults << epCount << "," << sampleMean(rawResults.col(epCount)) << "," << sampleStandardError(rawResults.col(epCount)) << endl;	// The functions 'sampleMean' and 'sampleStandardError' are defined in common.hpp
 
 	for (int algCount = 0; algCount < numAlgs; algCount++)
 	{
@@ -428,41 +429,28 @@ int main(int argc, char* argv[])
 		string filePath = path + environmentName + " with iO " + to_string(iOrder) + ", dO " + to_string(dOrder) + "-" + algName + ".csv";
 		ofstream outResults(filePath);
 
-		double meanResult, meanStandardError = 0;
-
+		double meanResult = 0, meanStandardError = 0;
+		
 		outResults << "Episode,Average Discounted Return,Standard Error" << endl;
 		for (int epCount = 0; epCount < maxEpisodes; epCount++)
 		{   
 			MatrixXd algResult = rawResults.block(algCount*numRuns, 0, numRuns, maxEpisodes);
-			meanResult += sampleMean(algResult.col(epCount));
+			meanResult += algResult.col(epCount).mean();
 			meanStandardError += sampleStandardError(algResult.col(epCount));
 			if ((epCount + 1) % numSamples == 0)
 			{
-				outResults << epCount << "," << sampleMean(algResult.col(epCount)) << "," << sampleStandardError(algResult.col(epCount)) << endl;	// The functions 'sampleMean' and 'sampleStandardError' are defined in common.hpp
-				meanResult, meanStandardError = 0;
+				outResults << epCount << "," << meanResult / (double)numSamples << "," << meanStandardError / (double)numSamples << endl;	// The functions 'sampleMean' and 'sampleStandardError' are defined in common.hpp
+				meanResult = meanStandardError = 0;
 			}
 		}
 		outResults.close();
 	}
-
-	//outResults << "Episode,Average Discounted Return,Standard Error" << endl;
-	//for (int epCount = 0; epCount < maxEpisodes; epCount++)
-	//{
-	//	meanResult += sampleMean(rawResults.col(epCount));
-	//	meanStandardError += sampleStandardError(rawResults.col(epCount));
-	//	if ((epCount + 1) % numSamples == 0)
-	//	{
-	//		outResults << epCount << "," << sampleMean(rawResults.col(epCount)) << "," << sampleStandardError(rawResults.col(epCount)) << endl;	// The functions 'sampleMean' and 'sampleStandardError' are defined in common.hpp
-	//		meanResult, meanStandardError = 0;
-	//	}
-	//}
-	//outResults.close();
 	cout << "\tResults printed." << endl;
 
 	// Clean up memory. Everything that we called "new" for, we need to call "delete" for.
 	for (int i = 0; i < numTrials; i++)
 	{
-		delete environments[i];
+		delete environments[i];	// This call the deconstructor for environmnets[i], and then frees up the memory in the OS.
 		delete phis[i];
 		delete agents[i];
 	}
