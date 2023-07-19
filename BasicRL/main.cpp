@@ -351,18 +351,19 @@ int main(int argc, char* argv[])
 
 	// Hyperparameters
 	int numRuns = 100, numAlgs = 3, numTrials = numRuns * numAlgs;
+	int numSamples = 5; // How many samples (average) we use for the plot
 	int iOrder = 3, dOrder = 3;
 	double alphaAC = 0.0001, betaAC = 0.0001, lambdaAC = 0.8;
-	double alphaSarsa = 0.0001, lambdaSarsa = 0.8, epsilonSarsa = 0.1;
-	double alphaQ = 0.0001, lambdaQ = 0.8, epsilonQ = 0.1;
+	double alphaSarsa = 0.0001, lambdaSarsa = 0.8, epsilonSarsa = 0.01;
+	double alphaQ = 0.0001, lambdaQ = 0.8, epsilonQ = 0.01;
 
 	// Create the environment objects
 	cout << "Creating environments..." << endl;
 	vector<Environment*> environments(numTrials);
 	for (int i = 0; i < numTrials; i++)
-//		environments[i] = new MountainCar();
-      environments[i] = new CartPole();
-//        environments[i] = new Acrobot();
+		environments[i] = new MountainCar();
+      //environments[i] = new CartPole();
+        //environments[i] = new Acrobot();
 	cout << "\tEnvironments created." << endl;
 
 	// Get parameters of the environment
@@ -419,8 +420,6 @@ int main(int argc, char* argv[])
 	//outResults << "Episode,Average Discounted Return,Standard Error" << endl;
 	//for (int epCount = 0; epCount < maxEpisodes; epCount++)
 	//	outResults << epCount << "," << sampleMean(rawResults.col(epCount)) << "," << sampleStandardError(rawResults.col(epCount)) << endl;	// The functions 'sampleMean' and 'sampleStandardError' are defined in common.hpp
-	
-	int numSamples = 5;
 
 	for (int algCount = 0; algCount < numAlgs; algCount++)
 	{

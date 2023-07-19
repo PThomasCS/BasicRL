@@ -18,17 +18,15 @@ def plot():
 """
 
 def plot():
-    csv_dir = 'out/'  # Path to the CSV directory
-    output_dir = 'out/'  # Path to the output directory for plots
-    os.makedirs(output_dir, exist_ok=True)  # Create the output directory if it doesn't exist
-    
-    csv_files = [file for file in os.listdir(csv_dir) if file.endswith('.csv')]
+    # Make a list of CSV files with results
+    csv_files = [file for file in os.listdir('out/') if file.endswith('.csv')]  
     
     for file in csv_files:
-        filename = os.path.splitext(file)[0]  # Extract the filename without extension
+    # Extract the filename without extension
+        filename = os.path.splitext(file)[0]
         
         # Read the CSV file
-        csv_path = os.path.join(csv_dir, file)
+        csv_path = os.path.join('out/', file)
         df = pd.read_csv(csv_path)
         
         # Plotting
@@ -39,7 +37,7 @@ def plot():
         plt.ylabel('Average Discounted Return')
         
         # Save the plot as a JPEG file
-        output_path = os.path.join(output_dir, 'plot_{}.jpg'.format(filename))
+        output_path = os.path.join('out/', 'plot_{}.jpg'.format(filename))
         plt.savefig(output_path, format='jpeg')
         plt.close()  # Close the plot to free up memory
         
