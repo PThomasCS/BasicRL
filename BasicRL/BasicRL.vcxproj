@@ -138,6 +138,7 @@
     <ClInclude Include="Acrobot.hpp" />
     <ClInclude Include="Agent.hpp" />
     <ClInclude Include="ActorCritic.hpp" />
+    <ClInclude Include="ExpectedSarsaLambda.hpp" />
     <ClInclude Include="Gridworld687.hpp" />
     <ClInclude Include="MountainCar.hpp" />
     <ClInclude Include="QLambda.hpp" />
@@ -154,6 +155,7 @@
   <ItemGroup>
     <ClCompile Include="Acrobot.cpp" />
     <ClCompile Include="ActorCritic.cpp" />
+    <ClCompile Include="ExpectedSarsaLambda.cpp" />
     <ClCompile Include="Gridworld687.cpp" />
     <ClCompile Include="MountainCar.cpp" />
     <ClCompile Include="QLambda.cpp" />

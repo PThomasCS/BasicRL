@@ -8,6 +8,8 @@ void errorExit(const std::string& s);
 
 int maxIndex(const Eigen::VectorXd& v, std::mt19937_64& generator);
 
+std::vector<int> maxIndices(const Eigen::VectorXd& v, std::mt19937_64& generator);
+
 // Return random integer based on the provided probabilities
 template <typename VectorType>
 int randp(const VectorType & probabilities, std::mt19937_64 & generator)

@@ -363,19 +363,20 @@ int main(int argc, char* argv[])
 	mt19937_64 generator;
 
 	// Hyperparameters
-	int numRuns = 100, numAlgs = 3, numTrials = numRuns * numAlgs;			// @TODO: Reverse variable names. numTrials is the number of times each algorithm/environmnet pair is run, numRuns is the total number of runs that will happen.
+	int numTrials = 100, numAlgs = 4, numRuns = numTrials * numAlgs;			// DONE! @TODO: Reverse variable names. numTrials is the number of times each algorithm/environmnet pair is run, numRuns is the total number of runs that will happen.
 	int numSamples = 5; // How many samples (average) we use for the plot
 	int iOrder = 3, dOrder = 3;
 	double alphaAC = 0.0001, betaAC = 0.0001, lambdaAC = 0.8;
 	double alphaSarsa = 0.0001, lambdaSarsa = 0.8, epsilonSarsa = 0.01;
 	double alphaQ = 0.0001, lambdaQ = 0.8, epsilonQ = 0.01;
+	double alphaExpectedSarsa = 0.0001, lambdaExpectedSarsa = 0.8, epsilonExpectedSarsa = 0.01;
 
 	// Create the environment objects
 	cout << "Creating environments..." << endl;
-	vector<Environment*> environments(numTrials);
-	for (int i = 0; i < numTrials; i++)
-		environments[i] = new MountainCar();
-      //environments[i] = new CartPole();
+	vector<Environment*> environments(numRuns);
+	for (int i = 0; i < numRuns; i++)
+		//environments[i] = new MountainCar();
+      environments[i] = new CartPole();
         //environments[i] = new Acrobot();
 	cout << "\tEnvironments created." << endl;
 
@@ -388,19 +389,20 @@ int main(int argc, char* argv[])
 
 	// Create agents. First, we need the FeatureGenerator objects - one for each!
 	cout << "Creating feature generators..." << endl;
-	vector<FeatureGenerator*> phis(numTrials);
-	for (int i = 0; i < numTrials; i++)
+	vector<FeatureGenerator*> phis(numRuns);
+	for (int i = 0; i < numRuns; i++)
 		phis[i] = new FourierBasis(observationDimension, observationLowerBound, observationUpperBound, iOrder, dOrder);
 	cout << "\tFeatures generators created." << endl;
 
 	// Now, actually create the agents
 	cout << "Creating agents..." << endl;
-	vector<Agent*> agents(numTrials);
-	for (int i = 0; i < numRuns; i++)
+	vector<Agent*> agents(numRuns);
+	for (int i = 0; i < numTrials; i++)
 	{
 		agents[i] = new ActorCritic(observationDimension, numActions, alphaAC, betaAC, lambdaAC, gamma, phis[i]);
-		agents[i + numRuns] = new SarsaLambda(observationDimension, numActions, alphaSarsa, lambdaSarsa, epsilonSarsa, gamma, phis[i + numRuns]);
-		agents[i + 2*numRuns] = new QLambda(observationDimension, numActions, alphaQ, lambdaQ, epsilonQ, gamma, phis[i + 2 * numRuns]);
+		agents[i + numTrials] = new SarsaLambda(observationDimension, numActions, alphaSarsa, lambdaSarsa, epsilonSarsa, gamma, phis[i + numTrials]);
+		agents[i + 2 * numTrials] = new QLambda(observationDimension, numActions, alphaQ, lambdaQ, epsilonQ, gamma, phis[i + 2 * numTrials]);
+		agents[i + 3 * numTrials] = new ExpectedSarsaLambda(observationDimension, numActions, alphaQ, lambdaQ, epsilonQ, gamma, phis[i + 3 * numTrials]);
 	}
 	cout << "\tAgents created." << endl;
 
@@ -409,14 +411,14 @@ int main(int argc, char* argv[])
 
 	// Actually run the trials - this function is threaded!
 	cout << "Running trials..." << endl;
-	MatrixXd rawResults = run(agents, environments, numTrials, maxEpisodes, maxEpisodeLength, generator);
+	MatrixXd rawResults = run(agents, environments, numRuns, maxEpisodes, maxEpisodeLength, generator);
 	cout << "\tTrials completed." << endl;
 	
 	// Print the results to a file.
 	cout << "Printing results to out/results.csv..." << endl;
 #ifdef _MSC_VER	// Check if the compiler is a Microsoft compiler.
 	//string filePath = "out/results.csv";	// If so, use this path
-	string path = "out/results-" + to_string(numRuns) + " runs-";	// If so, use this path
+	string path = "out/results-" + to_string(numTrials) + " trials-";	// If so, use this path
 #else
 	//string filePath = "../out/results.csv";	// Otherwise, use this path
 	string path = "../out/results";	// Otherwise, use this path
@@ -425,7 +427,7 @@ int main(int argc, char* argv[])
 	for (int algCount = 0; algCount < numAlgs; algCount++)
 	{
 		// Get the name of the algorithm
-		string algName = agents[algCount*numRuns]->getName();
+		string algName = agents[algCount * numTrials]->getName();
 		string filePath = path + environmentName + " with iO " + to_string(iOrder) + ", dO " + to_string(dOrder) + "-" + algName + ".csv";
 		ofstream outResults(filePath);
 
@@ -434,7 +436,7 @@ int main(int argc, char* argv[])
 		outResults << "Episode,Average Discounted Return,Standard Error" << endl;
 		for (int epCount = 0; epCount < maxEpisodes; epCount++)
 		{   
-			MatrixXd algResult = rawResults.block(algCount*numRuns, 0, numRuns, maxEpisodes);
+			MatrixXd algResult = rawResults.block(algCount*numTrials, 0, numTrials, maxEpisodes);
 			meanResult += algResult.col(epCount).mean();
 			meanStandardError += sampleStandardError(algResult.col(epCount));
 			if ((epCount + 1) % numSamples == 0)
@@ -448,7 +450,7 @@ int main(int argc, char* argv[])
 	cout << "\tResults printed." << endl;
 
 	// Clean up memory. Everything that we called "new" for, we need to call "delete" for.
-	for (int i = 0; i < numTrials; i++)
+	for (int i = 0; i < numRuns; i++)
 	{
 		delete environments[i];	// This call the deconstructor for environmnets[i], and then frees up the memory in the OS.
 		delete phis[i];

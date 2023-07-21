@@ -44,3 +44,30 @@ int maxIndex(const VectorXd& v, mt19937_64& generator)
 		return bestIndices[index];
 	}
 }
+
+// TO-DO: use in the maxIndex function (?)
+
+vector<int> maxIndices(const VectorXd& v, mt19937_64& generator)
+{
+	// Check that v has at least one element.
+	assert((int)v.size() > 0);
+
+	// Initially the first element is best
+	vector<int> bestIndices(1, 0); // Note: When profiling, this is a surprisingly slow line. If it really matters, you can find ways to not declare this varaible every time this function is called. Be careful about threading though!
+	double bestValue = v[0];
+
+	// Loop over the other elements updating our list of bestIndices and the bestValue
+	for (int i = 1; i < (int)v.size(); i++)
+	{
+		if (v[i] == bestValue)
+			bestIndices.push_back(i);
+		else if (v[i] > bestValue)
+		{
+			bestIndices.resize(1);
+			bestIndices[0] = i;
+			bestValue = v[i];
+		}
+	}
+
+	return bestIndices;
+}
