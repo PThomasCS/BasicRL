@@ -35,7 +35,7 @@ public:
                         std::mt19937_64 &generator) override;                                // step from time (t) to time (t+1), where the agent selects action 'a', return the resulting reward
     virtual bool episodeOver(
             std::mt19937_64 &generator) const override;                                // query whether the episode is over (only call once per time step).
-
+    virtual Eigen::VectorXd f(VectorXd buff1, double torque);
 private:
     // State variables
     double theta1;      // Position of joint 1 ("shoulder")
@@ -43,7 +43,7 @@ private:
     double theta1Dot;   // Angular velocity of joint 1 ("shoulder")
     double theta2Dot;   // Angular velocity of 2 ("elbow")
 
-     	// Standard parameters for the Acrobot
+    // Standard parameters for the Acrobot
     const double m1 = 1.0;				// Mass of the first link
     const double m2 = 1.0;				// Mass of the second link
     const double l1 = 1.0;				// Length of the first link
@@ -54,6 +54,8 @@ private:
     const double i2 = 1.0;
     const double g = 9.8;				// Acceleration due to gravity
     const double fmax = 1.0;		    // Maximum (and -minimum) force that can be applied
-    const double dt = 0.05;				// Time step duration (CHANGE FROM BOOK)
+    const double dt = 0.05;				// Time step duration (CHANGE FROM BOOK)   
     const double numSimSteps = 4;       // Number of steps to simulate, each of length dt
+    const bool rungeKutta = false;      // If true, use Runge-Kutta method, else forward Euler
+    const double integSteps = 10;
 };
