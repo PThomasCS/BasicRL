@@ -7,7 +7,7 @@ public:
     ////////////////////////////////////////////////////////////////
     // Constructor
     ////////////////////////////////////////////////////////////////
-    Acrobot();
+    Acrobot(bool rungeKutta = true, double numIntegSteps = 10.0);
 
     ////////////////////////////////////////////////////////////////
     // Functions for getting properties of the environment
@@ -35,7 +35,7 @@ public:
                         std::mt19937_64 &generator) override;                                // step from time (t) to time (t+1), where the agent selects action 'a', return the resulting reward
     virtual bool episodeOver(
             std::mt19937_64 &generator) const override;                                // query whether the episode is over (only call once per time step).
-    virtual Eigen::VectorXd f(VectorXd buff1, double torque);
+    virtual Eigen::VectorXd f(Eigen::VectorXd buff1, double torque);
 private:
     // State variables
     double theta1;      // Position of joint 1 ("shoulder")
@@ -55,7 +55,13 @@ private:
     const double g = 9.8;				// Acceleration due to gravity
     const double fmax = 1.0;		    // Maximum (and -minimum) force that can be applied
     const double dt = 0.05;				// Time step duration (CHANGE FROM BOOK)   
-    const double numSimSteps = 4;       // Number of steps to simulate, each of length dt
-    const bool rungeKutta = false;      // If true, use Runge-Kutta method, else forward Euler
-    const double integSteps = 10;
+    const double numSimSteps = 4.0;     // Number of steps to simulate, each of length dt
+    bool rungeKutta;                    // If true, use Runge-Kutta method, else forward Euler
+    double numIntegSteps;
+    double h;
+    Eigen::VectorXd y;
+    Eigen::VectorXd k1;
+    Eigen::VectorXd k2;
+    Eigen::VectorXd k3;
+    Eigen::VectorXd k4;
 };

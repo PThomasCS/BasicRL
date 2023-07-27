@@ -10,4 +10,5 @@ C:\Data\BasicRL\BasicRL\FourierBasis.cpp;C:\Data\BasicRL\BasicRL\x64\Release\Fou
 C:\Data\BasicRL\BasicRL\Gridworld.cpp;C:\Data\BasicRL\BasicRL\x64\Release\Gridworld.obj
 C:\Data\BasicRL\BasicRL\June16_2023.cpp;C:\Data\BasicRL\BasicRL\x64\Release\June16_2023.obj
 C:\Data\BasicRL\BasicRL\main.cpp;C:\Data\BasicRL\BasicRL\x64\Release\main.obj
+C:\Data\BasicRL\BasicRL\Reinforce.cpp;C:\Data\BasicRL\BasicRL\x64\Release\Reinforce.obj
 C:\Data\BasicRL\BasicRL\SarsaLambda.cpp;C:\Data\BasicRL\BasicRL\x64\Release\SarsaLambda.obj

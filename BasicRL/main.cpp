@@ -363,21 +363,23 @@ int main(int argc, char* argv[])
 	mt19937_64 generator;
 
 	// Hyperparameters
-	int numTrials = 100, numAlgs = 4, numRuns = numTrials * numAlgs;			// DONE! @TODO: Reverse variable names. numTrials is the number of times each algorithm/environmnet pair is run, numRuns is the total number of runs that will happen.
+	int numTrials = 10, numAlgs = 1, numRuns = numTrials * numAlgs;			// DONE! @TODO: Reverse variable names. numTrials is the number of times each algorithm/environmnet pair is run, numRuns is the total number of runs that will happen.
 	int numSamples = 5; // How many samples (average) we use for the plot
 	int iOrder = 3, dOrder = 3;
 	double alphaAC = 0.0001, betaAC = 0.0001, lambdaAC = 0.8;
 	double alphaSarsa = 0.0001, lambdaSarsa = 0.8, epsilonSarsa = 0.01;
 	double alphaQ = 0.0001, lambdaQ = 0.8, epsilonQ = 0.01;
 	double alphaExpectedSarsa = 0.0001, lambdaExpectedSarsa = 0.8, epsilonExpectedSarsa = 0.01;
+	double alphaReinforce = 0.01;
 
 	// Create the environment objects
 	cout << "Creating environments..." << endl;
 	vector<Environment*> environments(numRuns);
 	for (int i = 0; i < numRuns; i++)
-		//environments[i] = new MountainCar();
-      environments[i] = new CartPole();
-        //environments[i] = new Acrobot();
+		environments[i] = new MountainCar();
+	  //environments[i] = new CartPole();
+		//environments[i] = new Acrobot();
+		//environments[i] = new Gridworld687();
 	cout << "\tEnvironments created." << endl;
 
 	// Get parameters of the environment
@@ -399,10 +401,13 @@ int main(int argc, char* argv[])
 	vector<Agent*> agents(numRuns);
 	for (int i = 0; i < numTrials; i++)
 	{
-		agents[i] = new ActorCritic(observationDimension, numActions, alphaAC, betaAC, lambdaAC, gamma, phis[i]);
-		agents[i + numTrials] = new SarsaLambda(observationDimension, numActions, alphaSarsa, lambdaSarsa, epsilonSarsa, gamma, phis[i + numTrials]);
-		agents[i + 2 * numTrials] = new QLambda(observationDimension, numActions, alphaQ, lambdaQ, epsilonQ, gamma, phis[i + 2 * numTrials]);
-		agents[i + 3 * numTrials] = new ExpectedSarsaLambda(observationDimension, numActions, alphaQ, lambdaQ, epsilonQ, gamma, phis[i + 3 * numTrials]);
+		//agents[i] = new ActorCritic(observationDimension, numActions, alphaAC, betaAC, lambdaAC, gamma, phis[i]);
+		//agents[i + numTrials] = new SarsaLambda(observationDimension, numActions, alphaSarsa, lambdaSarsa, epsilonSarsa, gamma, phis[i + numTrials]);
+		//agents[i + 2 * numTrials] = new QLambda(observationDimension, numActions, alphaQ, lambdaQ, epsilonQ, gamma, phis[i + 2 * numTrials]);
+		//agents[i + 3 * numTrials] = new ExpectedSarsaLambda(observationDimension, numActions, alphaQ, lambdaQ, epsilonQ, gamma, phis[i + 3 * numTrials]);
+
+		// Assumes numTrials == numRuns (testing 1 algorithm)
+		agents[i] = new Reinforce(observationDimension, numActions, alphaReinforce, gamma, phis[i]);
 	}
 	cout << "\tAgents created." << endl;
 

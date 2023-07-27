@@ -149,6 +149,7 @@
     <ClInclude Include="FourierBasis.hpp" />
     <ClInclude Include="Gridworld.hpp" />
     <ClInclude Include="June16_2023.hpp" />
+    <ClInclude Include="Reinforce.hpp" />
     <ClInclude Include="SarsaLambda.hpp" />
     <ClInclude Include="stdafx.hpp" />
   </ItemGroup>
@@ -165,6 +166,7 @@
     <ClCompile Include="Gridworld.cpp" />
     <ClCompile Include="June16_2023.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Reinforce.cpp" />
     <ClCompile Include="SarsaLambda.cpp" />
   </ItemGroup>
   <ItemGroup>
