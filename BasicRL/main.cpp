@@ -363,9 +363,16 @@ int main(int argc, char* argv[])
 	mt19937_64 generator;
 
 	// Hyperparameters
-	int numTrials = 10, numAlgs = 1, numRuns = numTrials * numAlgs;			// DONE! @TODO: Reverse variable names. numTrials is the number of times each algorithm/environmnet pair is run, numRuns is the total number of runs that will happen.
+	int numTrials = 10, numAlgs = 1, int numEnvs = 3;
+	int numRuns = numTrials * numAlgs, numRunsTotal = numRuns * numEnvs;		// DONE! @TODO: Reverse variable names. numTrials is the number of times each algorithm/environmnet pair is run, numRuns is the total number of runs that will happen.
 	int numSamples = 5; // How many samples (average) we use for the plot
-	int iOrder = 3, dOrder = 3;
+	
+	// Environments
+	int iOrderGridworld687 = 0, dOrderGridworld687 = 0;
+	int iOrderMountainCar = 3, dOrderMountainCar = 3;
+	int iOrderCartPole = 3, dOrderCartPole = 3;
+
+	// Agents
 	double alphaAC = 0.0001, betaAC = 0.0001, lambdaAC = 0.8;
 	double alphaSarsa = 0.0001, lambdaSarsa = 0.8, epsilonSarsa = 0.01;
 	double alphaQ = 0.0001, lambdaQ = 0.8, epsilonQ = 0.01;
@@ -374,50 +381,124 @@ int main(int argc, char* argv[])
 
 	// Create the environment objects
 	cout << "Creating environments..." << endl;
-	vector<Environment*> environments(numRuns);
+	vector<Environment*> environments(numRunsTotal);
 	for (int i = 0; i < numRuns; i++)
-		environments[i] = new MountainCar();
-	  //environments[i] = new CartPole();
-		//environments[i] = new Acrobot();
-		//environments[i] = new Gridworld687();
+	{
+		environments[i] = new Gridworld687();
+		environments[i + numRuns] = new MountainCar();
+		environments[i + 2 * numRuns] = new CartPole();
+	}
 	cout << "\tEnvironments created." << endl;
 
 	// Get parameters of the environment
-	int observationDimension = environments[0]->getObservationDimension(), numActions = environments[0]->getNumActions(),
-		maxEpisodes = environments[0]->getRecommendedMaxEpisodes(), maxEpisodeLength = environments[0]->getRecommendedEpisodeLength();
-	double gamma = environments[0]->getGamma();
-	VectorXd observationLowerBound = environments[0]->getObservationLowerBound(),
-		observationUpperBound = environments[0]->getObservationUpperBound();
+	vector<string> environmentName;
+	vector<int> observationDimension(numRunsTotal), numActions(numRunsTotal);
+	VectorXd maxEpisodes(numRunsTotal), maxEpisodeLength(numRunsTotal);
+	vector<double> gamma(numRunsTotal);
+	vector<VectorXd> observationLowerBound(numRunsTotal), observationUpperBound(numRunsTotal);
+
+	for (int i = 0; i < numRunsTotal; i++)
+	{
+		environmentName[i] = environments[i]->getName();
+		observationDimension[i] = environments[i]->getObservationDimension();
+		numActions[i] = environments[i]->getNumActions();
+		maxEpisodes[i] = environments[i]->getRecommendedMaxEpisodes();
+		maxEpisodeLength[i] = environments[i]->getRecommendedEpisodeLength();
+		observationLowerBound[i] = environments[i]->getObservationLowerBound();
+		observationUpperBound[i] = environments[i]->getObservationUpperBound();
+	}
+
+
+	// Get parameters for the feature generator
+	vector<int> iOrder, dOrder;
+	for (int i = 0; i < numRunsTotal; i++)
+	{
+		if (environmentName[i] == "Gridworld687")
+		{
+			iOrder[i] = iOrderGridworld687;
+			dOrder[i] = dOrderGridworld687;
+		}
+		else if (environmentName[i] == "Mountain Car")
+		{
+			iOrder[i] = iOrderMountainCar;
+			dOrder[i] = dOrderMountainCar;
+		}
+		else if (environmentName[i] == "Cart-Pole")
+		{
+			iOrder[i] = iOrderCartPole;
+			dOrder[i] = dOrderCartPole;
+		}
+	}
 
 	// Create agents. First, we need the FeatureGenerator objects - one for each!
 	cout << "Creating feature generators..." << endl;
-	vector<FeatureGenerator*> phis(numRuns);
-	for (int i = 0; i < numRuns; i++)
-		phis[i] = new FourierBasis(observationDimension, observationLowerBound, observationUpperBound, iOrder, dOrder);
+	vector<FeatureGenerator*> phis(numRunsTotal);
+	for (int i = 0; i < numRunsTotal; i++)
+		phis[i] = new FourierBasis(observationDimension[i], observationLowerBound[i], observationUpperBound[i], iOrder[i], dOrder[i]);
 	cout << "\tFeatures generators created." << endl;
+
+	//int observationDimension = environments[0]->getObservationDimension(), numActions = environments[0]->getNumActions(),
+	//	maxEpisodes = environments[0]->getRecommendedMaxEpisodes(), maxEpisodeLength = environments[0]->getRecommendedEpisodeLength();
+	//double gamma = environments[0]->getGamma();
+	//VectorXd observationLowerBound = environments[0]->getObservationLowerBound(),
+	//	observationUpperBound = environments[0]->getObservationUpperBound();
+
+
+	//cout << "Creating environments..." << endl;
+	//vector<Environment*> environments(numRuns);
+	//for (int i = 0; i < numRuns; i++)
+	//	environments[i] = new MountainCar();
+	//  //environments[i] = new CartPole();
+	//	//environments[i] = new Acrobot();
+	//	//environments[i] = new Gridworld687();
+	//cout << "\tEnvironments created." << endl;
+
+	//// Get parameters of the environment
+	//int observationDimension = environments[0]->getObservationDimension(), numActions = environments[0]->getNumActions(),
+	//	maxEpisodes = environments[0]->getRecommendedMaxEpisodes(), maxEpisodeLength = environments[0]->getRecommendedEpisodeLength();
+	//double gamma = environments[0]->getGamma();
+	//VectorXd observationLowerBound = environments[0]->getObservationLowerBound(),
+	//	observationUpperBound = environments[0]->getObservationUpperBound();
+
+	// Create agents. First, we need the FeatureGenerator objects - one for each!
+
+	//cout << "Creating feature generators..." << endl;
+	//vector<FeatureGenerator*> phis(numRuns);
+	//for (int i = 0; i < numRuns; i++)
+	//	phis[i] = new FourierBasis(observationDimension, observationLowerBound, observationUpperBound, iOrder, dOrder);
+	//cout << "\tFeatures generators created." << endl;
 
 	// Now, actually create the agents
 	cout << "Creating agents..." << endl;
 	vector<Agent*> agents(numRuns);
 	for (int i = 0; i < numTrials; i++)
-	{
+	{   //not i
+		agents[i] = new ActorCritic(observationDimension[i], numActions[i], alphaAC, betaAC, lambdaAC, gamma[i], phis[i]);
+		agents[i + numTrials] = new SarsaLambda(observationDimension[i + numTrials], numActions[i + numTrials], alphaSarsa, lambdaSarsa, epsilonSarsa, gamma[i + numTrials], phis[i + numTrials]);
+		agents[i + 2 * numTrials] = new QLambda(observationDimension[i + 2 * numTrials], numActions[i + 2 * numTrials], alphaQ, lambdaQ, epsilonQ, gamma[i + 2 * numTrials], phis[i + 2 * numTrials]);
+		agents[i + 3 * numTrials] = new ExpectedSarsaLambda(observationDimension[i + 3 * numTrials], numActions[i + 3 * numTrials], alphaQ, lambdaQ, epsilonQ, gamma[i + 3 * numTrials], phis[i + 3 * numTrials]);
+		agents[i + 4 * numTrials] = new Reinforce(observationDimension[i + 4 * numTrials], numActions[i + 4 * numTrials], alphaReinforce, gamma[i + 4 * numTrials], phis[i + 4 * numTrials]);
+
 		//agents[i] = new ActorCritic(observationDimension, numActions, alphaAC, betaAC, lambdaAC, gamma, phis[i]);
 		//agents[i + numTrials] = new SarsaLambda(observationDimension, numActions, alphaSarsa, lambdaSarsa, epsilonSarsa, gamma, phis[i + numTrials]);
 		//agents[i + 2 * numTrials] = new QLambda(observationDimension, numActions, alphaQ, lambdaQ, epsilonQ, gamma, phis[i + 2 * numTrials]);
 		//agents[i + 3 * numTrials] = new ExpectedSarsaLambda(observationDimension, numActions, alphaQ, lambdaQ, epsilonQ, gamma, phis[i + 3 * numTrials]);
+		//agents[i + 4 * numTrials] = new Reinforce(observationDimension, numActions, alphaReinforce, gamma, phis[i]);
 
-		// Assumes numTrials == numRuns (testing 1 algorithm)
-		agents[i] = new Reinforce(observationDimension, numActions, alphaReinforce, gamma, phis[i]);
+		//// Assumes numTrials == numRuns (testing 1 algorithm)
+		//agents[i] = new Reinforce(observationDimension, numActions, alphaReinforce, gamma, phis[i]);
 	}
 	cout << "\tAgents created." << endl;
 
-	// Get names
-	string environmentName = environments[0]->getName();
-
 	// Actually run the trials - this function is threaded!
 	cout << "Running trials..." << endl;
-	MatrixXd rawResults = run(agents, environments, numRuns, maxEpisodes, maxEpisodeLength, generator);
+	MatrixXd rawResults = run(agents, environments, numRunsTotal, maxEpisodes.maxCoeff(), maxEpisodeLength.maxCoeff(), generator);
 	cout << "\tTrials completed." << endl;
+
+	//// Actually run the trials - this function is threaded!
+	//cout << "Running trials..." << endl;
+	//MatrixXd rawResults = run(agents, environments, numRunsTotal, maxEpisodes, maxEpisodeLength, generator);
+	//cout << "\tTrials completed." << endl;
 	
 	// Print the results to a file.
 	cout << "Printing results to out/results.csv..." << endl;
