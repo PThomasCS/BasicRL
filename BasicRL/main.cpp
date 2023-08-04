@@ -6,27 +6,53 @@ using namespace Eigen;
 /*
 * Run numTrials agent lifetimes on the provided environment. The entry in position (i,j) of the resulting matrix is the return from the j'th episode in the i'th trial.
 */
-MatrixXd run(vector<Agent*> agents, vector<Environment*> environments, int numTrials, int numEpisodes, int maxEpisodeLength, mt19937_64& generator)
+
+// Changed return type from MatrixXd to vector<MatrixXd>
+// Added arguments int numEnvs, int numAlgs, int numRuns
+vector<MatrixXd> run(vector<Agent*> agents, vector<Environment*> environments, int numTrials, VectorXi maxEpisodes, VectorXi maxEpisodeLength, mt19937_64& generator, int numEnvs, int numAlgs, int numRuns, int numRunsTotal)
 {
 	// Ensure that agents and environments are of length numTrials
-	if ((agents.size() != numTrials) || (environments.size() != numTrials))
+	if ((agents.size() != numRunsTotal) || (environments.size() != numRunsTotal))
 		errorExit("Error in run(...). The number of agents/environments did not match numTrials.");
 	
+	// Changed here; create result matrix for each environment-algorithm combination
+	vector<MatrixXd> results;
+
+    for (int i = 0; i < numEnvs * numAlgs; i++)
+	{
+		int numEpisodes = maxEpisodes[i * numTrials];
+		MatrixXd result(numTrials, numEpisodes);
+		results.push_back(result);
+	}
+
+	int resultIdx = 0;
+
+	// End change
+
 	// Create the object that we will return
-	MatrixXd result(numTrials, numEpisodes);
+	//MatrixXd result(numTrials, numEpisodes);
 	
 	// Each thread has its own random number generator, since generators are not thread safe
-	vector<mt19937_64> generators(numTrials);
-	for (int i = 0; i < numTrials; i++)
+	vector<mt19937_64> generators(numRunsTotal);
+	for (int i = 0; i < numRunsTotal; i++)
 		generators[i].seed(generator());	// See with a random sample from the generator passed as an argument to this function
 
-	cout << "\tThere are " << numTrials << " trials to run. Printing a * when each is completed..." << endl;
+	cout << "\tThere are " << numRunsTotal << " trials to run. Printing a * when each is completed..." << endl;
 	// Loop over trials
 	#pragma omp parallel for	// This line instructs the compiler to parallelize the following for-loop. This uses openmp.
-	for (int trial = 0; trial < numTrials; trial++)
-	{
+	for (int trial = 0; trial < numRunsTotal; trial++)
+	{   
+		cout << "resultIdx bef " << resultIdx << endl;
+		if ((trial != 0) && (trial % numTrials == 0))
+			resultIdx += 1;
+		cout << "resultIdx aft " << resultIdx << endl;
+
 		// Run an agent lifetime
 		double gamma = environments[trial]->getGamma();
+
+		// Changed here
+		int numEpisodes = maxEpisodes[trial];
+		//double numEpisodes = environments[trial]->getRecommendedMaxEpisodes;
 		
 		// Loop over episodes
 		for (int epCount = 0; epCount < numEpisodes; epCount++)
@@ -46,7 +72,9 @@ MatrixXd run(vector<Agent*> agents, vector<Environment*> environments, int numTr
 				// Get the initial observation
 				environments[trial]->getObservation(generators[trial], curObs); // Writes the observation into curObs
 				// Loop over time steps
-				for (int t = 0; t < maxEpisodeLength; t++) // After maxEpisodeLength the episode doesn't "end", we just stop simulating it - so we don't do a terminal update
+				// Changed here
+				int maxEpiLen = maxEpisodeLength[trial];
+				for (int t = 0; t < maxEpiLen; t++) // After maxEpisodeLength the episode doesn't "end", we just stop simulating it - so we don't do a terminal update
 				{
 					// Get action from the agent
 					act = agents[trial]->getAction(curObs, generators[trial]);
@@ -77,7 +105,11 @@ MatrixXd run(vector<Agent*> agents, vector<Environment*> environments, int numTr
 					// Copy new->cur
 					curObs = newObs;
 				}
-				result(trial, epCount) = G;
+
+				// Change: find envIdx and AlgId and save G to result
+				cout << trial << " " << resultIdx << " " << results[resultIdx].rows() << " " << results[resultIdx].cols() << " " << trial << " " << epCount << endl;
+				results[resultIdx](trial, epCount) = G;
+				//result(trial, epCount) = G;
 			}
 			else
 			{
@@ -91,7 +123,10 @@ MatrixXd run(vector<Agent*> agents, vector<Environment*> environments, int numTr
 				environments[trial]->getObservation(generators[trial], curObs); // Writes the observation into curObs
 				curAct = agents[trial]->getAction(curObs, generators[trial]);
 				// Loop over time steps
-				for (int t = 0; t < maxEpisodeLength; t++) // After maxEpisodeLength the episode doesn't "end", we just stop simulating it - so we don't do a terminal update
+				// Changed here
+				int maxEpiLen = maxEpisodeLength[trial];
+
+				for (int t = 0; t < maxEpiLen; t++) // After maxEpisodeLength the episode doesn't "end", we just stop simulating it - so we don't do a terminal update
 				{
 					// Take the action, observe resulting reward
 					reward = environments[trial]->step(curAct, generators[trial]);
@@ -123,7 +158,10 @@ MatrixXd run(vector<Agent*> agents, vector<Environment*> environments, int numTr
 					curAct = newAct;
 					curObs = newObs;
 				}
-				result(trial, epCount) = G;
+				// Change: find envIdx and AlgId and save G to result
+				results[resultIdx](trial, epCount) = G;
+				// attempts to write next trial to array out of size
+				//result(trial, epCount) = G;
 			}
 		}
 		// End of a trial - print a star
@@ -131,7 +169,8 @@ MatrixXd run(vector<Agent*> agents, vector<Environment*> environments, int numTr
 		cout.flush();
 	}
 	cout << endl; // We just printed a bunch of *'s. Put a newline so anything that prints after this starts on a new line.
-	return result;
+	//return result;
+	return results;
 }
 
 // TODO: I think we should delete the function below once the one above is set up properly. It is similar, but threaded!
@@ -363,7 +402,7 @@ int main(int argc, char* argv[])
 	mt19937_64 generator;
 
 	// Hyperparameters
-	int numTrials = 10, numAlgs = 1, int numEnvs = 3;
+	int numTrials = 2, numAlgs = 1, numEnvs = 3;
 	int numRuns = numTrials * numAlgs, numRunsTotal = numRuns * numEnvs;		// DONE! @TODO: Reverse variable names. numTrials is the number of times each algorithm/environmnet pair is run, numRuns is the total number of runs that will happen.
 	int numSamples = 5; // How many samples (average) we use for the plot
 	
@@ -391,9 +430,9 @@ int main(int argc, char* argv[])
 	cout << "\tEnvironments created." << endl;
 
 	// Get parameters of the environment
-	vector<string> environmentName;
+	vector<string> environmentName(numRunsTotal);
 	vector<int> observationDimension(numRunsTotal), numActions(numRunsTotal);
-	VectorXd maxEpisodes(numRunsTotal), maxEpisodeLength(numRunsTotal);
+	VectorXi maxEpisodes(numRunsTotal), maxEpisodeLength(numRunsTotal);
 	vector<double> gamma(numRunsTotal);
 	vector<VectorXd> observationLowerBound(numRunsTotal), observationUpperBound(numRunsTotal);
 
@@ -410,7 +449,7 @@ int main(int argc, char* argv[])
 
 
 	// Get parameters for the feature generator
-	vector<int> iOrder, dOrder;
+	vector<int> iOrder(numRunsTotal), dOrder(numRunsTotal);
 	for (int i = 0; i < numRunsTotal; i++)
 	{
 		if (environmentName[i] == "Gridworld687")
@@ -470,29 +509,43 @@ int main(int argc, char* argv[])
 
 	// Now, actually create the agents
 	cout << "Creating agents..." << endl;
-	vector<Agent*> agents(numRuns);
-	for (int i = 0; i < numTrials; i++)
-	{   //not i
-		agents[i] = new ActorCritic(observationDimension[i], numActions[i], alphaAC, betaAC, lambdaAC, gamma[i], phis[i]);
-		agents[i + numTrials] = new SarsaLambda(observationDimension[i + numTrials], numActions[i + numTrials], alphaSarsa, lambdaSarsa, epsilonSarsa, gamma[i + numTrials], phis[i + numTrials]);
-		agents[i + 2 * numTrials] = new QLambda(observationDimension[i + 2 * numTrials], numActions[i + 2 * numTrials], alphaQ, lambdaQ, epsilonQ, gamma[i + 2 * numTrials], phis[i + 2 * numTrials]);
-		agents[i + 3 * numTrials] = new ExpectedSarsaLambda(observationDimension[i + 3 * numTrials], numActions[i + 3 * numTrials], alphaQ, lambdaQ, epsilonQ, gamma[i + 3 * numTrials], phis[i + 3 * numTrials]);
-		agents[i + 4 * numTrials] = new Reinforce(observationDimension[i + 4 * numTrials], numActions[i + 4 * numTrials], alphaReinforce, gamma[i + 4 * numTrials], phis[i + 4 * numTrials]);
-
-		//agents[i] = new ActorCritic(observationDimension, numActions, alphaAC, betaAC, lambdaAC, gamma, phis[i]);
-		//agents[i + numTrials] = new SarsaLambda(observationDimension, numActions, alphaSarsa, lambdaSarsa, epsilonSarsa, gamma, phis[i + numTrials]);
-		//agents[i + 2 * numTrials] = new QLambda(observationDimension, numActions, alphaQ, lambdaQ, epsilonQ, gamma, phis[i + 2 * numTrials]);
-		//agents[i + 3 * numTrials] = new ExpectedSarsaLambda(observationDimension, numActions, alphaQ, lambdaQ, epsilonQ, gamma, phis[i + 3 * numTrials]);
-		//agents[i + 4 * numTrials] = new Reinforce(observationDimension, numActions, alphaReinforce, gamma, phis[i]);
-
-		//// Assumes numTrials == numRuns (testing 1 algorithm)
-		//agents[i] = new Reinforce(observationDimension, numActions, alphaReinforce, gamma, phis[i]);
+	vector<Agent*> agents(numRunsTotal);
+	for (int i = 0; i < numRunsTotal; i+=numRuns)
+	{ 
+		for (int j = 0; j < numTrials; j++)
+		{   
+			int idx = i + j;
+			agents[idx] = new ActorCritic(observationDimension[idx], numActions[idx], alphaAC, betaAC, lambdaAC, gamma[idx], phis[idx]);
+			//agents[idx + numTrials] = new SarsaLambda(observationDimension[idx + numTrials], numActions[idx + numTrials], alphaSarsa, lambdaSarsa, epsilonSarsa, gamma[idx + numTrials], phis[idx + numTrials]);
+			//agents[idx + 2 * numTrials] = new QLambda(observationDimension[idx + 2 * numTrials], numActions[idx + 2 * numTrials], alphaQ, lambdaQ, epsilonQ, gamma[idx + 2 * numTrials], phis[idx + 2 * numTrials]);
+			//agents[idx + 3 * numTrials] = new ExpectedSarsaLambda(observationDimension[idx + 3 * numTrials], numActions[idx + 3 * numTrials], alphaQ, lambdaQ, epsilonQ, gamma[idx + 3 * numTrials], phis[idx + 3 * numTrials]);
+			//agents[idx + 4 * numTrials] = new Reinforce(observationDimension[idx + 4 * numTrials], numActions[idx + 4 * numTrials], alphaReinforce, gamma[idx + 4 * numTrials], phis[idx + 4 * numTrials]);
+		}
 	}
+	//for (int i = 0; i < numTrials; i++)
+	//{   //not i
+	//	agents[i] = new ActorCritic(observationDimension[i], numActions[i], alphaAC, betaAC, lambdaAC, gamma[i], phis[i]);
+	//	agents[i + numTrials] = new SarsaLambda(observationDimension[i + numTrials], numActions[i + numTrials], alphaSarsa, lambdaSarsa, epsilonSarsa, gamma[i + numTrials], phis[i + numTrials]);
+	//	agents[i + 2 * numTrials] = new QLambda(observationDimension[i + 2 * numTrials], numActions[i + 2 * numTrials], alphaQ, lambdaQ, epsilonQ, gamma[i + 2 * numTrials], phis[i + 2 * numTrials]);
+	//	agents[i + 3 * numTrials] = new ExpectedSarsaLambda(observationDimension[i + 3 * numTrials], numActions[i + 3 * numTrials], alphaQ, lambdaQ, epsilonQ, gamma[i + 3 * numTrials], phis[i + 3 * numTrials]);
+	//	agents[i + 4 * numTrials] = new Reinforce(observationDimension[i + 4 * numTrials], numActions[i + 4 * numTrials], alphaReinforce, gamma[i + 4 * numTrials], phis[i + 4 * numTrials]);
+
+	//	//agents[i] = new ActorCritic(observationDimension, numActions, alphaAC, betaAC, lambdaAC, gamma, phis[i]);
+	//	//agents[i + numTrials] = new SarsaLambda(observationDimension, numActions, alphaSarsa, lambdaSarsa, epsilonSarsa, gamma, phis[i + numTrials]);
+	//	//agents[i + 2 * numTrials] = new QLambda(observationDimension, numActions, alphaQ, lambdaQ, epsilonQ, gamma, phis[i + 2 * numTrials]);
+	//	//agents[i + 3 * numTrials] = new ExpectedSarsaLambda(observationDimension, numActions, alphaQ, lambdaQ, epsilonQ, gamma, phis[i + 3 * numTrials]);
+	//	//agents[i + 4 * numTrials] = new Reinforce(observationDimension, numActions, alphaReinforce, gamma, phis[i]);
+
+	//	//// Assumes numTrials == numRuns (testing 1 algorithm)
+	//	//agents[i] = new Reinforce(observationDimension, numActions, alphaReinforce, gamma, phis[i]);
+	//}
 	cout << "\tAgents created." << endl;
 
 	// Actually run the trials - this function is threaded!
 	cout << "Running trials..." << endl;
-	MatrixXd rawResults = run(agents, environments, numRunsTotal, maxEpisodes.maxCoeff(), maxEpisodeLength.maxCoeff(), generator);
+	// Changed var type
+	vector<MatrixXd> rawResults = run(agents, environments, numTrials, maxEpisodes, maxEpisodeLength, generator, numEnvs, numAlgs, numRuns, numRunsTotal);
+	//MatrixXd rawResults = run(agents, environments, numRunsTotal, maxEpisodes.maxCoeff(), maxEpisodeLength.maxCoeff(), generator);
 	cout << "\tTrials completed." << endl;
 
 	//// Actually run the trials - this function is threaded!
@@ -510,21 +563,24 @@ int main(int argc, char* argv[])
 	string path = "../out/results";	// Otherwise, use this path
 #endif
 
-	for (int algCount = 0; algCount < numAlgs; algCount++)
-	{
-		// Get the name of the algorithm
-		string algName = agents[algCount * numTrials]->getName();
-		string filePath = path + environmentName + " with iO " + to_string(iOrder) + ", dO " + to_string(dOrder) + "-" + algName + ".csv";
+	for (int i = 0; i < numEnvs * numAlgs; i++)
+	{   
+		int idx = i * numTrials + 1;
+		string envName = environmentName[idx];
+		string algName = agents[idx]->getName();
+		int maxEps = maxEpisodes[idx];
+
+		string filePath = path + envName + " with iO " + to_string(iOrder[idx]) + ", dO " + to_string(dOrder[idx]) + "-" + algName + ".csv";
 		ofstream outResults(filePath);
 
 		double meanResult = 0, meanStandardError = 0;
-		
+
 		outResults << "Episode,Average Discounted Return,Standard Error" << endl;
-		for (int epCount = 0; epCount < maxEpisodes; epCount++)
-		{   
-			MatrixXd algResult = rawResults.block(algCount*numTrials, 0, numTrials, maxEpisodes);
-			meanResult += algResult.col(epCount).mean();
-			meanStandardError += sampleStandardError(algResult.col(epCount));
+
+		for (int epCount = 0; epCount < maxEps; epCount++)
+		{
+			meanResult += rawResults[i].col(epCount).mean();
+			meanStandardError += sampleStandardError(rawResults[i].col(epCount));
 			if ((epCount + 1) % numSamples == 0)
 			{
 				outResults << epCount << "," << meanResult / (double)numSamples << "," << meanStandardError / (double)numSamples << endl;	// The functions 'sampleMean' and 'sampleStandardError' are defined in common.hpp
@@ -534,6 +590,31 @@ int main(int argc, char* argv[])
 		outResults.close();
 	}
 	cout << "\tResults printed." << endl;
+
+	//for (int algCount = 0; algCount < numAlgs; algCount++)
+	//{
+	//	// Get the name of the algorithm
+	//	string algName = agents[algCount * numTrials]->getName();
+	//	string filePath = path + environmentName + " with iO " + to_string(iOrder) + ", dO " + to_string(dOrder) + "-" + algName + ".csv";
+	//	ofstream outResults(filePath);
+
+	//	double meanResult = 0, meanStandardError = 0;
+	//	
+	//	outResults << "Episode,Average Discounted Return,Standard Error" << endl;
+	//	for (int epCount = 0; epCount < maxEpisodes; epCount++)
+	//	{   
+	//		MatrixXd algResult = rawResults.block(algCount*numTrials, 0, numTrials, maxEpisodes);
+	//		meanResult += algResult.col(epCount).mean();
+	//		meanStandardError += sampleStandardError(algResult.col(epCount));
+	//		if ((epCount + 1) % numSamples == 0)
+	//		{
+	//			outResults << epCount << "," << meanResult / (double)numSamples << "," << meanStandardError / (double)numSamples << endl;	// The functions 'sampleMean' and 'sampleStandardError' are defined in common.hpp
+	//			meanResult = meanStandardError = 0;
+	//		}
+	//	}
+	//	outResults.close();
+	//}
+	//cout << "\tResults printed." << endl;
 
 	// Clean up memory. Everything that we called "new" for, we need to call "delete" for.
 	for (int i = 0; i < numRuns; i++)
