@@ -26,6 +26,7 @@ vector<MatrixXd> run(vector<Agent*> agents, vector<Environment*> environments, i
 	}
 
 	int resultIdx = 0;
+    int trialResultIdxOffset = 0;
 
 	// End change
 
@@ -42,10 +43,14 @@ vector<MatrixXd> run(vector<Agent*> agents, vector<Environment*> environments, i
 	#pragma omp parallel for	// This line instructs the compiler to parallelize the following for-loop. This uses openmp.
 	for (int trial = 0; trial < numRunsTotal; trial++)
 	{   
-		cout << "resultIdx bef " << resultIdx << endl;
+//		cout << "resultIdx bef " << resultIdx << endl;
 		if ((trial != 0) && (trial % numTrials == 0))
+        {
+//            cout << "here" << endl;
 			resultIdx += 1;
-		cout << "resultIdx aft " << resultIdx << endl;
+            trialResultIdxOffset += numTrials;
+        }
+//		cout << "resultIdx aft " << resultIdx << endl;
 
 		// Run an agent lifetime
 		double gamma = environments[trial]->getGamma();
@@ -107,8 +112,11 @@ vector<MatrixXd> run(vector<Agent*> agents, vector<Environment*> environments, i
 				}
 
 				// Change: find envIdx and AlgId and save G to result
-				cout << trial << " " << resultIdx << " " << results[resultIdx].rows() << " " << results[resultIdx].cols() << " " << trial << " " << epCount << endl;
-				results[resultIdx](trial, epCount) = G;
+/*				cout << trial << " " << resultIdx << " " << results[resultIdx].rows() << " " << results[resultIdx].cols() << " " << trial << " " << epCount << endl;
+//				cout << trial << "," << trialResultIdxOffset << endl;
+//              cout << trial - trialResultIdxOffset << endl;
+                cout << G << endl;*/
+                results[resultIdx]((trial - trialResultIdxOffset), epCount) = G;
 				//result(trial, epCount) = G;
 			}
 			else
@@ -159,7 +167,7 @@ vector<MatrixXd> run(vector<Agent*> agents, vector<Environment*> environments, i
 					curObs = newObs;
 				}
 				// Change: find envIdx and AlgId and save G to result
-				results[resultIdx](trial, epCount) = G;
+				results[resultIdx]((trial - trialResultIdxOffset), epCount) = G;
 				// attempts to write next trial to array out of size
 				//result(trial, epCount) = G;
 			}
@@ -402,9 +410,9 @@ int main(int argc, char* argv[])
 	mt19937_64 generator;
 
 	// Hyperparameters
-	int numTrials = 2, numAlgs = 1, numEnvs = 3;
+	int numTrials = 2, numAlgs = 3, numEnvs = 3;
 	int numRuns = numTrials * numAlgs, numRunsTotal = numRuns * numEnvs;		// DONE! @TODO: Reverse variable names. numTrials is the number of times each algorithm/environmnet pair is run, numRuns is the total number of runs that will happen.
-	int numSamples = 5; // How many samples (average) we use for the plot
+	int numSamples = 1; // How many samples (average) we use for the plot
 	
 	// Environments
 	int iOrderGridworld687 = 0, dOrderGridworld687 = 0;
@@ -516,8 +524,8 @@ int main(int argc, char* argv[])
 		{   
 			int idx = i + j;
 			agents[idx] = new ActorCritic(observationDimension[idx], numActions[idx], alphaAC, betaAC, lambdaAC, gamma[idx], phis[idx]);
-			//agents[idx + numTrials] = new SarsaLambda(observationDimension[idx + numTrials], numActions[idx + numTrials], alphaSarsa, lambdaSarsa, epsilonSarsa, gamma[idx + numTrials], phis[idx + numTrials]);
-			//agents[idx + 2 * numTrials] = new QLambda(observationDimension[idx + 2 * numTrials], numActions[idx + 2 * numTrials], alphaQ, lambdaQ, epsilonQ, gamma[idx + 2 * numTrials], phis[idx + 2 * numTrials]);
+			agents[idx + numTrials] = new SarsaLambda(observationDimension[idx + numTrials], numActions[idx + numTrials], alphaSarsa, lambdaSarsa, epsilonSarsa, gamma[idx + numTrials], phis[idx + numTrials]);
+			agents[idx + 2 * numTrials] = new QLambda(observationDimension[idx + 2 * numTrials], numActions[idx + 2 * numTrials], alphaQ, lambdaQ, epsilonQ, gamma[idx + 2 * numTrials], phis[idx + 2 * numTrials]);
 			//agents[idx + 3 * numTrials] = new ExpectedSarsaLambda(observationDimension[idx + 3 * numTrials], numActions[idx + 3 * numTrials], alphaQ, lambdaQ, epsilonQ, gamma[idx + 3 * numTrials], phis[idx + 3 * numTrials]);
 			//agents[idx + 4 * numTrials] = new Reinforce(observationDimension[idx + 4 * numTrials], numActions[idx + 4 * numTrials], alphaReinforce, gamma[idx + 4 * numTrials], phis[idx + 4 * numTrials]);
 		}
@@ -560,12 +568,14 @@ int main(int argc, char* argv[])
 	string path = "out/results-" + to_string(numTrials) + " trials-";	// If so, use this path
 #else
 	//string filePath = "../out/results.csv";	// Otherwise, use this path
-	string path = "../out/results";	// Otherwise, use this path
+	string path = "../out/results-" + to_string(numTrials) + " trials-";	// Otherwise, use this path
 #endif
+//    for (int i = 0; i < numEnvs * numAlgs; i++)
+//        cout << rawResults[i];
 
 	for (int i = 0; i < numEnvs * numAlgs; i++)
 	{   
-		int idx = i * numTrials + 1;
+		int idx = i * numTrials;
 		string envName = environmentName[idx];
 		string algName = agents[idx]->getName();
 		int maxEps = maxEpisodes[idx];

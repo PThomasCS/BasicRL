@@ -27,12 +27,12 @@ double MountainCar::getGamma() const
 
 int MountainCar::getRecommendedEpisodeLength() const
 {
-    return 10000; 
+    return 1000; // was 10000
 }
 
 int MountainCar::getRecommendedMaxEpisodes() const
 {
-    return 5000;
+    return 1000; // was 5000
 }
 
 string MountainCar::getName() const

@@ -32,12 +32,12 @@ double Gridworld::getGamma() const
 
 int Gridworld::getRecommendedEpisodeLength() const
 {
-	return 10000;
+	return 100; // was 10000
 }
 
 int Gridworld::getRecommendedMaxEpisodes() const
 {
-	return 1000;
+	return 5; // was 1000
 }
 
 string Gridworld::getName() const

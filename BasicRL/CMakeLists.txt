@@ -385,14 +385,14 @@ add_executable(BasicRL
         lib/Eigen/src/SVD/UpperBidiagonalization.h
         lib/Eigen/src/UmfPackSupport/UmfPackSupport.h
         Agent.hpp
-        AlActorCritic.cpp
-        AlActorCritic.hpp
-        AlGridworld687.cpp
-        AlGridworld687.hpp
-        AlMountainCar.cpp
-        AlMountainCar.hpp
-        AlQLambda.cpp
-        AlQLambda.hpp
+        ActorCritic.cpp
+        ActorCritic.hpp
+        Gridworld687.cpp
+        Gridworld687.hpp
+        MountainCar.cpp
+        MountainCar.hpp
+        QLambda.cpp
+        QLambda.hpp
         common.cpp
         common.hpp
         Environment.hpp

@@ -25,12 +25,12 @@ double CartPole::getGamma() const
 
 int CartPole::getRecommendedEpisodeLength() const
 {
-    return 1000; // 20 sec max, one time step is 0.02 sec
+    return 1000; // 20 sec max, one time step is 0.02 sec // was 1000
 }
 
 int CartPole::getRecommendedMaxEpisodes() const
 {
-    return 500;
+    return 500; // was 500
 }
 
 string CartPole::getName() const

@@ -4,7 +4,7 @@
 
 
 // Print an error message, wait for the user to press enter, then exit with error code 1.
-void errorExit(const std::string& s);
+[[noreturn]] void errorExit(const std::string& s);
 
 int maxIndex(const Eigen::VectorXd& v, std::mt19937_64& generator);
 
