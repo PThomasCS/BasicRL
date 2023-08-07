@@ -569,7 +569,7 @@ int main(int argc, char* argv[])
 	//string filePath = "../out/results.csv";	// Otherwise, use this path
 	string path = "../out/results-" + to_string(numTrials) + " trials-";	// Otherwise, use this path
 #endif
-    // TO-DO: instead of using numSamples to write results to CSV, write all results (so that CSV contains all results) and use numSaples parameter only for plotting
+    // TO-DO: instead of using numSamples to write the results to CSV, write all results (so that CSV contains all results) and use numSaples parameter only for plotting
 	for (int i = 0; i < numEnvs * numAlgs; i++)
 	{   
 		int idx = i * numTrials;
