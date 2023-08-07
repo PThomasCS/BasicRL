@@ -25,7 +25,7 @@ double Gridworld687::getGamma() const
 
 int Gridworld687::getRecommendedEpisodeLength() const
 {
-    return 500; //  was 10000
+    return 10000; //  was 10000
 }
 
 int Gridworld687::getRecommendedMaxEpisodes() const

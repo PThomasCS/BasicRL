@@ -54,7 +54,7 @@
 #include "QLambda.hpp"				// Q(lambda)
 #include "ActorCritic.hpp"			// Actor-Critic
 #include "ExpectedSarsaLambda.hpp"	// Expected Sarsa
-#include "Reinforce.hpp"            // Classic Reinfoce (from 2019 Course Notes)
+#include "Reinforce.hpp"            // Classic Reinforce (from 2019 Course Notes)
 
 ////////////////////////////////////////////////////////////////
 // Sandbox / Experiments not necessarily related to RL

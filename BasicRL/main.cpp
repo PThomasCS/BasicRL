@@ -15,7 +15,8 @@ vector<MatrixXd> run(vector<Agent*> agents, vector<Environment*> environments, i
 	if ((agents.size() != numRunsTotal) || (environments.size() != numRunsTotal))
 		errorExit("Error in run(...). The number of agents/environments did not match numTrials.");
 	
-	// Changed here; create result matrix for each environment-algorithm combination
+	// Start change; create result matrix (numTrials, numEpisodes) for each environment-algorithm combination
+    // Each result matrix will save G for episode in each trial for this environment-algorithm combination
 	vector<MatrixXd> results;
 
     for (int i = 0; i < numEnvs * numAlgs; i++)
@@ -25,9 +26,8 @@ vector<MatrixXd> run(vector<Agent*> agents, vector<Environment*> environments, i
 		results.push_back(result);
 	}
 
-	int resultIdx = 0;
-    int trialResultIdxOffset = 0;
-
+	int resultIdx = 0;              // Index of result matrix in vector results to write G
+    int trialResultIdxOffset = 0;   // Offset so that we can use [trial - trialResultIdxOffset] to write G into a correct place in one of the result matrices
 	// End change
 
 	// Create the object that we will return
@@ -42,22 +42,23 @@ vector<MatrixXd> run(vector<Agent*> agents, vector<Environment*> environments, i
 	// Loop over trials
 	#pragma omp parallel for	// This line instructs the compiler to parallelize the following for-loop. This uses openmp.
 	for (int trial = 0; trial < numRunsTotal; trial++)
-	{   
-//		cout << "resultIdx bef " << resultIdx << endl;
+	{
+
+        // Start change; handle resultIdx and trialResultIdxOffset for trial
 		if ((trial != 0) && (trial % numTrials == 0))
         {
-//            cout << "here" << endl;
-			resultIdx += 1;
-            trialResultIdxOffset += numTrials;
+			resultIdx += 1;                     // Increment resultIdx if moved to next algorithm (each env-alg is tested with numTrials trials)
+            trialResultIdxOffset += numTrials;  // Increment trialResultIdxOffset
         }
-//		cout << "resultIdx aft " << resultIdx << endl;
+        // End change
 
 		// Run an agent lifetime
 		double gamma = environments[trial]->getGamma();
 
-		// Changed here
+		// Start change; why double?
 		int numEpisodes = maxEpisodes[trial];
 		//double numEpisodes = environments[trial]->getRecommendedMaxEpisodes;
+        // End change
 		
 		// Loop over episodes
 		for (int epCount = 0; epCount < numEpisodes; epCount++)
@@ -77,46 +78,42 @@ vector<MatrixXd> run(vector<Agent*> agents, vector<Environment*> environments, i
 				// Get the initial observation
 				environments[trial]->getObservation(generators[trial], curObs); // Writes the observation into curObs
 				// Loop over time steps
-				// Changed here
+				// Start change
 				int maxEpiLen = maxEpisodeLength[trial];
+                // End change
 				for (int t = 0; t < maxEpiLen; t++) // After maxEpisodeLength the episode doesn't "end", we just stop simulating it - so we don't do a terminal update
-				{
-					// Get action from the agent
-					act = agents[trial]->getAction(curObs, generators[trial]);
-					
-					// Take the action, observe resulting reward
-					reward = environments[trial]->step(act, generators[trial]);
+                {
+                    // Get action from the agent
+                    act = agents[trial]->getAction(curObs, generators[trial]);
 
-					// Update the return
-					G += curGamma * reward;
+                    // Take the action, observe resulting reward
+                    reward = environments[trial]->step(act, generators[trial]);
 
-					// Update curGamma
-					curGamma *= gamma;
+                    // Update the return
+                    G += curGamma * reward;
 
-					// Check if the episode is over
-					if (environments[trial]->episodeOver(generators[trial]))
-					{
-						// Do a terminal update and break out of the loop over time
-						agents[trial]->trainEpisodeEnd(curObs, act, reward, generators[trial]);
-						break;
-					}
+                    // Update curGamma
+                    curGamma *= gamma;
 
-					// Get the resulting observation
-					environments[trial]->getObservation(generators[trial], newObs);
+                    // Check if the episode is over
+                    if (environments[trial]->episodeOver(generators[trial])) {
+                        // Do a terminal update and break out of the loop over time
+                        agents[trial]->trainEpisodeEnd(curObs, act, reward, generators[trial]);
+                        break;
+                    }
 
-					// Train
-					agents[trial]->train(curObs, act, reward, newObs, generators[trial]);
+                    // Get the resulting observation
+                    environments[trial]->getObservation(generators[trial], newObs);
 
-					// Copy new->cur
-					curObs = newObs;
-				}
+                    // Train
+                    agents[trial]->train(curObs, act, reward, newObs, generators[trial]);
 
-				// Change: find envIdx and AlgId and save G to result
-/*				cout << trial << " " << resultIdx << " " << results[resultIdx].rows() << " " << results[resultIdx].cols() << " " << trial << " " << epCount << endl;
-//				cout << trial << "," << trialResultIdxOffset << endl;
-//              cout << trial - trialResultIdxOffset << endl;
-                cout << G << endl;*/
+                    // Copy new->cur
+                    curObs = newObs;
+                }
+                // Start change; save G to the correct place in the correct result matrix
                 results[resultIdx]((trial - trialResultIdxOffset), epCount) = G;
+                // End change
 				//result(trial, epCount) = G;
 			}
 			else
@@ -131,8 +128,9 @@ vector<MatrixXd> run(vector<Agent*> agents, vector<Environment*> environments, i
 				environments[trial]->getObservation(generators[trial], curObs); // Writes the observation into curObs
 				curAct = agents[trial]->getAction(curObs, generators[trial]);
 				// Loop over time steps
-				// Changed here
+				// Start change
 				int maxEpiLen = maxEpisodeLength[trial];
+                // End change
 
 				for (int t = 0; t < maxEpiLen; t++) // After maxEpisodeLength the episode doesn't "end", we just stop simulating it - so we don't do a terminal update
 				{
@@ -166,8 +164,9 @@ vector<MatrixXd> run(vector<Agent*> agents, vector<Environment*> environments, i
 					curAct = newAct;
 					curObs = newObs;
 				}
-				// Change: find envIdx and AlgId and save G to result
+				// Start change; save G to the correct place in the correct result matrix
 				results[resultIdx]((trial - trialResultIdxOffset), epCount) = G;
+                // End change
 				// attempts to write next trial to array out of size
 				//result(trial, epCount) = G;
 			}
@@ -570,9 +569,7 @@ int main(int argc, char* argv[])
 	//string filePath = "../out/results.csv";	// Otherwise, use this path
 	string path = "../out/results-" + to_string(numTrials) + " trials-";	// Otherwise, use this path
 #endif
-//    for (int i = 0; i < numEnvs * numAlgs; i++)
-//        cout << rawResults[i];
-
+    // TO-DO: instead of using numSamples to write results to CSV, write all results (so that CSV contains all results) and use numSaples parameter only for plotting
 	for (int i = 0; i < numEnvs * numAlgs; i++)
 	{   
 		int idx = i * numTrials;
