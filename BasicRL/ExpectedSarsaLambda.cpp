@@ -96,12 +96,12 @@ void ExpectedSarsaLambda::train(const Eigen::VectorXd& observation, const int cu
 
     // Calculate the expectation of QValues of sPrime, aPrime
     // Calculate the QValues and find the indices of best actions
-    VectorXd qValues(numActions);
-    qValues = w * (*newFeatures);
+    VectorXd newQValues(numActions);
+    newQValues = w * (*newFeatures);
 
-    vector<int> bestActions = maxIndices(qValues, generator);
-    int numBestActions = bestActions.size();
-
+    vector<int> bestActions = maxIndices(newQValues);
+    int numBestActions = (int)bestActions.size();
+    
     // Calculate action probabilities
     // If we explore (with probability epsilon), then all actions are sampled uniformly
     VectorXd actionProbabilities(numActions);
@@ -116,7 +116,7 @@ void ExpectedSarsaLambda::train(const Eigen::VectorXd& observation, const int cu
 
     // Compute the TD-error
     // The expectation of QValues of sPrime, aPrime is calculated by qValues.dot(actionProbabilities)
-    double delta = reward + gamma * qValues.dot(actionProbabilities) - w.row(curAction).dot(*curFeatures);	// We already computed the features for "curObservation" at a getAction call and stored them in curFeatures, and newObservation-->newFeatures
+    double delta = reward + gamma * newQValues.dot(actionProbabilities) - w.row(curAction).dot(*curFeatures);	// We already computed the features for "curObservation" at a getAction call and stored them in curFeatures, and newObservation-->newFeatures
 
     // Update the e-traces
     e = gamma * lambda * e;

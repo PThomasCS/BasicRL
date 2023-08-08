@@ -6,9 +6,18 @@
 // Print an error message, wait for the user to press enter, then exit with error code 1.
 [[noreturn]] void errorExit(const std::string& s);
 
+// Returns one index that achieves the maximum value in v. If there are ties, a winner is selected uniformly randomly
 int maxIndex(const Eigen::VectorXd& v, std::mt19937_64& generator);
 
-std::vector<int> maxIndices(const Eigen::VectorXd& v, std::mt19937_64& generator);
+// Returns a vector containing the indices with maximum values.
+std::vector<int> maxIndices(const Eigen::VectorXd& v);
+
+// Loads buff[i] with e^x[i] / (sum_j e^x[j]). Useful for softmax, uses the log-sum-exp trick for numerical stability
+// Based on: https://gregorygundersen.com/blog/2020/02/09/log-sum-exp/
+void softmax(const Eigen::VectorXd& x, Eigen::VectorXd& buff);
+
+// Same as softmax above, but implemented the naive way that is easier to check. This is used for making sure the above implementation is correct
+void softmaxDebug(const Eigen::VectorXd& x, Eigen::VectorXd& buff);
 
 // Return random integer based on the provided probabilities
 template <typename VectorType>
@@ -34,7 +43,6 @@ int randp(const VectorType & probabilities, std::mt19937_64 & generator)
 	assert(false);	// All probabilities were zero - that shouldn't have happened
 	errorExit("Error in randp - all elements have zero probability");
 }
-
 
 /*
 Floating-point modulo:
@@ -148,23 +156,10 @@ double sampleStandardError(const T& v)
 	return result;
 }
 
-// Function to push back an element to a 1D vector n times 
-
-//template <typename T>
-//void addParamTo1D(const T& param, const int n, vector<T>& buff)
-//{
-//	for (int i = 0; i < n; i++)
-//		buff.push_back(param);
-//}
-
-// Function to push back a vector of elements to a 2D vector n times 
-
-//template <typename T>
-//void addParamTo2D(const vector<T>& v, const int n, vector<vector<T>>& buff)
-//{
-//	for (int i = 0; i < v.size(); i++)
-//		for (int j = 0; j < n; j++)
-//			buff.push_back(v[i]);
-//}
-
-
+// Pushes back a provided element n times
+template <typename T>
+void push_back_n(const T& value, const int n, std::vector<T>& buff)
+{
+	for (int i = 0; i < n; i++)
+		buff.push_back(value);
+}

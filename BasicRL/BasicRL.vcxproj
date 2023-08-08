@@ -140,6 +140,7 @@
     <ClInclude Include="ActorCritic.hpp" />
     <ClInclude Include="ExpectedSarsaLambda.hpp" />
     <ClInclude Include="Gridworld687.hpp" />
+    <ClInclude Include="IdentityBasis.hpp" />
     <ClInclude Include="MountainCar.hpp" />
     <ClInclude Include="QLambda.hpp" />
     <ClInclude Include="CartPole.hpp" />
@@ -158,6 +159,7 @@
     <ClCompile Include="ActorCritic.cpp" />
     <ClCompile Include="ExpectedSarsaLambda.cpp" />
     <ClCompile Include="Gridworld687.cpp" />
+    <ClCompile Include="IdentityBasis.cpp" />
     <ClCompile Include="mainUpdates.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>

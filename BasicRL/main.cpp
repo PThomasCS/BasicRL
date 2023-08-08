@@ -13,155 +13,37 @@ using namespace Eigen;
 /*
 * Run numTrials agent lifetimes on the provided environment. The entry in position (i,j) of the resulting matrix is the return from the j'th episode in the i'th trial.
 */
-	MatrixXd run(vector<Agent*> agents, vector<Environment*> environments, int numTrials, int numEpisodes, int maxEpisodeLength, mt19937_64& generator)
-	{
-		// Ensure that agents and environments are of length numTrials
-		if ((agents.size() != numTrials) || (environments.size() != numTrials))
-			errorExit("Error in run(...). The number of agents/environments did not match numTrials.");
+MatrixXd run(vector<Agent*> agents, vector<Environment*> environments, int numTrials, int numEpisodes, 
+	int maxEpisodeLength, mt19937_64& generator)
+{
+	// Ensure that agents and environments are of length numTrials
+	if ((agents.size() != numTrials) || (environments.size() != numTrials))
+		errorExit("Error in run(...). The number of agents/environments did not match numTrials.");
 
-		// Create the object that we will return
-		MatrixXd result(numTrials, numEpisodes);
+	// Create the object that we will return
+	MatrixXd result(numTrials, numEpisodes);
 
-		// Each thread has its own random number generator, since generators are not thread safe
-		vector<mt19937_64> generators(numTrials);
-		for (int i = 0; i < numTrials; i++)
-			generators[i].seed(generator());	// See with a random sample from the generator passed as an argument to this function
+	// Each thread has its own random number generator, since generators are not thread safe
+	vector<mt19937_64> generators(numTrials);
+	for (int i = 0; i < numTrials; i++)
+		generators[i].seed(generator());	// See with a random sample from the generator passed as an argument to this function
 
-		cout << "\tThere are " << numTrials << " trials to run. Printing a * when each is completed..." << endl;
-		// Loop over trials
+	cout << "\tThere are " << numTrials << " trials to run. Printing a * when each is completed..." << endl;
+	// Loop over trials
 #pragma omp parallel for	// This line instructs the compiler to parallelize the following for-loop. This uses openmp.
-		for (int trial = 0; trial < numTrials; trial++)
-		{
-			// Run an agent lifetime
-			double gamma = environments[trial]->getGamma();
-
-			// Loop over episodes
-			for (int epCount = 0; epCount < numEpisodes; epCount++)
-			{
-				// Tell the agent and environment that we're starting a new episode
-				agents[trial]->newEpisode(generators[trial]);
-				environments[trial]->newEpisode(generators[trial]);
-
-				if (agents[trial]->trainBeforeAPrime())
-				{
-					// Loop over time steps in this episode.
-					// First define the variables we will use
-					VectorXd curObs, newObs;
-					int act;
-					double reward, G = 0, curGamma = 1;
-
-					// Get the initial observation
-					environments[trial]->getObservation(generators[trial], curObs); // Writes the observation into curObs
-					// Loop over time steps
-					for (int t = 0; t < maxEpisodeLength; t++) // After maxEpisodeLength the episode doesn't "end", we just stop simulating it - so we don't do a terminal update
-					{
-						// Get action from the agent
-						act = agents[trial]->getAction(curObs, generators[trial]);
-
-						// Take the action, observe resulting reward
-						reward = environments[trial]->step(act, generators[trial]);
-
-						// Update the return
-						G += curGamma * reward;
-
-						// Update curGamma
-						curGamma *= gamma;
-
-						// Check if the episode is over
-						if (environments[trial]->episodeOver(generators[trial]))
-						{
-							// Do a terminal update and break out of the loop over time
-							agents[trial]->trainEpisodeEnd(curObs, act, reward, generators[trial]);
-							break;
-						}
-
-						// Get the resulting observation
-						environments[trial]->getObservation(generators[trial], newObs);
-
-						// Train
-						agents[trial]->train(curObs, act, reward, newObs, generators[trial]);
-
-						// Copy new->cur
-						curObs = newObs;
-					}
-					result(trial, epCount) = G;
-				}
-				else
-				{
-					// Loop over time steps in this episode.
-					// First define the variables we will use
-					VectorXd curObs, newObs;
-					int curAct, newAct;
-					double reward, G = 0, curGamma = 1;
-
-					// Get the initial observation and action
-					environments[trial]->getObservation(generators[trial], curObs); // Writes the observation into curObs
-					curAct = agents[trial]->getAction(curObs, generators[trial]);
-					// Loop over time steps
-					for (int t = 0; t < maxEpisodeLength; t++) // After maxEpisodeLength the episode doesn't "end", we just stop simulating it - so we don't do a terminal update
-					{
-						// Take the action, observe resulting reward
-						reward = environments[trial]->step(curAct, generators[trial]);
-
-						// Update the return
-						G += curGamma * reward;
-
-						// Update curGamma
-						curGamma *= gamma;
-
-						// Check if the episode is over
-						if (environments[trial]->episodeOver(generators[trial]))
-						{
-							// Do a terminal update and break out of the loop over time
-							agents[trial]->trainEpisodeEnd(curObs, curAct, reward, generators[trial]);
-							break;
-						}
-
-						// Get the resulting observation
-						environments[trial]->getObservation(generators[trial], newObs);
-
-						// Get next action from the agent
-						newAct = agents[trial]->getAction(newObs, generators[trial]);
-
-						// Train
-						agents[trial]->train(curObs, curAct, reward, newObs, newAct, generators[trial]);
-
-						// Copy new->cur
-						curAct = newAct;
-						curObs = newObs;
-					}
-					result(trial, epCount) = G;
-				}
-			}
-			// End of a trial - print a star
-			cout.put('*');
-			cout.flush();
-		}
-		cout << endl; // We just printed a bunch of *'s. Put a newline so anything that prints after this starts on a new line.
-		return result;
-	}
-
-	// TODO: I think we should delete the function below once the one above is set up properly. It is similar, but threaded!
-
-	// Takes as input an agent and an environment, runs the agent on the environment for one agent lifetime.
-	// Returns the vector of returns from each episode.
-	VectorXd runLifetime(Agent* agent, Environment* env, int numEpisodes, int maxEpisodeLength,
-		mt19937_64& generator, VectorXd& totalTimeStepsAtEpisodeEndsBuff)	// Buff means "buffer" - we are going to return values in this object.
+	for (int trial = 0; trial < numTrials; trial++)
 	{
-		VectorXd result(numEpisodes);	// Create the array where we will return the resulting returns (G).
-		totalTimeStepsAtEpisodeEndsBuff.resize(numEpisodes);
-		VectorXd episodeLengths(numEpisodes); // Create the array where we will store the total number of steps taken across all episodes up to that moment in time.
-		double gamma = env->getGamma();
-		int actCount = 0;
+		// Run an agent lifetime
+		double gamma = environments[trial]->getGamma();
 
 		// Loop over episodes
 		for (int epCount = 0; epCount < numEpisodes; epCount++)
 		{
 			// Tell the agent and environment that we're starting a new episode
-			agent->newEpisode(generator);
-			env->newEpisode(generator);
+			agents[trial]->newEpisode(generators[trial]);
+			environments[trial]->newEpisode(generators[trial]);
 
-			if (agent->trainBeforeAPrime())
+			if (agents[trial]->trainBeforeAPrime())
 			{
 				// Loop over time steps in this episode.
 				// First define the variables we will use
@@ -170,16 +52,15 @@ using namespace Eigen;
 				double reward, G = 0, curGamma = 1;
 
 				// Get the initial observation
-				env->getObservation(generator, curObs); // Writes the observation into curObs
+				environments[trial]->getObservation(generators[trial], curObs); // Writes the observation into curObs
 				// Loop over time steps
 				for (int t = 0; t < maxEpisodeLength; t++) // After maxEpisodeLength the episode doesn't "end", we just stop simulating it - so we don't do a terminal update
 				{
 					// Get action from the agent
-					act = agent->getAction(curObs, generator);
-					actCount++; // Increment action count
+					act = agents[trial]->getAction(curObs, generators[trial]);
 
 					// Take the action, observe resulting reward
-					reward = env->step(act, generator);
+					reward = environments[trial]->step(act, generators[trial]);
 
 					// Update the return
 					G += curGamma * reward;
@@ -188,24 +69,23 @@ using namespace Eigen;
 					curGamma *= gamma;
 
 					// Check if the episode is over
-					if (env->episodeOver(generator))
+					if (environments[trial]->episodeOver(generators[trial]))
 					{
 						// Do a terminal update and break out of the loop over time
-						agent->trainEpisodeEnd(curObs, act, reward, generator);
+						agents[trial]->trainEpisodeEnd(curObs, act, reward, generators[trial]);
 						break;
 					}
 
 					// Get the resulting observation
-					env->getObservation(generator, newObs);
+					environments[trial]->getObservation(generators[trial], newObs);
 
 					// Train
-					agent->train(curObs, act, reward, newObs, generator);
+					agents[trial]->train(curObs, act, reward, newObs, generators[trial]);
 
 					// Copy new->cur
 					curObs = newObs;
 				}
-				result[epCount] = G;
-				totalTimeStepsAtEpisodeEndsBuff[epCount] = actCount;
+				result(trial, epCount) = G;
 			}
 			else
 			{
@@ -216,14 +96,13 @@ using namespace Eigen;
 				double reward, G = 0, curGamma = 1;
 
 				// Get the initial observation and action
-				env->getObservation(generator, curObs); // Writes the observation into curObs
-				curAct = agent->getAction(curObs, generator);
-				actCount++; // Increment action count
+				environments[trial]->getObservation(generators[trial], curObs); // Writes the observation into curObs
+				curAct = agents[trial]->getAction(curObs, generators[trial]);
 				// Loop over time steps
 				for (int t = 0; t < maxEpisodeLength; t++) // After maxEpisodeLength the episode doesn't "end", we just stop simulating it - so we don't do a terminal update
 				{
 					// Take the action, observe resulting reward
-					reward = env->step(curAct, generator);
+					reward = environments[trial]->step(curAct, generators[trial]);
 
 					// Update the return
 					G += curGamma * reward;
@@ -232,249 +111,173 @@ using namespace Eigen;
 					curGamma *= gamma;
 
 					// Check if the episode is over
-					if (env->episodeOver(generator))
+					if (environments[trial]->episodeOver(generators[trial]))
 					{
 						// Do a terminal update and break out of the loop over time
-						agent->trainEpisodeEnd(curObs, curAct, reward, generator);
+						agents[trial]->trainEpisodeEnd(curObs, curAct, reward, generators[trial]);
 						break;
 					}
 
 					// Get the resulting observation
-					env->getObservation(generator, newObs);
+					environments[trial]->getObservation(generators[trial], newObs);
 
 					// Get next action from the agent
-					newAct = agent->getAction(newObs, generator);
-					actCount++; // Increment action count
+					newAct = agents[trial]->getAction(newObs, generators[trial]);
 
 					// Train
-					agent->train(curObs, curAct, reward, newObs, newAct, generator);
+					agents[trial]->train(curObs, curAct, reward, newObs, newAct, generators[trial]);
 
 					// Copy new->cur
 					curAct = newAct;
 					curObs = newObs;
 				}
-				result[epCount] = G;
-				totalTimeStepsAtEpisodeEndsBuff[epCount] = actCount;
+				result(trial, epCount) = G;
 			}
 		}
-
-		// Return the results that we computed
-		return result;
+		// End of a trial - print a star
+		cout.put('*');
+		cout.flush();
 	}
+	cout << endl; // We just printed a bunch of *'s. Put a newline so anything that prints after this starts on a new line.
+	return result;
+}
 
-	void sandbox()
+void sandbox()
+{
+	cout << "Running other experiments/code." << endl;
+	//sandboxJune16_2023();
+	//sandboxJune16_2023();
+
+	// Test softmax variants
+	VectorXd x(3);
+	x[0] = 0;
+	x[1] = 1000.2;
+	x[2] = -3000.7;
+	VectorXd p;
+	softmax(x, p);
+	cout << "Using the fancy method:" << endl << setprecision(9) << p.transpose() << endl;
+
+	softmaxDebug(x, p);
+	cout << "Using the regular method:" << endl << setprecision(9) << p.transpose() << endl;
+
+	cout << "Done running other experiments/code. Hit enter to continue." << endl;
+	(void)getchar();
+}
+
+int main(int argc, char* argv[])
+{
+	// Comment out the line below if you don't want to run other random experiments first!
+	sandbox();
+
+	// Default random number generator
+	mt19937_64 generator;
+
+	// Hyperparameters
+	int numTrials = 10, numAlgs = 1, numRuns = numTrials * numAlgs;			// DONE! @TODO: Reverse variable names. numTrials is the number of times each algorithm/environmnet pair is run, numRuns is the total number of runs that will happen.
+	int numSamples = 5; // How many samples (average) we use for the plot
+	int iOrder = 3, dOrder = 3;
+	double alphaAC = 0.0001, betaAC = 0.0001, lambdaAC = 0.8;
+	double alphaSarsa = 0.0001, lambdaSarsa = 0.8, epsilonSarsa = 0.01;
+	double alphaQ = 0.0001, lambdaQ = 0.8, epsilonQ = 0.01;
+	double alphaExpectedSarsa = 0.0001, lambdaExpectedSarsa = 0.8, epsilonExpectedSarsa = 0.01;
+	double alphaReinforce = 0.01;
+
+	// Create the environment objects
+	cout << "Creating environments..." << endl;
+	vector<Environment*> environments(numRuns);
+	for (int i = 0; i < numRuns; i++)
+		environments[i] = new MountainCar();
+	//environments[i] = new CartPole();
+		//environments[i] = new Acrobot();
+		//environments[i] = new Gridworld687();
+	cout << "\tEnvironments created." << endl;
+
+	// Get parameters of the environment
+	int observationDimension = environments[0]->getObservationDimension(), numActions = environments[0]->getNumActions(),
+		maxEpisodes = environments[0]->getRecommendedMaxEpisodes(), maxEpisodeLength = environments[0]->getRecommendedEpisodeLength();
+	double gamma = environments[0]->getGamma();
+	VectorXd observationLowerBound = environments[0]->getObservationLowerBound(),
+		observationUpperBound = environments[0]->getObservationUpperBound();
+
+	// Create agents. First, we need the FeatureGenerator objects - one for each!
+	cout << "Creating feature generators..." << endl;
+	vector<FeatureGenerator*> phis(numRuns);
+	for (int i = 0; i < numRuns; i++)
+		phis[i] = new FourierBasis(observationDimension, observationLowerBound, observationUpperBound, iOrder, dOrder);
+	cout << "\tFeatures generators created." << endl;
+
+	// Now, actually create the agents
+	cout << "Creating agents..." << endl;
+	vector<Agent*> agents(numRuns);
+	for (int i = 0; i < numTrials; i++)
 	{
-		cout << "Running other experiments/code." << endl;
-		//sandboxJune16_2023();
-		//sandboxJune16_2023();
+		//agents[i] = new ActorCritic(observationDimension, numActions, alphaAC, betaAC, lambdaAC, gamma, phis[i]);
+		//agents[i + numTrials] = new SarsaLambda(observationDimension, numActions, alphaSarsa, lambdaSarsa, epsilonSarsa, gamma, phis[i + numTrials]);
+		//agents[i + 2 * numTrials] = new QLambda(observationDimension, numActions, alphaQ, lambdaQ, epsilonQ, gamma, phis[i + 2 * numTrials]);
+		//agents[i + 3 * numTrials] = new ExpectedSarsaLambda(observationDimension, numActions, alphaQ, lambdaQ, epsilonQ, gamma, phis[i + 3 * numTrials]);
 
-		mt19937_64 generator;
-		VectorXd observation = VectorXd::Zero(4);
-		while (true)
-		{
-			VectorXd inputLowerBound = VectorXd::Zero(4);
-			VectorXd inputUpperBound = VectorXd::Ones(4);
-			FourierBasis phi(4, inputLowerBound, inputUpperBound, 3, 3);
-			SarsaLambda s(10, 5, 0.01, .8, .1, 1.0, &phi);
-			cout << s.getAction(observation, generator) << endl;
-		}
-
-
-		cout << "Done running other experiments/code. Hit enter to continue." << endl;
-		(void)getchar();
+		// Assumes numTrials == numRuns (testing 1 algorithm)
+		agents[i] = new Reinforce(observationDimension, numActions, alphaReinforce, gamma, phis[i]);
 	}
+	cout << "\tAgents created." << endl;
 
-	// Here is the old main! Ith as hyperparameter settings you may have been working with.
-	/*
-	int main(int argc, char* argv[])
-	{
-		// Comment out the line below if you don't want to run other random experiments first!
-	//	sandbox();
+	// Get names
+	string environmentName = environments[0]->getName();
 
-		// Set hyperparameters and RNG
-		//double  alpha = 0.001, beta = 0.001, lambda = 0.9, epsilon = 0.0, sigma = 0.5; // mc
-		//double  alpha = 0.0001, beta = 0.0001, lambda = 0.8; // Phil mc
+	// Actually run the trials - this function is threaded!
+	cout << "Running trials..." << endl;
+	MatrixXd rawResults = run(agents, environments, numRuns, maxEpisodes, maxEpisodeLength, generator);
+	cout << "\tTrials completed." << endl;
 
-		double  alpha = 0.0001, beta = 0.0001, lambda = 0.8; // Phil mc 2
-
-	//    double  alpha = 0.001, lambda = 0.9, epsilon = 0.0;
-	//	double  alpha = 0.01, beta = 0.01, lambda = 0.8, epsilon = 0.05, sigma = 0.1; // Qlambda, Actor-Critic, gr687
-	//	double  alpha = 0.1, beta = 0.1, lambda = 0.8, epsilon = 0.05, sigma = 0.1;
-
-		//int iOrder = 5, dOrder = 5; // mc 5, 5
-		//int iOrder = 3, dOrder = 3; // Phil's attempt at MC
-		int iOrder = 7, dOrder = 7; // Phil's attempt at MC 2
-		mt19937_64 generator;	// If you don't seed it, it has some fixed seed that is the same every time.
-
-		// Create the environment
-	//	Gridworld env(4);
-	//  Gridworld687 env;
-	//  MountainCar env;
-		MountainCar env(false);
-
-		// Get parameters of the environment
-		int observationDimension = env.getObservationDimension(), numActions = env.getNumActions(),
-			maxEpisodes = env.getRecommendedMaxEpisodes(), maxEpisodeLength = env.getRecommendedEpisodeLength();
-		double gamma = env.getGamma();
-		VectorXd observationLowerBound = env.getObservationLowerBound(),
-			observationUpperBound = env.getObservationUpperBound();
-
-		// Create the FourierBasis object
-		FourierBasis phi(observationDimension, observationLowerBound, observationUpperBound, iOrder, dOrder);
-
-		// Create the agent
-	//	SarsaLambda agent(observationDimension, numActions, alpha, lambda, epsilon, gamma, &phi); // The &phi means "the memory location of phi". Notice the constructor takes a pointer FeatureGenerator*.
-	//    QLambda agent(observationDimension, numActions, alpha, lambda, epsilon, gamma, &phi); // The &phi means "the memory location of phi". Notice the constructor takes a pointer FeatureGenerator*.
-		ActorCritic agent(observationDimension, numActions, alpha, beta, lambda, gamma, &phi); // The &phi means "the memory location of phi". Notice the constructor takes a pointer FeatureGenerator*.
-
-		// Run the agent on the environment
-		VectorXd totalTimeStepsAtEpisodeEnds;	// runLifetime will store the total number of timesteps that have passed when each episode ends. It will store it in this array.
-		VectorXd returns = runLifetime(&agent, &env, maxEpisodes, maxEpisodeLength, generator, totalTimeStepsAtEpisodeEnds);
-
-		// Print totalTimeStepsAtEpisodeEnds to file
-
-	#ifdef _MSC_VER	// Check if the compiler is a Microsoft compiler.
-		string filePath = "out/totalTimeStepsAtEpisodeEnds.txt";	// If so, use this path
-	#else
-		string filePath = "../out/totalTimeStepsAtEpisodeEnds.txt";	// Otherwise, use this path
-	#endif
-		ofstream outTimeSteps(filePath);
-		outTimeSteps << fixed << totalTimeStepsAtEpisodeEnds << endl;
-		outTimeSteps.close();
-
-		// Print the returns
-		cout << "Returns:" << endl << returns << endl;
-
-		// Print the returns to a file
-	#ifdef _MSC_VER	// Check if the compiler is a Microsoft compiler.
-		filePath = "out/returns.txt";	// If so, use this path
-	#else
-		filePath = "../out/returns.txt";	// Otherwise, use this path
-	#endif
-		ofstream outReturns(filePath);
-		outReturns << returns << endl;
-		outReturns.close();
-
-		// Print message indicating that the program has finished
-		cout << "Done. Press enter to exit." << endl;
-		return 0; // No error.
-	}
-	*/
-
-	int main(int argc, char* argv[])
-	{
-		// Comment out the line below if you don't want to run other random experiments first!
-		//sandbox();
-
-		// Default random number generator
-		mt19937_64 generator;
-
-		// Hyperparameters
-		int numTrials = 10, numAlgs = 1, numRuns = numTrials * numAlgs;			// DONE! @TODO: Reverse variable names. numTrials is the number of times each algorithm/environmnet pair is run, numRuns is the total number of runs that will happen.
-		int numSamples = 5; // How many samples (average) we use for the plot
-		int iOrder = 3, dOrder = 3;
-		double alphaAC = 0.0001, betaAC = 0.0001, lambdaAC = 0.8;
-		double alphaSarsa = 0.0001, lambdaSarsa = 0.8, epsilonSarsa = 0.01;
-		double alphaQ = 0.0001, lambdaQ = 0.8, epsilonQ = 0.01;
-		double alphaExpectedSarsa = 0.0001, lambdaExpectedSarsa = 0.8, epsilonExpectedSarsa = 0.01;
-		double alphaReinforce = 0.01;
-
-		// Create the environment objects
-		cout << "Creating environments..." << endl;
-		vector<Environment*> environments(numRuns);
-		for (int i = 0; i < numRuns; i++)
-			environments[i] = new MountainCar();
-		//environments[i] = new CartPole();
-		  //environments[i] = new Acrobot();
-		  //environments[i] = new Gridworld687();
-		cout << "\tEnvironments created." << endl;
-
-		// Get parameters of the environment
-		int observationDimension = environments[0]->getObservationDimension(), numActions = environments[0]->getNumActions(),
-			maxEpisodes = environments[0]->getRecommendedMaxEpisodes(), maxEpisodeLength = environments[0]->getRecommendedEpisodeLength();
-		double gamma = environments[0]->getGamma();
-		VectorXd observationLowerBound = environments[0]->getObservationLowerBound(),
-			observationUpperBound = environments[0]->getObservationUpperBound();
-
-		// Create agents. First, we need the FeatureGenerator objects - one for each!
-		cout << "Creating feature generators..." << endl;
-		vector<FeatureGenerator*> phis(numRuns);
-		for (int i = 0; i < numRuns; i++)
-			phis[i] = new FourierBasis(observationDimension, observationLowerBound, observationUpperBound, iOrder, dOrder);
-		cout << "\tFeatures generators created." << endl;
-
-		// Now, actually create the agents
-		cout << "Creating agents..." << endl;
-		vector<Agent*> agents(numRuns);
-		for (int i = 0; i < numTrials; i++)
-		{
-			//agents[i] = new ActorCritic(observationDimension, numActions, alphaAC, betaAC, lambdaAC, gamma, phis[i]);
-			//agents[i + numTrials] = new SarsaLambda(observationDimension, numActions, alphaSarsa, lambdaSarsa, epsilonSarsa, gamma, phis[i + numTrials]);
-			//agents[i + 2 * numTrials] = new QLambda(observationDimension, numActions, alphaQ, lambdaQ, epsilonQ, gamma, phis[i + 2 * numTrials]);
-			//agents[i + 3 * numTrials] = new ExpectedSarsaLambda(observationDimension, numActions, alphaQ, lambdaQ, epsilonQ, gamma, phis[i + 3 * numTrials]);
-
-			// Assumes numTrials == numRuns (testing 1 algorithm)
-			agents[i] = new Reinforce(observationDimension, numActions, alphaReinforce, gamma, phis[i]);
-		}
-		cout << "\tAgents created." << endl;
-
-		// Get names
-		string environmentName = environments[0]->getName();
-
-		// Actually run the trials - this function is threaded!
-		cout << "Running trials..." << endl;
-		MatrixXd rawResults = run(agents, environments, numRuns, maxEpisodes, maxEpisodeLength, generator);
-		cout << "\tTrials completed." << endl;
-
-		// Print the results to a file.
-		cout << "Printing results to out/results.csv..." << endl;
+	// Print the results to a file.
+	cout << "Printing results to out/results.csv..." << endl;
 #ifdef _MSC_VER	// Check if the compiler is a Microsoft compiler.
-		//string filePath = "out/results.csv";	// If so, use this path
-		string path = "out/results-" + to_string(numTrials) + " trials-";	// If so, use this path
+	//string filePath = "out/results.csv";	// If so, use this path
+	string path = "out/results-" + to_string(numTrials) + " trials-";	// If so, use this path
 #else
-		//string filePath = "../out/results.csv";	// Otherwise, use this path
-		string path = "../out/results";	// Otherwise, use this path
+	//string filePath = "../out/results.csv";	// Otherwise, use this path
+	string path = "../out/results";	// Otherwise, use this path
 #endif
 
-		for (int algCount = 0; algCount < numAlgs; algCount++)
+	for (int algCount = 0; algCount < numAlgs; algCount++)
+	{
+		// Get the name of the algorithm
+		string algName = agents[algCount * numTrials]->getName();
+		string filePath = path + environmentName + " with iO " + to_string(iOrder) + ", dO " + to_string(dOrder) + "-" + algName + ".csv";
+		ofstream outResults(filePath);
+
+		double meanResult = 0, meanStandardError = 0;
+
+		outResults << "Episode,Average Discounted Return,Standard Error" << endl;
+		for (int epCount = 0; epCount < maxEpisodes; epCount++)
 		{
-			// Get the name of the algorithm
-			string algName = agents[algCount * numTrials]->getName();
-			string filePath = path + environmentName + " with iO " + to_string(iOrder) + ", dO " + to_string(dOrder) + "-" + algName + ".csv";
-			ofstream outResults(filePath);
-
-			double meanResult = 0, meanStandardError = 0;
-
-			outResults << "Episode,Average Discounted Return,Standard Error" << endl;
-			for (int epCount = 0; epCount < maxEpisodes; epCount++)
+			MatrixXd algResult = rawResults.block(algCount * numTrials, 0, numTrials, maxEpisodes);
+			meanResult += algResult.col(epCount).mean();
+			meanStandardError += sampleStandardError(algResult.col(epCount));
+			if ((epCount + 1) % numSamples == 0)
 			{
-				MatrixXd algResult = rawResults.block(algCount * numTrials, 0, numTrials, maxEpisodes);
-				meanResult += algResult.col(epCount).mean();
-				meanStandardError += sampleStandardError(algResult.col(epCount));
-				if ((epCount + 1) % numSamples == 0)
-				{
-					outResults << epCount << "," << meanResult / (double)numSamples << "," << meanStandardError / (double)numSamples << endl;	// The functions 'sampleMean' and 'sampleStandardError' are defined in common.hpp
-					meanResult = meanStandardError = 0;
-				}
+				outResults << epCount << "," << meanResult / (double)numSamples << "," << meanStandardError / (double)numSamples << endl;	// The functions 'sampleMean' and 'sampleStandardError' are defined in common.hpp
+				meanResult = meanStandardError = 0;
 			}
-			outResults.close();
 		}
-		cout << "\tResults printed." << endl;
-
-		// Clean up memory. Everything that we called "new" for, we need to call "delete" for.
-		for (int i = 0; i < numRuns; i++)
-		{
-			delete environments[i];	// This call the deconstructor for environmnets[i], and then frees up the memory in the OS.
-			delete phis[i];
-			delete agents[i];
-		}
-
-		system("learning_curves.py");
-
-		// Print message indicating that the program has finished
-		cout << "Done. Press enter to exit." << endl;
-		return 0; // No error.
+		outResults.close();
 	}
+	cout << "\tResults printed." << endl;
+
+	// Clean up memory. Everything that we called "new" for, we need to call "delete" for.
+	for (int i = 0; i < numRuns; i++)
+	{
+		delete environments[i];	// This call the deconstructor for environmnets[i], and then frees up the memory in the OS.
+		delete phis[i];
+		delete agents[i];
+	}
+
+	system("learning_curves.py");
+
+	// Print message indicating that the program has finished
+	cout << "Done. Press enter to exit." << endl;
+	return 0; // No error.
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////

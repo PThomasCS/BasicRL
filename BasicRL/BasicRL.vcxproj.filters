@@ -66,6 +66,9 @@
     <ClInclude Include="Reinforce.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="IdentityBasis.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="common.cpp">
@@ -111,6 +114,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="mainUpdates.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IdentityBasis.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

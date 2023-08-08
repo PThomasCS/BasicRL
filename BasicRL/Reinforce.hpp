@@ -8,7 +8,7 @@ public:
     ////////////////////////////////////////////////////////////////
     // Constructor
     ////////////////////////////////////////////////////////////////
-    Reinforce(int observationDimension, int numActions, double alpha, double gamma, FeatureGenerator* phi);
+    Reinforce(int observationDimension, int numActions, double alpha, double gamma, FeatureGenerator* phi, bool includeExtraGamma = false);
     ~Reinforce();
 
     ////////////////////////////////////////////////////////////////
@@ -36,17 +36,19 @@ public:
     double epsilon;
     double gamma;
     FeatureGenerator* phi;
+    bool includeExtraGamma;
 
-    Eigen::VectorXd actionProbabilities;  // Policy
+    Eigen::VectorXd actionProbabilities;    // Policy
 
-    std::vector<double> r;                // Rewards in the episode
-    std::vector<double> g;                // Returns from time t
+    std::vector<double> rewards;            // Rewards in the episode
+    std::vector<double> returns;            // Returns from time t
 
-    Eigen::MatrixXd theta;	              // Weights for the policy
-    Eigen::MatrixXd delTheta;             // Log del w.r.t theta
+    Eigen::MatrixXd theta;                  // Weights for the policy
+    
+    Eigen::MatrixXd psi;                    // $\partial \ln( \pi(s,a,\theta) ) / \partial \theta$ - the compatible features
+    std::vector<Eigen::MatrixXd> psis;      // Vector of all psi (compatible features) for one episode. psis[t] is psi from time step t.
 
-    Eigen::MatrixXd grad;                 // Gradient
-    std::vector<Eigen::MatrixXd> gradT;   // Vector of all returns from t * delTheta at t
+    Eigen::MatrixXd grad;                   // The unbiased estimate of the policy gradient from one episode
 
     Eigen::VectorXd* curFeatures;
     Eigen::VectorXd* newFeatures;

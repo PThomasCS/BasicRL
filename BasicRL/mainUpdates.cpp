@@ -184,6 +184,23 @@ vector<MatrixXd> run(vector<Agent*> agents, vector<Environment*> environments, v
 	return results;
 }
 
+/*
+#include <map>
+int main() 
+{
+	unordered_map<string, double> my_map;
+	my_map["apple"] = 5;
+	my_map["banana"] = 3;
+
+	for (auto& pair : my_map) 
+	{
+		cout << pair.first << ": " << pair.second << endl;
+	}
+
+	return 0;
+}
+*/
+
 int main(int argc, char* argv[])
 {
 	// Comment out the line below if you don't want to run other random experiments first!
@@ -192,12 +209,12 @@ int main(int argc, char* argv[])
 	// Default random number generator
 	mt19937_64 generator;
 
-	vector<int> numTrials;
-	vector<string> agentNames;
-	vector<string> envNames;
-	vector<int> iOrder;
-	vector<int> dOrder;
-	vector<vector<double>> hyperParameters;
+	vector<int> numTrials;			// Length = total number of agent-environment pairs. numTrials[i] is the number of trials to run for the i'th agent-environment pair.
+	vector<string> agentNames;		// Length = total number of trials (sum of elements in numTrials)
+	vector<string> envNames;		// Length = total number of trials (sum of elements in numTrials)
+	vector<int> iOrder;				// Length = total number of trials (sum of elements in numTrials)
+	vector<int> dOrder;				// Length = total number of trials (sum of elements in numTrials)
+	vector<vector<double>> hyperParameters;	// Length = total number of trials (sum of elements in numTrials). i'th element is a vector of hyperparameters for this agent-environment pair
 
 	////////////////////////////////
 	// Set parameters
