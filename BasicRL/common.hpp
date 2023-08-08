@@ -147,3 +147,24 @@ double sampleStandardError(const T& v)
 	// Return the computed result
 	return result;
 }
+
+// Function to push back an element to a 1D vector n times 
+
+//template <typename T>
+//void addParamTo1D(const T& param, const int n, vector<T>& buff)
+//{
+//	for (int i = 0; i < n; i++)
+//		buff.push_back(param);
+//}
+
+// Function to push back a vector of elements to a 2D vector n times 
+
+//template <typename T>
+//void addParamTo2D(const vector<T>& v, const int n, vector<vector<T>>& buff)
+//{
+//	for (int i = 0; i < v.size(); i++)
+//		for (int j = 0; j < n; j++)
+//			buff.push_back(v[i]);
+//}
+
+

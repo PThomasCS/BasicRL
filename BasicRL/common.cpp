@@ -71,3 +71,4 @@ vector<int> maxIndices(const VectorXd& v, mt19937_64& generator)
 
 	return bestIndices;
 }
+
