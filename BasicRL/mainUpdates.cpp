@@ -5,6 +5,7 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.hpp"
+#include <unordered_map>
 
 using namespace std;
 using namespace Eigen;
@@ -13,51 +14,46 @@ using namespace Eigen;
 * Run numTrials agent lifetimes on the provided environment. The entry in position (i,j) of the resulting matrix is the return from the j'th episode in the i'th trial.
 */
 
-// NOT FINISHED
-
-vector<MatrixXd> run(vector<Agent*> agents, vector<Environment*> environments, vector<int> numTrials, VectorXi maxEpisodes, VectorXi maxEpisodeLength, mt19937_64& generator, int numTrialsTotal)
+vector<MatrixXd> run(vector<Agent*> agents, vector<Environment*> environments, VectorXi maxEpisodes, VectorXi maxEpisodeLength, mt19937_64& generator, vector<int> numExperimentTrials, int numTrialsTotal)
 {
 	// Ensure that agents and environments are of length numTrials
 	if ((agents.size() != numTrialsTotal) || (environments.size() != numTrialsTotal))
 		errorExit("Error in run(...). The number of agents/environments did not match numTrials.");
 
-	vector<MatrixXd> results;
+	int numExperiments = (int)numExperimentTrials.size();
+	int idxFirstTrialNextExperiment = 0;
+	vector<int> firstTrialNextExperiment;
 
-	for (int i = 0; i < numTrials.size(); i++)
+    // Create a vector of matrices to store returns from all experiments; each matrix stores results from one experiment
+	vector<MatrixXd> results(numExperiments);
+
+	for (int experimentIdx = 0; experimentIdx < numExperiments; experimentIdx++)
 	{
-		int numEpisodes = maxEpisodes[i * numTrials];
-		MatrixXd result(numTrials, numEpisodes);
-		results.push_back(result);
+		int numEpisodes = maxEpisodes[idxFirstTrialNextExperiment];
+		MatrixXd experimentResult(numExperimentTrials[experimentIdx], numEpisodes);
+		results.push_back(experimentResult);
+		idxFirstTrialNextExperiment += numExperimentTrials[experimentIdx];
 	}
 
-	int resultIdx = 0;              // Index of result matrix in vector results to write G
-	int trialResultIdxOffset = 0;   // Offset so that we can use [trial - trialResultIdxOffset] to write G into a correct place in one of the result matrices
-	// End change
-
+	int experimentIdx = 0;              // Index of result matrix in vector results to write G
+	int trialCount = 0;
+	
 	// Create the object that we will return
 	//MatrixXd result(numTrials, numEpisodes);
 
 	// Each thread has its own random number generator, since generators are not thread safe
-	vector<mt19937_64> generators(numRunsTotal);
-	for (int i = 0; i < numRunsTotal; i++)
-		generators[i].seed(generator());	// See with a random sample from the generator passed as an argument to this function
+	vector<mt19937_64> generators(numTrialsTotal);
+	for (int trial = 0; trial < numTrialsTotal; trial++)
+		generators[trial].seed(generator());	// See with a random sample from the generator passed as an argument to this function
 
-	cout << "\tThere are " << numRunsTotal << " trials to run. Printing a * when each is completed..." << endl;
+	cout << "\tThere are " << numTrialsTotal << " trials to run. Printing a * when each is completed..." << endl;
+
 	// Loop over trials
 #pragma omp parallel for	// This line instructs the compiler to parallelize the following for-loop. This uses openmp.
-	for (int trial = 0; trial < numRunsTotal; trial++)
+	for (int trial = 0; trial < numTrialsTotal; trial++)
 	{
-
-		// Start change; handle resultIdx and trialResultIdxOffset for trial
-		if ((trial != 0) && (trial % numTrials == 0))
-		{
-			resultIdx += 1;                     // Increment resultIdx if moved to next algorithm (each env-alg is tested with numTrials trials)
-			trialResultIdxOffset += numTrials;  // Increment trialResultIdxOffset
-		}
-		// End change
-
 		// Run an agent lifetime
-		double gamma = environments[trial]->getGamma();
+		double gamma = environments[trial]->getGamma(); // we have gammas vector?
 
 		// Start change; why double?
 		int numEpisodes = maxEpisodes[trial];
@@ -83,9 +79,8 @@ vector<MatrixXd> run(vector<Agent*> agents, vector<Environment*> environments, v
 				environments[trial]->getObservation(generators[trial], curObs); // Writes the observation into curObs
 				// Loop over time steps
 				// Start change
-				int maxEpiLen = maxEpisodeLength[trial];
 				// End change
-				for (int t = 0; t < maxEpiLen; t++) // After maxEpisodeLength the episode doesn't "end", we just stop simulating it - so we don't do a terminal update
+				for (int t = 0; t < maxEpisodeLength[trial]; t++) // After maxEpisodeLength the episode doesn't "end", we just stop simulating it - so we don't do a terminal update
 				{
 					// Get action from the agent
 					act = agents[trial]->getAction(curObs, generators[trial]);
@@ -116,7 +111,7 @@ vector<MatrixXd> run(vector<Agent*> agents, vector<Environment*> environments, v
 					curObs = newObs;
 				}
 				// Start change; save G to the correct place in the correct result matrix
-				results[resultIdx]((trial - trialResultIdxOffset), epCount) = G;
+				results[experimentIdx](trialCount, epCount) = G;
 				// End change
 				//result(trial, epCount) = G;
 			}
@@ -169,12 +164,21 @@ vector<MatrixXd> run(vector<Agent*> agents, vector<Environment*> environments, v
 					curObs = newObs;
 				}
 				// Start change; save G to the correct place in the correct result matrix
-				results[resultIdx]((trial - trialResultIdxOffset), epCount) = G;
+				results[experimentIdx](trialCount, epCount) = G;
 				// End change
 				// attempts to write next trial to array out of size
 				//result(trial, epCount) = G;
 			}
 		}
+		// Update indices
+		if (trialCount > numExperimentTrials[experimentIdx])
+		{
+			experimentIdx += 1;
+			trialCount = 0;
+		}
+		else if (experimentIdx < numExperiments)
+			trialCount += 1;
+
 		// End of a trial - print a star
 		cout.put('*');
 		cout.flush();
@@ -209,83 +213,64 @@ int main(int argc, char* argv[])
 	// Default random number generator
 	mt19937_64 generator;
 
-	vector<int> numTrials;			// Length = total number of agent-environment pairs. numTrials[i] is the number of trials to run for the i'th agent-environment pair.
-	vector<string> agentNames;		// Length = total number of trials (sum of elements in numTrials)
-	vector<string> envNames;		// Length = total number of trials (sum of elements in numTrials)
-	vector<int> iOrder;				// Length = total number of trials (sum of elements in numTrials)
-	vector<int> dOrder;				// Length = total number of trials (sum of elements in numTrials)
-	vector<vector<double>> hyperParameters;	// Length = total number of trials (sum of elements in numTrials). i'th element is a vector of hyperparameters for this agent-environment pair
+	vector<int> numTrialsInExperiment;							// Length = total number of agent-environment pairs.   numTrialsInExperiment[i] is the number of trials to run for the i'th agent-environment pair.
+	vector<string> agentNames;									// Length = total number of trials (sum of elements in numTrialsInExperiment)
+	vector<string> envNames;									// Length = total number of trials (sum of elements in numTrialsInExperiment)
+	vector<string> featureGenNames;								// Length = total number of trials (sum of elements in numTrialsInExperiment)																										
+	vector<unordered_map<string, int>> featureGenParameters;	// Length = total number of trials (sum of elements in numTrialsInExperiment). i'th element is a map of parameters for this agent-environment pair's feature generator
+	vector<unordered_map<string, double>> hyperParameters;		// Length = total number of trials (sum of elements in numTrialsInExperiment). i'th element is a map of hyperparameters for this agent-environment pair
 
 	////////////////////////////////
-	// Set parameters
+	// Set parameters for experiments
 	////////////////////////////////
 
 	// Actor-Critic on Gridworld687
-	numTrials.push_back(100);													// Set the number of trials for this algorithm (n)
-	addParamTo1D("Actor-Critic", numTrials.back(), agentNames);					// Add the agent name n times to the test vector (1D)
-	addParamTo1D("Gridworld687", numTrials.back(), envNames);					// Add the environment name n times to the test vector (1D)
-	addParamTo1D(0, numTrials.back(), iOrder);						            // Add the iOrder n times to the test vector (1D)
-	addParamTo1D(0, numTrials.back(), dOrder);                                  // Add the dOrder n times to the test vector (1D)
-	// Hyper parameters: {alphaAC, betaAC, lambdaAC}
-	addParamTo2D({ 0.001, 0.001, 0.8 }, numTrials.back(), hyperParameters);		// Add the hyper parameters n times to the test vector (2D)
+	numTrialsInExperiment.push_back(100);													// Set the number of trials for this algorithm (n)
+	push_back_n((string)"Actor-Critic", numTrialsInExperiment.back(), agentNames);					// Add the agent name n times to the test vector (1D)
+	push_back_n((string)"Gridworld687", numTrialsInExperiment.back(), envNames);					// Add the environment name n times to the test vector (1D)
+	push_back_n((string)"Identity Basis", numTrialsInExperiment.back(), featureGenNames);
+	push_back_n({ {"alpha", 0.001}, {"beta", 0.001}, {"lambda", 0.8} }, numTrialsInExperiment.back(), hyperParameters);
 
 	// Actor-Critic on Mountain Car
-	numTrials.push_back(100);
-	addParamTo1D("Sarsa(Lambda)", numTrials.back(), agentNames);
-	addParamTo1D("Mountain Car", numTrials.back(), envNames);
-	addParamTo1D(3, numTrials.back(), iOrder);
-	addParamTo1D(3, numTrials.back(), iOrder);
-	// Hyper parameters: {alphaAC, betaAC, lambdaAC}
-	addParamTo2D({ 0.001, 0.001, 0.8 }, numTrials.back(), hyperParameters);
+	numTrialsInExperiment.push_back(100);
+	push_back_n((string)"Sarsa(Lambda)", numTrialsInExperiment.back(), agentNames);
+	push_back_n((string)"Mountain Car", numTrialsInExperiment.back(), envNames);
+	push_back_n({ {"iOrder", 3}, {"dOrder", 3} }, numTrialsInExperiment.back(), featureGenParameters);
+	push_back_n({ {"alpha", 0.001}, {"beta", 0.001}, {"lambda", 0.8} }, numTrialsInExperiment.back(), hyperParameters);
 
 	// Actor-Critic on Cart-Pole
-	numTrials.push_back(100);
-	addParamTo1D("Actor-Critic", numTrials.back(), agentNames);
-	addParamTo1D("Cart-Pole", numTrials.back(), envNames);
-	addParamTo1D(3, numTrials.back(), iOrder);
-	addParamTo1D(3, numTrials.back(), iOrder);
-	// Hyper parameters: {alphaAC, betaAC, lambdaAC}
-	addParamTo2D({ 0.001, 0.001, 0.8 }, numTrials.back(), hyperParameters);
+	numTrialsInExperiment.push_back(100);
+	push_back_n((string)"Actor-Critic", numTrialsInExperiment.back(), agentNames);
+	push_back_n((string)"Cart-Pole", numTrialsInExperiment.back(), envNames);
+	push_back_n({ {"iOrder", 3}, {"dOrder", 3} }, numTrialsInExperiment.back(), featureGenParameters);
+	push_back_n({ {"alpha", 0.001}, {"beta", 0.001}, {"lambda", 0.8} }, numTrialsInExperiment.back(), hyperParameters);
 
 	// Sarsa(Lambda) on Mountain Car
 	// Hyper parameters: {alphaSarsa, LambdaSarsa, EpsilonSarsa}
-	numTrials.push_back(100);
-	addParamTo1D("Sarsa(Lambda)", numTrials.back(), agentNames);
-	addParamTo1D("Mountain Car", numTrials.back(), envNames);
-	addParamTo1D(3, numTrials.back(), iOrder);
-	addParamTo1D(3, numTrials.back(), iOrder);
-	addParamTo2D({ 0.001, 0.8, 0.05 }, numTrials.back(), hyperParameters);
+	numTrialsInExperiment.push_back(100);
+	push_back_n((string)"Sarsa(Lambda)", numTrialsInExperiment.back(), agentNames);
+	push_back_n((string)"Mountain Car", numTrialsInExperiment.back(), envNames);
+	push_back_n({ {"iOrder", 3}, {"dOrder", 3} }, numTrialsInExperiment.back(), featureGenParameters);
+	push_back_n({ {"alpha", 0.001}, {"lambda", 0.8}, {"epsilon", 0.05} }, numTrialsInExperiment.back(), hyperParameters);
 
 	// Sarsa(Lambda) on Cart-Pole
-	// Hyper parameters: {alphaSarsa, LambdaSarsa, EpsilonSarsa}
-	numTrials.push_back(100);
-	addParamTo1D("Sarsa(Lambda)", numTrials.back(), agentNames);
-	addParamTo1D("Mountain Car", numTrials.back(), envNames);
-	addParamTo1D(3, numTrials.back(), iOrder);
-	addParamTo1D(3, numTrials.back(), iOrder);
-	addParamTo2D({ 0.001, 0.001, 0.9 }, numTrials.back(), hyperParameters);
+	numTrialsInExperiment.push_back(100);
+	push_back_n((string)"Sarsa(Lambda)", numTrialsInExperiment.back(), agentNames);
+	push_back_n((string)"Mountain Car", numTrialsInExperiment.back(), envNames);
+	push_back_n({ {"iOrder", 3}, {"dOrder", 3} }, numTrialsInExperiment.back(), featureGenParameters);
+	push_back_n({ {"alpha", 0.001}, {"lambda", 0.8}, {"epsilon", 0.05} }, numTrialsInExperiment.back(), hyperParameters);
 
 	// Q(Lambda) on Cart-Pole
-	// Hyper parameters: {alphaSarsa, LambdaSarsa, EpsilonSarsa}
-	numTrials.push_back(100);
-	addParamTo1D("Q(Lambda)", numTrials.back(), agentNames);
-	addParamTo1D("Cart-Pole", numTrials.back(), envNames);
-	addParamTo1D(3, numTrials.back(), iOrder);
-	addParamTo1D(3, numTrials.back(), iOrder);
-	addParamTo2D({ 0.001, 0.001, 0.9 }, numTrials.back(), hyperParameters);
+	numTrialsInExperiment.push_back(100);
+	push_back_n((string)"Q(Lambda)", numTrialsInExperiment.back(), agentNames);
+	push_back_n((string)"Cart-Pole", numTrialsInExperiment.back(), envNames);
+	push_back_n({ {"iOrder", 3}, {"dOrder", 3} }, numTrialsInExperiment.back(), featureGenParameters);
+	push_back_n({ {"alpha", 0.001}, {"lambda", 0.8}, {"epsilon", 0.05} }, numTrialsInExperiment.back(), hyperParameters);
 
-	//envsNamesAC = { "Gridworld687", "Mountain-Car", "Cart-Pole" };
-	//numTrialsAC = { 2, 3, 4 };
-	//iOrderdOrderAC = { {0, 0}, {3, 3}, {3, 3} };
-	//// {alphaAC, betaAC, lambdaAC}
-	//hyperParametersAC = { {0.001, 0.001, 0.9}, {0.0001, 0.0001, 0.85}, {0.0001, 0.0001, 0.8} };
-
-	int numTrialsTotal = agentNames.size();
-
-	////////////////////////////////
-	// Create feature generators objects
-	////////////////////////////////
-
+	// Calculate the total number of trials
+	int numTrialsTotal = 0;
+	for (int i = 0; i < numTrialsInExperiment.size(); i++)
+		numTrialsTotal += numTrialsInExperiment[i]
 
 	////////////////////////////////
 	// Create environment objects
@@ -310,22 +295,22 @@ int main(int argc, char* argv[])
 	// Get the parameters of each environment object
 	////////////////////////////////
 
-	vector<int> observationDimension(numTrialsTotal),
-		vector<int> numActions(numTrialsTotal);
-	VectorXi maxEpisodes(numTrialsTotal);
-	VectorXi maxEpisodeLength(numTrialsTotal);
-	vector<double> gamma(numTrialsTotal);
-	vector<VectorXd> observationLowerBound(numTrialsTotal);
-	vector<VectorXd> observationUpperBound(numTrialsTotal);
+	vector<int> observationDimensions(numTrialsTotal);				// The dimension of the observation vector 
+	vector<int> numActions(numTrialsTotal);                         // DO WE USE THIS? The number of actions
+	VectorXi maxEpisodes(numTrialsTotal);							// The recommended episode length. Episodes might be terminated after this many time steps external to the environment (episodeOver will not necessarily return true).
+	VectorXi maxEpisodeLengths(numTrialsTotal);						// The recommended maximum number of episodes for an agent lifetime for this environment.
+	vector<double> gammas(numTrialsTotal);							// The discount factors
+	vector<VectorXd> observationLowerBounds(numTrialsTotal);		// A lower bound on each observation feature
+	vector<VectorXd> observationUpperBounds(numTrialsTotal);		// An upper bound on each observation feature
 
 	for (int i = 0; i < numTrialsTotal; i++)
 	{
-		observationDimension[i] = environments[i]->getObservationDimension();
+		observationDimensions[i] = environments[i]->getObservationDimension();
 		numActions[i] = environments[i]->getNumActions();
 		maxEpisodes[i] = environments[i]->getRecommendedMaxEpisodes();
-		maxEpisodeLength[i] = environments[i]->getRecommendedEpisodeLength();
-		observationLowerBound[i] = environments[i]->getObservationLowerBound();
-		observationUpperBound[i] = environments[i]->getObservationUpperBound();
+		maxEpisodeLengths[i] = environments[i]->getRecommendedEpisodeLength();
+		observationLowerBounds[i] = environments[i]->getObservationLowerBound();
+		observationUpperBounds[i] = environments[i]->getObservationUpperBound();
 	}
 
 	////////////////////////////////
@@ -334,8 +319,13 @@ int main(int argc, char* argv[])
 
 	cout << "Creating feature generators..." << endl;
 	vector<FeatureGenerator*> phis(numTrialsTotal);
-	for (int i = 0; i < numTrialsTotal; i++)
-		phis[i] = new FourierBasis(observationDimension[i], observationLowerBound[i], observationUpperBound[i], iOrder[i], dOrder[i]);
+	for (int trial = 0; trial < numTrialsTotal; trial++)
+	{
+		if (featureGenNames[trial] == "Fourier Basis")
+			phis[trial] = new FourierBasis(observationDimensions[trial], observationLowerBounds[trial], observationUpperBounds[trial], featureGenParameters[trial]["iOrder"], featureGenParameters[trial]["dOrder"]);
+		else if (featureGenNames[trial] == "Identity Basis")
+			phis[trial] = new IdentityBasis(observationDimensions[trial], observationLowerBounds[trial], observationUpperBounds[trial]);
+	}
 	cout << "\tFeatures generators created." << endl;
 
 	////////////////////////////////
@@ -345,43 +335,42 @@ int main(int argc, char* argv[])
 	// Now, actually create the agents
 	cout << "Creating agents..." << endl;
 	vector<Agent*> agents(numTrialsTotal);
-	for (int i = 0; i < numTrialsTotal; i++)
+	for (int trial = 0; trial < numTrialsTotal; trial++)
 	{
-		if (agentNames[i] == "Actor-Critic")
-			agents[i] = new ActorCritic(observationDimension[i], numActions[i], hyperParameters[i][0], hyperParameters[i][1], hyperParameters[i][2], gamma[i], phis[i]);
-		else if (agentNames[i] == "Sarsa(Lambda)")
-			agents[i] = new SarsaLambda(observationDimension[i], numActions[i], hyperParameters[i][0], hyperParameters[i][1], hyperParameters[i][2], gamma[i], phis[i]);
-		else if (agentNames[i] == "Q(Lambda)")
-			agents[i] = new QLambda(observationDimension[i], numActions[i], hyperParameters[i][0], hyperParameters[i][1], hyperParameters[i][2], gamma[i], phis[i]);
+		if (agentNames[trial] == "Actor-Critic")
+			agents[trial] = new ActorCritic(observationDimensions[trial], numActions[trial], hyperParameters[trial]["alpha"], hyperParameters[trial]["beta"], hyperParameters[trial]["lambda"], gammas[trial], phis[trial]);
+		else if (agentNames[trial] == "Sarsa(Lambda)")
+			agents[trial] = new SarsaLambda(observationDimensions[trial], numActions[trial], hyperParameters[trial]["alpha"], hyperParameters[trial]["lambda"], hyperParameters[trial]["epsilon"], gammas[trial], phis[trial]);
+		else if (agentNames[trial] == "Q(Lambda)")
+			agents[trial] = new QLambda(observationDimensions[trial], numActions[trial], hyperParameters[trial]["alpha"], hyperParameters[trial]["lambda"], hyperParameters[trial]["epsilon"], gammas[trial], phis[trial]);
 	}
 
 	// Actually run the trials - this function is threaded!
 	cout << "Running trials..." << endl;
 	// Changed var type
-	vector<MatrixXd> rawResults = run(agents, environments, numTrials, maxEpisodes, maxEpisodeLength, generator, numEnvs, numAlgs, numRuns, numRunsTotal);
+	vector<MatrixXd> rawResults = run(agents, environments, maxEpisodes, maxEpisodeLengths, generator, numTrialsInExperiment, numTrialsTotal);
 	//MatrixXd rawResults = run(agents, environments, numRunsTotal, maxEpisodes.maxCoeff(), maxEpisodeLength.maxCoeff(), generator);
 	cout << "\tTrials completed." << endl;
-
-	// NOT FINISHED
 
 	// Print the results to a file.
 	cout << "Printing results to out/results.csv..." << endl;
 #ifdef _MSC_VER	// Check if the compiler is a Microsoft compiler.
 	//string filePath = "out/results.csv";	// If so, use this path
-	string path = "out/results-" + to_string(numTrials) + " trials-";	// If so, use this path
+	string path = "out/summary_results-";	// If so, use this path
 #else
 	//string filePath = "../out/results.csv";	// Otherwise, use this path
 	string path = "../out/results-" + to_string(numTrials) + " trials-";	// Otherwise, use this path
 #endif
 	// TO-DO: instead of using numSamples to write the results to CSV, write all results (so that CSV contains all results) and use numSaples parameter only for plotting
-	for (int i = 0; i < numEnvs * numAlgs; i++)
-	{
-		int idx = i * numTrials;
-		string envName = environmentName[idx];
-		string algName = agents[idx]->getName();
+	int firstTrialInNextExperiment = 0;
+	for (int experiment = 0; experiment < (int)numTrialsInExperiment.size(); experiment++)
+	{ 
+		int idx = firstTrialInNextExperiment + numTrialsInExperiment[experiment];
+		string envName = envNames[idx];
+		string agentName = envNames[idx];
 		int maxEps = maxEpisodes[idx];
 
-		string filePath = path + envName + " with iO " + to_string(iOrder[idx]) + ", dO " + to_string(dOrder[idx]) + "-" + algName + ".csv";
+		string filePath = path + to_string(numTrialsInExperiment[i]) + " trials-" + envName + " with iO " + to_string(iOrder[idx]) + ", dO " + to_string(dOrder[idx]) + "-" + algName + ".csv";
 		ofstream outResults(filePath);
 
 		double meanResult = 0, meanStandardError = 0;
