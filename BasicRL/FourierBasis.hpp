@@ -13,6 +13,7 @@ public:
 	////////////////////////////////////////////////////////////////
 	// Functions required by FeatureGenerator parent class
 	////////////////////////////////////////////////////////////////
+	std::string getName() const override;
 	void generateFeatures(const Eigen::VectorXd& in, Eigen::VectorXd& outBuff) override;
 	int getNumOutputs() const override;
 

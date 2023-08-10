@@ -356,7 +356,7 @@ int main(int argc, char* argv[])
 	cout << "Printing results to out/results.csv..." << endl;
 #ifdef _MSC_VER	// Check if the compiler is a Microsoft compiler.
 	//string filePath = "out/results.csv";	// If so, use this path
-	string path = "out/summary_results-";	// If so, use this path
+	string path = "out/results";	// If so, use this path
 #else
 	//string filePath = "../out/results.csv";	// Otherwise, use this path
 	string path = "../out/results-" + to_string(numTrials) + " trials-";	// Otherwise, use this path
@@ -364,35 +364,29 @@ int main(int argc, char* argv[])
 	// TO-DO: instead of using numSamples to write the results to CSV, write all results (so that CSV contains all results) and use numSaples parameter only for plotting
 	int firstTrialInNextExperiment = 0;
 	for (int experiment = 0; experiment < (int)numTrialsInExperiment.size(); experiment++)
-	{ 
+	{
 		int idx = firstTrialInNextExperiment + numTrialsInExperiment[experiment];
 		string envName = envNames[idx];
-		string agentName = envNames[idx];
+		string agentFullName = agents[idx]->getName();
+		string featureGenFullName = phis[idx]->getName();
 		int maxEps = maxEpisodes[idx];
 
-		string filePath = path + to_string(numTrialsInExperiment[i]) + " trials-" + envName + " with iO " + to_string(iOrder[idx]) + ", dO " + to_string(dOrder[idx]) + "-" + algName + ".csv";
-		ofstream outResults(filePath);
-
-		double meanResult = 0, meanStandardError = 0;
+		string summaryFilePath = path + "summary-" + to_string(numTrialsInExperiment[idx]) + " trials-" + envName + featureGenFullName + agentFullName + ".csv";
+		ofstream outResults(summaryFilePath);
 
 		outResults << "Episode,Average Discounted Return,Standard Error" << endl;
 
 		for (int epCount = 0; epCount < maxEps; epCount++)
 		{
-			meanResult += rawResults[i].col(epCount).mean();
-			meanStandardError += sampleStandardError(rawResults[i].col(epCount));
-			if ((epCount + 1) % numSamples == 0)
-			{
-				outResults << epCount << "," << meanResult / (double)numSamples << "," << meanStandardError / (double)numSamples << endl;	// The functions 'sampleMean' and 'sampleStandardError' are defined in common.hpp
-				meanResult = meanStandardError = 0;
-			}
+			double meanResult = rawResults[idx].col(epCount).mean();
+			double standardError = sampleStandardError(rawResults[idx].col(epCount));
+
+			outResults << epCount << "," << meanResult << "," << standardError << endl;
 		}
-		outResults.close();
 	}
-	cout << "\tResults printed." << endl;
 
 	// Clean up memory. Everything that we called "new" for, we need to call "delete" for.
-	for (int i = 0; i < numRuns; i++)
+	for (int i = 0; i < numTrialsTotal; i++)
 	{
 		delete environments[i];	// This call the deconstructor for environmnets[i], and then frees up the memory in the OS.
 		delete phis[i];

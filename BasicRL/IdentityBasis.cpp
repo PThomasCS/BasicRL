@@ -14,6 +14,11 @@ IdentityBasis::IdentityBasis(int inputDimension, const Eigen::VectorXd& inputLow
 	inputRange = (inputUpperBound - inputLowerBound);
 }
 
+string IdentityBasis::getName() const
+{
+	return "Identity Basis";
+}
+
 void IdentityBasis::generateFeatures(const Eigen::VectorXd& in, Eigen::VectorXd& outBuff)
 {
 	// Normalize the state

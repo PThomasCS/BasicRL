@@ -54,6 +54,11 @@ FourierBasis::FourierBasis(int inputDimension, const Eigen::VectorXd& inputLower
 	}
 }
 
+string FourierBasis::getName() const
+{
+	return "Fourier Basis with iOrder = " + to_string(iOrder) + ", dOrder = " + to_string(dOrder);
+}
+
 void FourierBasis::generateFeatures(const Eigen::VectorXd& in, Eigen::VectorXd& outBuff)
 {
 	// Normalize the state
