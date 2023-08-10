@@ -14,7 +14,7 @@ using namespace Eigen;
 // Run numTrials agent lifetimes on the provided environment. The entry in position (i,j) of the resulting matrix is the return from the j'th episode in the i'th trial.
 
 
-vector<MatrixXd> run(vector<Agent*> agents, vector<Environment*> environments, VectorXi maxEpisodes, VectorXi maxEpisodeLength, mt19937_64& generator, vector<int> numExperimentTrials, int numTrialsTotal)
+vector<MatrixXd> run(vector<Agent*> agents, vector<Environment*> environments, VectorXi maxEpisodes, VectorXi maxEpisodeLengths, mt19937_64& generator, vector<int> numExperimentTrials, int numTrialsTotal)
 {
 	// Ensure that agents and environments are of length numTrials
 	if ((agents.size() != numTrialsTotal) || (environments.size() != numTrialsTotal))
@@ -22,13 +22,12 @@ vector<MatrixXd> run(vector<Agent*> agents, vector<Environment*> environments, V
 
 	int numExperiments = (int)numExperimentTrials.size();
 	int idxFirstTrialNextExperiment = 0;
-	vector<int> firstTrialNextExperiment;
 
 	// Create a vector of matrices to store returns from all experiments; each matrix stores results from one experiment
-	vector<MatrixXd> results(numExperiments);
+	vector<MatrixXd> results;
 
 	for (int experimentIdx = 0; experimentIdx < numExperiments; experimentIdx++)
-	{
+	{   
 		int numEpisodes = maxEpisodes[idxFirstTrialNextExperiment];
 		MatrixXd experimentResult(numExperimentTrials[experimentIdx], numEpisodes);
 		results.push_back(experimentResult);
@@ -60,7 +59,7 @@ vector<MatrixXd> run(vector<Agent*> agents, vector<Environment*> environments, V
 		//double numEpisodes = environments[trial]->getRecommendedMaxEpisodes;
 		// End change
 
-		// Loop over episodes
+		// Loop over episodes in trial
 		for (int epCount = 0; epCount < numEpisodes; epCount++)
 		{
 			// Tell the agent and environment that we're starting a new episode
@@ -78,9 +77,8 @@ vector<MatrixXd> run(vector<Agent*> agents, vector<Environment*> environments, V
 				// Get the initial observation
 				environments[trial]->getObservation(generators[trial], curObs); // Writes the observation into curObs
 				// Loop over time steps
-				// Start change
-				// End change
-				for (int t = 0; t < maxEpisodeLength[trial]; t++) // After maxEpisodeLength the episode doesn't "end", we just stop simulating it - so we don't do a terminal update
+				//  After maxEpisodeLength the episode doesn't "end", we just stop simulating it - so we don't do a terminal update
+				for (int t = 0; t < maxEpisodeLengths[trial]; t++)
 				{
 					// Get action from the agent
 					act = agents[trial]->getAction(curObs, generators[trial]);
@@ -95,7 +93,8 @@ vector<MatrixXd> run(vector<Agent*> agents, vector<Environment*> environments, V
 					curGamma *= gamma;
 
 					// Check if the episode is over
-					if (environments[trial]->episodeOver(generators[trial])) {
+					if (environments[trial]->episodeOver(generators[trial]))
+					{
 						// Do a terminal update and break out of the loop over time
 						agents[trial]->trainEpisodeEnd(curObs, act, reward, generators[trial]);
 						break;
@@ -110,10 +109,9 @@ vector<MatrixXd> run(vector<Agent*> agents, vector<Environment*> environments, V
 					// Copy new->cur
 					curObs = newObs;
 				}
-				// Start change; save G to the correct place in the correct result matrix
+				// End of episode
+				// Save G to the correct place in the correct result matrix
 				results[experimentIdx](trialCount, epCount) = G;
-				// End change
-				//result(trial, epCount) = G;
 			}
 			else
 			{
@@ -128,7 +126,7 @@ vector<MatrixXd> run(vector<Agent*> agents, vector<Environment*> environments, V
 				curAct = agents[trial]->getAction(curObs, generators[trial]);
 				// Loop over time steps
 				// Start change
-				int maxEpiLen = maxEpisodeLength[trial];
+				int maxEpiLen = maxEpisodeLengths[trial];
 				// End change
 
 				for (int t = 0; t < maxEpiLen; t++) // After maxEpisodeLength the episode doesn't "end", we just stop simulating it - so we don't do a terminal update
@@ -163,15 +161,14 @@ vector<MatrixXd> run(vector<Agent*> agents, vector<Environment*> environments, V
 					curAct = newAct;
 					curObs = newObs;
 				}
-				// Start change; save G to the correct place in the correct result matrix
+				// End of episode
+				// Save G to the correct place in the correct result matrix
 				results[experimentIdx](trialCount, epCount) = G;
-				// End change
-				// attempts to write next trial to array out of size
-				//result(trial, epCount) = G;
 			}
 		}
+		// End of trial
 		// Update indices
-		if (trialCount > numExperimentTrials[experimentIdx])
+		if (trialCount > (numExperimentTrials[experimentIdx] - 1))
 		{
 			experimentIdx += 1;
 			trialCount = 0;
@@ -229,15 +226,16 @@ int main(int argc, char* argv[])
 	push_back_n((string)"Actor-Critic", numTrialsInExperiment.back(), agentNames);					// Add the agent name n times to the test vector (1D)
 	push_back_n((string)"Gridworld687", numTrialsInExperiment.back(), envNames);					// Add the environment name n times to the test vector (1D)
 	push_back_n((string)"Identity Basis", numTrialsInExperiment.back(), featureGenNames);
+	push_back_n({ }, numTrialsInExperiment.back(), featureGenParameters);
 	push_back_n({ {"alpha", 0.001}, {"beta", 0.001}, {"lambda", 0.8} }, numTrialsInExperiment.back(), hyperParameters);
 
-	//// Actor-Critic on Mountain Car
-	//numTrialsInExperiment.push_back(2);
-	//push_back_n((string)"Sarsa(Lambda)", numTrialsInExperiment.back(), agentNames);
-	//push_back_n((string)"Mountain Car", numTrialsInExperiment.back(), envNames);
-	//push_back_n((string)"Fourier Basis", numTrialsInExperiment.back(), featureGenNames);
-	//push_back_n({ {"iOrder", 3}, {"dOrder", 3} }, numTrialsInExperiment.back(), featureGenParameters);
-	//push_back_n({ {"alpha", 0.001}, {"beta", 0.001}, {"lambda", 0.8} }, numTrialsInExperiment.back(), hyperParameters);
+	// Actor-Critic on Mountain Car
+	numTrialsInExperiment.push_back(2);
+	push_back_n((string)"Sarsa(Lambda)", numTrialsInExperiment.back(), agentNames);
+	push_back_n((string)"Mountain Car", numTrialsInExperiment.back(), envNames);
+	push_back_n((string)"Fourier Basis", numTrialsInExperiment.back(), featureGenNames);
+	push_back_n({ {"iOrder", 3}, {"dOrder", 3} }, numTrialsInExperiment.back(), featureGenParameters);
+	push_back_n({ {"alpha", 0.001}, {"lambda", 0.8}, {"epsilon", 0.05} }, numTrialsInExperiment.back(), hyperParameters);
 
 	//// Actor-Critic on Cart-Pole
 	//numTrialsInExperiment.push_back(2);
@@ -360,22 +358,21 @@ int main(int argc, char* argv[])
 	cout << "Printing results to out/results.csv..." << endl;
 #ifdef _MSC_VER	// Check if the compiler is a Microsoft compiler.
 	//string filePath = "out/results.csv";	// If so, use this path
-	string path = "out/results";	// If so, use this path
+	string path = "out/results_";	// If so, use this path
 #else
 	//string filePath = "../out/results.csv";	// Otherwise, use this path
-	string path = "../out/results-" + to_string(numTrials) + " trials-";	// Otherwise, use this path
+	string path = "../out/results_";	// Otherwise, use this path
 #endif
 	// TO-DO: instead of using numSamples to write the results to CSV, write all results (so that CSV contains all results) and use numSaples parameter only for plotting
-	int firstTrialInNextExperiment = 0;
+	int idx = 0;
 	for (int experiment = 0; experiment < (int)numTrialsInExperiment.size(); experiment++)
 	{
-		int idx = firstTrialInNextExperiment + numTrialsInExperiment[experiment];
 		string envName = envNames[idx];
 		string agentFullName = agents[idx]->getName();
 		string featureGenFullName = phis[idx]->getName();
 		int maxEps = maxEpisodes[idx];
 
-		string summaryFilePath = path + "summary-" + to_string(numTrialsInExperiment[idx]) + " trials-" + envName + featureGenFullName + agentFullName + ".csv";
+		string summaryFilePath = path + "summary-" + to_string(numTrialsInExperiment[idx]) + "_trials_" + envName + "_" + featureGenFullName + "_" + agentFullName + ".csv";
 		ofstream outResults(summaryFilePath);
 
 		outResults << "Episode,Average Discounted Return,Standard Error" << endl;
@@ -387,6 +384,8 @@ int main(int argc, char* argv[])
 
 			outResults << epCount << "," << meanResult << "," << standardError << endl;
 		}
+
+	    idx += numTrialsInExperiment[experiment];
 	}
 
 	// Clean up memory. Everything that we called "new" for, we need to call "delete" for.
