@@ -10,40 +10,35 @@
 using namespace std;
 using namespace Eigen;
 
-
 // Run numTrials agent lifetimes on the provided environment. The entry in position (i,j) of the resulting matrix is the return from the j'th episode in the i'th trial.
-
 
 vector<MatrixXd> run(vector<Agent*> agents, vector<Environment*> environments, VectorXi maxEpisodes, VectorXi maxEpisodeLengths, mt19937_64& generator, vector<int> numExperimentTrials, int numTrialsTotal)
 {
-	// Ensure that agents and environments are of length numTrials
+	// Ensure that agents and environments are of length numTrialsTotal
 	if ((agents.size() != numTrialsTotal) || (environments.size() != numTrialsTotal))
 		errorExit("Error in run(...). The number of agents/environments did not match numTrials.");
 
-	int numExperiments = (int)numExperimentTrials.size();
-	int idxFirstTrialNextExperiment = 0;
+	int numExperiments = (int)numExperimentTrials.size();   // The total number of experiments
+	int idxFirstTrialInExperiment = 0;                      // The index of the first trial in the current experiment
 
-	// Create a vector of matrices to store returns from all experiments; each matrix stores results from one experiment
-	vector<MatrixXd> results;
+	// Create a vector of matrices to store returns from all experiments; each matrix stores returns from one experiment
+	vector<MatrixXd> results;                               // Length = the total number of experiments
 
 	for (int experimentIdx = 0; experimentIdx < numExperiments; experimentIdx++)
 	{   
-		int numEpisodes = maxEpisodes[idxFirstTrialNextExperiment];
-		MatrixXd experimentResult(numExperimentTrials[experimentIdx], numEpisodes);
+		int numEpisodes = maxEpisodes[idxFirstTrialInExperiment];                           // The maximum number of episodes for the environment used in an experiment
+		MatrixXd experimentResult(numExperimentTrials[experimentIdx], numEpisodes);    // The matrix to store returns from an experiment; rows = number of trials in the experiment, cols = maximum number of episodes
 		results.push_back(experimentResult);
-		idxFirstTrialNextExperiment += numExperimentTrials[experimentIdx];
+		idxFirstTrialInExperiment += numExperimentTrials[experimentIdx];                     // Update the index of the first trial in an experiment (to get the correct numEpisodes for the next experiment)
 	}
 
-	int experimentIdx = 0;              // Index of result matrix in vector results to write G
-	int trialCount = 0;
-
-	// Create the object that we will return
-	//MatrixXd result(numTrials, numEpisodes);
+	int experimentIdx = 0;      // The ndex of the result matrix in the vector of results
+	int trialCount = 0;         // The index for a trial in an experiment
 
 	// Each thread has its own random number generator, since generators are not thread safe
 	vector<mt19937_64> generators(numTrialsTotal);
 	for (int trial = 0; trial < numTrialsTotal; trial++)
-		generators[trial].seed(generator());	// See with a random sample from the generator passed as an argument to this function
+		generators[trial].seed(generator());	// Seed with a random sample from the generator passed as an argument to this function
 
 	cout << "\tThere are " << numTrialsTotal << " trials to run. Printing a * when each is completed..." << endl;
 
@@ -52,12 +47,10 @@ vector<MatrixXd> run(vector<Agent*> agents, vector<Environment*> environments, V
 	for (int trial = 0; trial < numTrialsTotal; trial++)
 	{
 		// Run an agent lifetime
-		double gamma = environments[trial]->getGamma(); // we have gammas vector?
+		double gamma = environments[trial]->getGamma(); // Or pass the gammas vector as an argument and use it?
 
-		// Start change; why double?
-		int numEpisodes = maxEpisodes[trial];
+		int numEpisodes = maxEpisodes[trial];           // Why did we use doubles?
 		//double numEpisodes = environments[trial]->getRecommendedMaxEpisodes;
-		// End change
 
 		// Loop over episodes in trial
 		for (int epCount = 0; epCount < numEpisodes; epCount++)
@@ -168,12 +161,12 @@ vector<MatrixXd> run(vector<Agent*> agents, vector<Environment*> environments, V
 		}
 		// End of trial
 		// Update indices
-		if (trialCount > (numExperimentTrials[experimentIdx] - 1))
+		if (trialCount == (numExperimentTrials[experimentIdx] - 1))
 		{
-			experimentIdx += 1;
+			experimentIdx += 1; // In the last trial we update this to be out of range (it's fine)
 			trialCount = 0;
 		}
-		else if (experimentIdx < numExperiments)
+		else
 			trialCount += 1;
 
 		// End of a trial - print a star
@@ -272,8 +265,8 @@ int main(int argc, char* argv[])
 
 	// Calculate the total number of trials
 	int numTrialsTotal = 0;
-	for (int i = 0; i < numTrialsInExperiment.size(); i++)
-		numTrialsTotal += numTrialsInExperiment[i];
+	for (int trial = 0; trial < numTrialsInExperiment.size(); trial++)
+		numTrialsTotal += numTrialsInExperiment[trial];
 
 		////////////////////////////////
 		// Create environment objects
@@ -281,16 +274,16 @@ int main(int argc, char* argv[])
 
 		cout << "Creating environments..." << endl;
 	vector<Environment*> environments(numTrialsTotal);
-	for (int i = 0; i < numTrialsTotal; i++)
+	for (int trial = 0; trial < numTrialsTotal; trial++)
 	{
-		if (envNames[i] == "Gridworld")
-			environments[i] = new Gridworld();
-		else if (envNames[i] == "Gridworld687")
-			environments[i] = new Gridworld687();
-		else if (envNames[i] == "Mountain Car")
-			environments[i] = new MountainCar();
-		else if (envNames[i] == "Cart-Pole")
-			environments[i] = new CartPole();
+		if (envNames[trial] == "Gridworld")
+			environments[trial] = new Gridworld();
+		else if (envNames[trial] == "Gridworld687")
+			environments[trial] = new Gridworld687();
+		else if (envNames[trial] == "Mountain Car")
+			environments[trial] = new MountainCar();
+		else if (envNames[trial] == "Cart-Pole")
+			environments[trial] = new CartPole();
 	}
 	cout << "\tEnvironments created." << endl;
 
@@ -306,14 +299,14 @@ int main(int argc, char* argv[])
 	vector<VectorXd> observationLowerBounds(numTrialsTotal);		// A lower bound on each observation feature
 	vector<VectorXd> observationUpperBounds(numTrialsTotal);		// An upper bound on each observation feature
 
-	for (int i = 0; i < numTrialsTotal; i++)
+	for (int trial = 0; trial < numTrialsTotal; trial++)
 	{
-		observationDimensions[i] = environments[i]->getObservationDimension();
-		numActions[i] = environments[i]->getNumActions();
-		maxEpisodes[i] = environments[i]->getRecommendedMaxEpisodes();
-		maxEpisodeLengths[i] = environments[i]->getRecommendedEpisodeLength();
-		observationLowerBounds[i] = environments[i]->getObservationLowerBound();
-		observationUpperBounds[i] = environments[i]->getObservationUpperBound();
+		observationDimensions[trial] = environments[trial]->getObservationDimension();
+		numActions[trial] = environments[trial]->getNumActions();
+		maxEpisodes[trial] = environments[trial]->getRecommendedMaxEpisodes();
+		maxEpisodeLengths[trial] = environments[trial]->getRecommendedEpisodeLength();
+		observationLowerBounds[trial] = environments[trial]->getObservationLowerBound();
+		observationUpperBounds[trial] = environments[trial]->getObservationUpperBound();
 	}
 
 	////////////////////////////////
@@ -364,7 +357,7 @@ int main(int argc, char* argv[])
 	string path = "../out/results_";	// Otherwise, use this path
 #endif
 	// TO-DO: instead of using numSamples to write the results to CSV, write all results (so that CSV contains all results) and use numSaples parameter only for plotting
-	int idx = 0;
+    int idx = 0;
 	for (int experiment = 0; experiment < (int)numTrialsInExperiment.size(); experiment++)
 	{
 		string envName = envNames[idx];
@@ -372,17 +365,20 @@ int main(int argc, char* argv[])
 		string featureGenFullName = phis[idx]->getName();
 		int maxEps = maxEpisodes[idx];
 
-		string summaryFilePath = path + "summary-" + to_string(numTrialsInExperiment[idx]) + "_trials_" + envName + "_" + featureGenFullName + "_" + agentFullName + ".csv";
-		ofstream outResults(summaryFilePath);
+//        string fullFilePath = path + "full-" + to_string(numTrialsInExperiment[idx]) + "_trials_" + envName + "_" + featureGenFullName + "_" + agentFullName + ".csv";
+//        ofstream outFullResults(fullFilePath);
 
-		outResults << "Episode,Average Discounted Return,Standard Error" << endl;
+        string summaryFilePath = path + "summary-" + to_string(numTrialsInExperiment[idx]) + "_trials_" + envName + "_" + featureGenFullName + "_" + agentFullName + ".csv";
+		ofstream outSummaryResults(summaryFilePath);
+
+        outSummaryResults << "Episode,Average Discounted Return,Standard Error" << endl;
 
 		for (int epCount = 0; epCount < maxEps; epCount++)
 		{
 			double meanResult = rawResults[idx].col(epCount).mean();
 			double standardError = sampleStandardError(rawResults[idx].col(epCount));
 
-			outResults << epCount << "," << meanResult << "," << standardError << endl;
+            outSummaryResults << epCount << "," << meanResult << "," << standardError << endl;
 		}
 
 	    idx += numTrialsInExperiment[experiment];
