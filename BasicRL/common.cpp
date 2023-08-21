@@ -93,7 +93,7 @@ void softmaxDebug(const Eigen::VectorXd& x, Eigen::VectorXd& buff)
 // Epsilon: samples from range [0.001, 0.1] around values 0.1, 0.05, 0.01, 0.005, 0.001 (with some variation)
 // Lambda: samples from range (0,1] around values 0.1, 0.2, 0.3, etc. (with some variation)
 
-// TO-DO: check code, use log-scale?
+// TO-DO: check code, use log-scale? :)
 
 double sampleHyperParameter(const string HyperParamName, std::mt19937_64& generator)
 {

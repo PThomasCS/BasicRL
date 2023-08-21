@@ -303,7 +303,7 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	// Actor-Critic on MountainCar
+	// Actor-Critic on MountainCar :)
 	numHyperParamExperiments.push_back(2);
 	for (int hyperParamExp = 0; hyperParamExp < numHyperParamExperiments.back(); hyperParamExp++)
 	{
@@ -323,8 +323,6 @@ int main(int argc, char* argv[])
 				{"lambda", sampleHyperParameter((string)"lambda", generator)} }, numTrialsInExperiment.back(), hyperParameters);
 		}
 	}
-
-
 	//// Actor-Critic on Mountain Car
 	//numTrialsInExperiment.push_back(2);
 	//push_back_n((string)"Sarsa(Lambda)", numTrialsInExperiment.back(), agentNames);
@@ -332,64 +330,64 @@ int main(int argc, char* argv[])
 	//push_back_n((string)"Fourier Basis", numTrialsInExperiment.back(), featureGenNames);
 	//push_back_n({ {"iOrder", 3}, {"dOrder", 3} }, numTrialsInExperiment.back(), featureGenParameters);
 	//push_back_n({ {"alpha", 0.001}, {"lambda", 0.8}, {"epsilon", 0.05} }, numTrialsInExperiment.back(), hyperParameters);
-=======
-//	 Actor-Critic on Gridworld687
-	numTrialsInExperiment.push_back(2);													// Set the number of trials for this algorithm (n)
-	push_back_n((string)"Actor-Critic", numTrialsInExperiment.back(), agentNames);					// Add the agent name n times to the test vector (1D)
-	push_back_n((string)"Gridworld687", numTrialsInExperiment.back(), envNames);					// Add the environment name n times to the test vector (1D)
-	push_back_n((string)"Identity Basis", numTrialsInExperiment.back(), featureGenNames);
-	push_back_n({ }, numTrialsInExperiment.back(), featureGenParameters);
-	push_back_n({ {"alpha", 0.001}, {"beta", 0.001}, {"lambda", 0.8} }, numTrialsInExperiment.back(), hyperParameters);
 
-    // Actor-Critic on Gridworld687
-    numTrialsInExperiment.push_back(2);
-    push_back_n((string)"Sarsa(Lambda)", numTrialsInExperiment.back(), agentNames);
-    push_back_n((string)"Gridworld687", numTrialsInExperiment.back(), envNames);
-    push_back_n((string)"Fourier Basis", numTrialsInExperiment.back(), featureGenNames);
-    push_back_n({ {"iOrder", 3}, {"dOrder", 3} }, numTrialsInExperiment.back(), featureGenParameters);
-    push_back_n({ {"alpha", 0.001}, {"lambda", 0.8}, {"epsilon", 0.05} }, numTrialsInExperiment.back(), hyperParameters);
-
-	// Actor-Critic on Mountain Car
-	numTrialsInExperiment.push_back(2);
-	push_back_n((string)"Sarsa(Lambda)", numTrialsInExperiment.back(), agentNames);
-	push_back_n((string)"Mountain Car", numTrialsInExperiment.back(), envNames);
-	push_back_n((string)"Fourier Basis", numTrialsInExperiment.back(), featureGenNames);
-	push_back_n({ {"iOrder", 3}, {"dOrder", 3} }, numTrialsInExperiment.back(), featureGenParameters);
-	push_back_n({ {"alpha", 0.001}, {"lambda", 0.8}, {"epsilon", 0.05} }, numTrialsInExperiment.back(), hyperParameters);
->>>>>>> 5ec184d4094344c7293e7367a916e9942d77a971
-
-	// Actor-Critic on Cart-Pole
-	numTrialsInExperiment.push_back(2);
-	push_back_n((string)"Actor-Critic", numTrialsInExperiment.back(), agentNames);
-	push_back_n((string)"Cart-Pole", numTrialsInExperiment.back(), envNames);
-	push_back_n((string)"Fourier Basis", numTrialsInExperiment.back(), featureGenNames);
-	push_back_n({ {"iOrder", 3}, {"dOrder", 3} }, numTrialsInExperiment.back(), featureGenParameters);
-	push_back_n({ {"alpha", 0.001}, {"beta", 0.001}, {"lambda", 0.8} }, numTrialsInExperiment.back(), hyperParameters);
-
-	// Sarsa(Lambda) on Mountain Car
-	// Hyper parameters: {alphaSarsa, LambdaSarsa, EpsilonSarsa}
-	numTrialsInExperiment.push_back(2);
-	push_back_n((string)"Sarsa(Lambda)", numTrialsInExperiment.back(), agentNames);
-	push_back_n((string)"Mountain Car", numTrialsInExperiment.back(), envNames);
-	push_back_n((string)"Fourier Basis", numTrialsInExperiment.back(), featureGenNames);
-	push_back_n({ {"iOrder", 3}, {"dOrder", 3} }, numTrialsInExperiment.back(), featureGenParameters);
-	push_back_n({ {"alpha", 0.001}, {"lambda", 0.8}, {"epsilon", 0.05} }, numTrialsInExperiment.back(), hyperParameters);
-
-	// Sarsa(Lambda) on Cart-Pole
-	numTrialsInExperiment.push_back(2);
-	push_back_n((string)"Sarsa(Lambda)", numTrialsInExperiment.back(), agentNames);
-	push_back_n((string)"Mountain Car", numTrialsInExperiment.back(), envNames);
-	push_back_n((string)"Fourier Basis", numTrialsInExperiment.back(), featureGenNames);
-	push_back_n({ {"iOrder", 3}, {"dOrder", 3} }, numTrialsInExperiment.back(), featureGenParameters);
-	push_back_n({ {"alpha", 0.001}, {"lambda", 0.8}, {"epsilon", 0.05} }, numTrialsInExperiment.back(), hyperParameters);
-
-	// Q(Lambda) on Cart-Pole
-	numTrialsInExperiment.push_back(2);
-	push_back_n((string)"Q(Lambda)", numTrialsInExperiment.back(), agentNames);
-	push_back_n((string)"Cart-Pole", numTrialsInExperiment.back(), envNames);
-	push_back_n((string)"Fourier Basis", numTrialsInExperiment.back(), featureGenNames);
-	push_back_n({ {"iOrder", 3}, {"dOrder", 3} }, numTrialsInExperiment.back(), featureGenParameters);
-	push_back_n({ {"alpha", 0.001}, {"lambda", 0.8}, {"epsilon", 0.05} }, numTrialsInExperiment.back(), hyperParameters);
+////	 Actor-Critic on Gridworld687
+//	numTrialsInExperiment.push_back(2);													// Set the number of trials for this algorithm (n)
+//	push_back_n((string)"Actor-Critic", numTrialsInExperiment.back(), agentNames);					// Add the agent name n times to the test vector (1D)
+//	push_back_n((string)"Gridworld687", numTrialsInExperiment.back(), envNames);					// Add the environment name n times to the test vector (1D)
+//	push_back_n((string)"Identity Basis", numTrialsInExperiment.back(), featureGenNames);
+//	push_back_n({ }, numTrialsInExperiment.back(), featureGenParameters);
+//	push_back_n({ {"alpha", 0.001}, {"beta", 0.001}, {"lambda", 0.8} }, numTrialsInExperiment.back(), hyperParameters);
+//
+//    // Actor-Critic on Gridworld687
+//    numTrialsInExperiment.push_back(2);
+//    push_back_n((string)"Sarsa(Lambda)", numTrialsInExperiment.back(), agentNames);
+//    push_back_n((string)"Gridworld687", numTrialsInExperiment.back(), envNames);
+//    push_back_n((string)"Fourier Basis", numTrialsInExperiment.back(), featureGenNames);
+//    push_back_n({ {"iOrder", 3}, {"dOrder", 3} }, numTrialsInExperiment.back(), featureGenParameters);
+//    push_back_n({ {"alpha", 0.001}, {"lambda", 0.8}, {"epsilon", 0.05} }, numTrialsInExperiment.back(), hyperParameters);
+//
+//	// Actor-Critic on Mountain Car
+//	numTrialsInExperiment.push_back(2);
+//	push_back_n((string)"Sarsa(Lambda)", numTrialsInExperiment.back(), agentNames);
+//	push_back_n((string)"Mountain Car", numTrialsInExperiment.back(), envNames);
+//	push_back_n((string)"Fourier Basis", numTrialsInExperiment.back(), featureGenNames);
+//	push_back_n({ {"iOrder", 3}, {"dOrder", 3} }, numTrialsInExperiment.back(), featureGenParameters);
+//	push_back_n({ {"alpha", 0.001}, {"lambda", 0.8}, {"epsilon", 0.05} }, numTrialsInExperiment.back(), hyperParameters);
+//>>>>>>> 5ec184d4094344c7293e7367a916e9942d77a971
+//
+//	// Actor-Critic on Cart-Pole
+//	numTrialsInExperiment.push_back(2);
+//	push_back_n((string)"Actor-Critic", numTrialsInExperiment.back(), agentNames);
+//	push_back_n((string)"Cart-Pole", numTrialsInExperiment.back(), envNames);
+//	push_back_n((string)"Fourier Basis", numTrialsInExperiment.back(), featureGenNames);
+//	push_back_n({ {"iOrder", 3}, {"dOrder", 3} }, numTrialsInExperiment.back(), featureGenParameters);
+//	push_back_n({ {"alpha", 0.001}, {"beta", 0.001}, {"lambda", 0.8} }, numTrialsInExperiment.back(), hyperParameters);
+//
+//	// Sarsa(Lambda) on Mountain Car
+//	// Hyper parameters: {alphaSarsa, LambdaSarsa, EpsilonSarsa}
+//	numTrialsInExperiment.push_back(2);
+//	push_back_n((string)"Sarsa(Lambda)", numTrialsInExperiment.back(), agentNames);
+//	push_back_n((string)"Mountain Car", numTrialsInExperiment.back(), envNames);
+//	push_back_n((string)"Fourier Basis", numTrialsInExperiment.back(), featureGenNames);
+//	push_back_n({ {"iOrder", 3}, {"dOrder", 3} }, numTrialsInExperiment.back(), featureGenParameters);
+//	push_back_n({ {"alpha", 0.001}, {"lambda", 0.8}, {"epsilon", 0.05} }, numTrialsInExperiment.back(), hyperParameters);
+//
+//	// Sarsa(Lambda) on Cart-Pole
+//	numTrialsInExperiment.push_back(2);
+//	push_back_n((string)"Sarsa(Lambda)", numTrialsInExperiment.back(), agentNames);
+//	push_back_n((string)"Mountain Car", numTrialsInExperiment.back(), envNames);
+//	push_back_n((string)"Fourier Basis", numTrialsInExperiment.back(), featureGenNames);
+//	push_back_n({ {"iOrder", 3}, {"dOrder", 3} }, numTrialsInExperiment.back(), featureGenParameters);
+//	push_back_n({ {"alpha", 0.001}, {"lambda", 0.8}, {"epsilon", 0.05} }, numTrialsInExperiment.back(), hyperParameters);
+//
+//	// Q(Lambda) on Cart-Pole
+//	numTrialsInExperiment.push_back(2);
+//	push_back_n((string)"Q(Lambda)", numTrialsInExperiment.back(), agentNames);
+//	push_back_n((string)"Cart-Pole", numTrialsInExperiment.back(), envNames);
+//	push_back_n((string)"Fourier Basis", numTrialsInExperiment.back(), featureGenNames);
+//	push_back_n({ {"iOrder", 3}, {"dOrder", 3} }, numTrialsInExperiment.back(), featureGenParameters);
+//	push_back_n({ {"alpha", 0.001}, {"lambda", 0.8}, {"epsilon", 0.05} }, numTrialsInExperiment.back(), hyperParameters);
 
 	// Calculate the total number of trials
 	int numTrialsTotal = 0;
@@ -496,11 +494,8 @@ int main(int argc, char* argv[])
 //        string fullFilePath = path + "full-" + to_string(numTrialsInExperiment[idx]) + "_trials_" + envName + "_" + featureGenFullName + "_" + agentFullName + ".csv";
 //        ofstream outFullResults(fullFilePath);
 
-<<<<<<< HEAD
-        string summaryFilePath = path + "summary-" + to_string(numTrialsInExperiment[experiment]) + "_trials_" + envName + "_" + featureGenFullName + "_" + agentFullName + ".csv";
-=======
+
         string summaryFilePath = path + "summary_" + to_string(numTrialsInExperiment[trialIdx]) + "_trials_" + envName + "_" + featureGenFullName + "_" + agentFullName + ".csv";
->>>>>>> 5ec184d4094344c7293e7367a916e9942d77a971
 		ofstream outSummaryResults(summaryFilePath);
 
   //      outSummaryResults << "Episode,Average Discounted Return,Standard Error" << endl;
@@ -517,19 +512,12 @@ int main(int argc, char* argv[])
 
 		for (int epCount = 0; epCount < maxEps; epCount++)
 		{
-<<<<<<< HEAD
 			outSummaryResults << epCount << ",";
 			for (int trialCount = 0; trialCount < numTrialsInExperiment[experiment]; trialCount++)
 			{
 				outSummaryResults << rawResults[experiment](trialCount, epCount) << ",";
 			}
 			outSummaryResults << endl;
-=======
-			double meanResult = rawResults[experiment].col(epCount).mean();
-			double standardError = sampleStandardError(rawResults[experiment].col(epCount));
-
-            outSummaryResults << epCount << "," << meanResult << "," << standardError << endl;
->>>>>>> 5ec184d4094344c7293e7367a916e9942d77a971
 		}
 
         trialIdx += numTrialsInExperiment[experiment];
