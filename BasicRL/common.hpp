@@ -163,3 +163,11 @@ void push_back_n(const T& value, const int n, std::vector<T>& buff)
 	for (int i = 0; i < n; i++)
 		buff.push_back(value);
 }
+
+// Samples hyper parameters around pre-defined values:
+// Alpha: samples from range [0.000001, 0.1] around values 0.1, 0.01, 0.001, etc. (with some variation)
+// Beta: samples from range [0.000001, 0.1] around values 0.1, 0.01, 0.001, etc. (with some variation)
+// Epsilon: samples from range [0.001, 0.1] around values 0.1, 0.05, 0.01, 0.005, 0.001 (with some variation)
+// Lambda: samples from range (0,1] around values 0.1, 0.2, 0.3, etc. (with some variation)
+
+double sampleHyperParameter(const std::string HyperParamName, std::mt19937_64& gen);

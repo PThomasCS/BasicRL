@@ -110,6 +110,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>lib;</AdditionalIncludeDirectories>
       <OpenMPSupport>false</OpenMPSupport>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -126,6 +127,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>lib;</AdditionalIncludeDirectories>
       <OpenMPSupport>true</OpenMPSupport>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

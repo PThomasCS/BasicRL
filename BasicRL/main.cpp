@@ -6,6 +6,7 @@
 
 #include "stdafx.hpp"
 #include <unordered_map>
+#include <iomanip> 
 
 using namespace std;
 using namespace Eigen;
@@ -23,6 +24,8 @@ vector<MatrixXd> run(vector<Agent*> agents, vector<Environment*> environments, V
 
 	// Create a vector of matrices to store returns from all experiments; each matrix stores returns from one experiment
 	vector<MatrixXd> results;                               // Length = the total number of experiments
+
+	cout << "numExperiments: " << numExperiments << endl;
 
 	for (int experimentIdx = 0; experimentIdx < numExperiments; experimentIdx++)
 	{   
@@ -203,6 +206,7 @@ int main(int argc, char* argv[])
 	// Default random number generator
 	mt19937_64 generator;
 
+	vector<int> numHyperParamExperiments;                       // Length = total number of sets of hyperparameters
 	vector<int> numTrialsInExperiment;							// Length = total number of agent-environment pairs.   numTrialsInExperiment[i] is the number of trials to run for the i'th agent-environment pair.
 	vector<string> agentNames;									// Length = total number of trials (sum of elements in numTrialsInExperiment)
 	vector<string> envNames;									// Length = total number of trials (sum of elements in numTrialsInExperiment)
@@ -214,21 +218,119 @@ int main(int argc, char* argv[])
 	// Set parameters for experiments
 	////////////////////////////////
 
-	// Actor-Critic on Gridworld687
-	numTrialsInExperiment.push_back(2);													// Set the number of trials for this algorithm (n)
-	push_back_n((string)"Actor-Critic", numTrialsInExperiment.back(), agentNames);					// Add the agent name n times to the test vector (1D)
-	push_back_n((string)"Gridworld687", numTrialsInExperiment.back(), envNames);					// Add the environment name n times to the test vector (1D)
-	push_back_n((string)"Identity Basis", numTrialsInExperiment.back(), featureGenNames);
-	push_back_n({ }, numTrialsInExperiment.back(), featureGenParameters);
-	push_back_n({ {"alpha", 0.001}, {"beta", 0.001}, {"lambda", 0.8} }, numTrialsInExperiment.back(), hyperParameters);
+	//// Sarsa-Lambda on MountainCar
+	//numHyperParamExperiments.push_back(2);
+	//for (int hyperParamExp = 0; hyperParamExp < numHyperParamExperiments.back(); hyperParamExp++)
+	//{
+	//	numTrialsInExperiment.push_back(2);
+	//	push_back_n((string)"Sarsa(Lambda)", numTrialsInExperiment.back(), agentNames);
+	//	push_back_n((string)"Mountain Car", numTrialsInExperiment.back(), envNames);
+	//	push_back_n((string)"Fourier Basis", numTrialsInExperiment.back(), featureGenNames);
+	//	push_back_n({ {"iOrder", 3}, {"dOrder", 3} }, numTrialsInExperiment.back(), featureGenParameters);
 
-	// Actor-Critic on Mountain Car
-	numTrialsInExperiment.push_back(2);
-	push_back_n((string)"Sarsa(Lambda)", numTrialsInExperiment.back(), agentNames);
-	push_back_n((string)"Mountain Car", numTrialsInExperiment.back(), envNames);
-	push_back_n((string)"Fourier Basis", numTrialsInExperiment.back(), featureGenNames);
-	push_back_n({ {"iOrder", 3}, {"dOrder", 3} }, numTrialsInExperiment.back(), featureGenParameters);
-	push_back_n({ {"alpha", 0.001}, {"lambda", 0.8}, {"epsilon", 0.05} }, numTrialsInExperiment.back(), hyperParameters);
+	//	if (hyperParamExp < 1)
+	//	{
+	//		push_back_n({ {"alpha", 0.0001}, {"lambda", 0.8}, {"epsilon", 0.05} }, numTrialsInExperiment.back(), hyperParameters);
+	//	}
+	//	else
+	//	{
+	//		push_back_n({ {"alpha", sampleHyperParameter((string)"alpha", generator)}, {"lambda", sampleHyperParameter((string)"lambda", generator)},
+	//			{"epsilon", sampleHyperParameter((string)"epsilon", generator)} }, numTrialsInExperiment.back(), hyperParameters);
+	//	}
+	//}
+
+	//// Sarsa-Lambda on Cart-Pole
+	//numHyperParamExperiments.push_back(2);
+	//for (int hyperParamExp = 0; hyperParamExp < numHyperParamExperiments.back(); hyperParamExp++)
+	//{
+	//	numTrialsInExperiment.push_back(2);
+	//	push_back_n((string)"Sarsa(Lambda)", numTrialsInExperiment.back(), agentNames);
+	//	push_back_n((string)"Cart-Pole", numTrialsInExperiment.back(), envNames);
+	//	push_back_n((string)"Fourier Basis", numTrialsInExperiment.back(), featureGenNames);
+	//	push_back_n({ {"iOrder", 3}, {"dOrder", 3} }, numTrialsInExperiment.back(), featureGenParameters);
+
+	//	if (hyperParamExp < 1)
+	//	{
+	//		push_back_n({ {"alpha", 0.001}, {"lambda", 0.8}, {"epsilon", 0.05} }, numTrialsInExperiment.back(), hyperParameters);
+	//	}
+	//	else
+	//	{
+	//		push_back_n({ {"alpha", sampleHyperParameter((string)"alpha", generator)}, {"lambda", sampleHyperParameter((string)"lambda", generator)},
+	//			{"epsilon", sampleHyperParameter((string)"epsilon", generator)} }, numTrialsInExperiment.back(), hyperParameters);
+	//	}
+	//}
+
+	//// Actor-Critic on Gridworld687
+	//numHyperParamExperiments.push_back(3);
+	//for (int hyperParamExp = 0; hyperParamExp < numHyperParamExperiments.back(); hyperParamExp++)
+	//{
+	//	numTrialsInExperiment.push_back(2);
+	//	push_back_n((string)"Actor-Critic", numTrialsInExperiment.back(), agentNames);
+	//	push_back_n((string)"Gridworld687", numTrialsInExperiment.back(), envNames);
+	//	push_back_n((string)"Identity Basis", numTrialsInExperiment.back(), featureGenNames);
+	//	push_back_n({ }, numTrialsInExperiment.back(), featureGenParameters);
+	//	
+	//	if (hyperParamExp < 1)
+	//	{
+	//		push_back_n({ {"alpha", 0.001}, {"beta", 0.001}, {"lambda", 0.8} }, numTrialsInExperiment.back(), hyperParameters);
+	//	}
+	//	else
+	//	{
+	//		push_back_n({ {"alpha", sampleHyperParameter((string)"alpha", generator)}, {"beta", sampleHyperParameter((string)"beta", generator)},
+	//			{"lambda", sampleHyperParameter((string)"lambda", generator)} }, numTrialsInExperiment.back(), hyperParameters);
+	//	}
+	//}
+
+	// Sarsa-Lambda on Gridworld687
+	numHyperParamExperiments.push_back(3);
+	for (int hyperParamExp = 0; hyperParamExp < numHyperParamExperiments.back(); hyperParamExp++)
+	{
+		numTrialsInExperiment.push_back(2);
+		push_back_n((string)"Sarsa(Lambda)", numTrialsInExperiment.back(), agentNames);
+		push_back_n((string)"Gridworld687", numTrialsInExperiment.back(), envNames);
+		push_back_n((string)"Fourier Basis", numTrialsInExperiment.back(), featureGenNames);
+		push_back_n({ {"iOrder", 0}, {"dOrder", 0} }, numTrialsInExperiment.back(), featureGenParameters);
+
+		if (hyperParamExp < 1)
+		{
+			push_back_n({ {"alpha", 0.01}, {"lambda", 0.8}, {"epsilon", 0.05} }, numTrialsInExperiment.back(), hyperParameters);
+		}
+		else
+		{
+			push_back_n({ {"alpha", sampleHyperParameter((string)"alpha", generator)}, {"lambda", sampleHyperParameter((string)"lambda", generator)},
+				{"epsilon", sampleHyperParameter((string)"epsilon", generator)} }, numTrialsInExperiment.back(), hyperParameters);
+		}
+	}
+
+	// Actor-Critic on MountainCar
+	numHyperParamExperiments.push_back(2);
+	for (int hyperParamExp = 0; hyperParamExp < numHyperParamExperiments.back(); hyperParamExp++)
+	{
+		numTrialsInExperiment.push_back(2);
+		push_back_n((string)"Actor-Critic", numTrialsInExperiment.back(), agentNames);
+		push_back_n((string)"Mountain Car", numTrialsInExperiment.back(), envNames);
+		push_back_n((string)"Fourier Basis", numTrialsInExperiment.back(), featureGenNames);
+		push_back_n({ {"iOrder", 3}, {"dOrder", 3} }, numTrialsInExperiment.back(), featureGenParameters);
+
+		if (hyperParamExp < 1)
+		{
+			push_back_n({ {"alpha", 0.001}, {"beta", 0.001}, {"lambda", 0.8} }, numTrialsInExperiment.back(), hyperParameters);
+		}
+		else
+		{
+			push_back_n({ {"alpha", sampleHyperParameter((string)"alpha", generator)}, {"beta", sampleHyperParameter((string)"beta", generator)},
+				{"lambda", sampleHyperParameter((string)"lambda", generator)} }, numTrialsInExperiment.back(), hyperParameters);
+		}
+	}
+
+
+	//// Actor-Critic on Mountain Car
+	//numTrialsInExperiment.push_back(2);
+	//push_back_n((string)"Sarsa(Lambda)", numTrialsInExperiment.back(), agentNames);
+	//push_back_n((string)"Mountain Car", numTrialsInExperiment.back(), envNames);
+	//push_back_n((string)"Fourier Basis", numTrialsInExperiment.back(), featureGenNames);
+	//push_back_n({ {"iOrder", 3}, {"dOrder", 3} }, numTrialsInExperiment.back(), featureGenParameters);
+	//push_back_n({ {"alpha", 0.001}, {"lambda", 0.8}, {"epsilon", 0.05} }, numTrialsInExperiment.back(), hyperParameters);
 
 	//// Actor-Critic on Cart-Pole
 	//numTrialsInExperiment.push_back(2);
@@ -368,17 +470,29 @@ int main(int argc, char* argv[])
 //        string fullFilePath = path + "full-" + to_string(numTrialsInExperiment[idx]) + "_trials_" + envName + "_" + featureGenFullName + "_" + agentFullName + ".csv";
 //        ofstream outFullResults(fullFilePath);
 
-        string summaryFilePath = path + "summary-" + to_string(numTrialsInExperiment[idx]) + "_trials_" + envName + "_" + featureGenFullName + "_" + agentFullName + ".csv";
+        string summaryFilePath = path + "summary-" + to_string(numTrialsInExperiment[experiment]) + "_trials_" + envName + "_" + featureGenFullName + "_" + agentFullName + ".csv";
 		ofstream outSummaryResults(summaryFilePath);
 
-        outSummaryResults << "Episode,Average Discounted Return,Standard Error" << endl;
+  //      outSummaryResults << "Episode,Average Discounted Return,Standard Error" << endl;
+
+		//for (int epCount = 0; epCount < maxEps; epCount++)
+		//{
+		//	double meanResult = rawResults[experiment].col(epCount).mean();
+		//	double standardError = sampleStandardError(rawResults[experiment].col(epCount));
+
+  //          outSummaryResults << epCount << "," << meanResult << "," << standardError << endl;
+		//}
+
+		outSummaryResults << fixed << setprecision(6);
 
 		for (int epCount = 0; epCount < maxEps; epCount++)
 		{
-			double meanResult = rawResults[idx].col(epCount).mean();
-			double standardError = sampleStandardError(rawResults[idx].col(epCount));
-
-            outSummaryResults << epCount << "," << meanResult << "," << standardError << endl;
+			outSummaryResults << epCount << ",";
+			for (int trialCount = 0; trialCount < numTrialsInExperiment[experiment]; trialCount++)
+			{
+				outSummaryResults << rawResults[experiment](trialCount, epCount) << ",";
+			}
+			outSummaryResults << endl;
 		}
 
 	    idx += numTrialsInExperiment[experiment];
@@ -392,7 +506,7 @@ int main(int argc, char* argv[])
 		delete agents[i];
 	}
 
-	system("learning_curves.py");
+	//system("learning_curves.py");
 
 	// Print message indicating that the program has finished
 	cout << "Done. Press enter to exit." << endl;

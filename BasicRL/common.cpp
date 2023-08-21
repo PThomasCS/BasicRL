@@ -86,3 +86,43 @@ void softmaxDebug(const Eigen::VectorXd& x, Eigen::VectorXd& buff)
 	buff = x.array().exp();
 	buff /= buff.sum();
 }
+
+// Samples hyper parameters around pre-defined values:
+// Alpha: samples from range [0.000001, 0.1] around values 0.1, 0.01, 0.001, etc. (with some variation)
+// Beta: samples from range [0.000001, 0.1] around values 0.1, 0.01, 0.001, etc. (with some variation)
+// Epsilon: samples from range [0.001, 0.1] around values 0.1, 0.05, 0.01, 0.005, 0.001 (with some variation)
+// Lambda: samples from range (0,1] around values 0.1, 0.2, 0.3, etc. (with some variation)
+
+// TO-DO: check code, use log-scale?
+
+double sampleHyperParameter(const string HyperParamName, std::mt19937_64& generator)
+{
+	uniform_real_distribution<double> uni_dist;		// will be initialized later according to the hyperparameter type
+	vector<double> predefined_values;				// will be initialized later according to the hyperparameter type
+
+	if (HyperParamName == "alpha" || HyperParamName == "beta") {
+		predefined_values = { 0.1, 0.01, 0.001, 0.0001, 0.00001 };
+		uni_dist = uniform_real_distribution<double>(0.000001, 0.1);
+	}
+	else if (HyperParamName == "epsilon") {
+		predefined_values = { 0.1, 0.05, 0.01, 0.005, 0.001 };
+		uni_dist = uniform_real_distribution<double>(0.001, 0.1);
+	}
+	else if (HyperParamName == "lambda") {
+		predefined_values = { 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0 };
+		uni_dist = uniform_real_distribution<double>(0.0, 1.0);
+	}
+
+	// Choose a random predefined value as the center of our sample range
+	uniform_int_distribution<size_t> index_dist(0, predefined_values.size() - 1);
+	double center = predefined_values[index_dist(generator)];
+
+	// Sample around the chosen predefined value
+	double variation = uni_dist(generator) * 0.1; // sampling up to 10% variation
+	double sampled_value = center + (uni_dist(generator) < 0.5 ? variation : -variation);
+
+	// Clip the sampled value to be within the allowable range
+	double min_value = uni_dist.a();
+	double max_value = uni_dist.b();
+	return max(min_value,min(max_value, sampled_value));
+}
