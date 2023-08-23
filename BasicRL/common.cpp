@@ -87,18 +87,19 @@ void softmaxDebug(const Eigen::VectorXd& x, Eigen::VectorXd& buff)
 	buff /= buff.sum();
 }
 
+// Dummy function for framework test
+
 // Samples hyper parameters around pre-defined values:
 // Alpha: samples from range [0.000001, 0.1] around values 0.1, 0.01, 0.001, etc. (with some variation)
 // Beta: samples from range [0.000001, 0.1] around values 0.1, 0.01, 0.001, etc. (with some variation)
 // Epsilon: samples from range [0.001, 0.1] around values 0.1, 0.05, 0.01, 0.005, 0.001 (with some variation)
 // Lambda: samples from range (0,1] around values 0.1, 0.2, 0.3, etc. (with some variation)
 
-// TO-DO: check code, use log-scale? :)
-
+// TO-DO: use log-scale? Add the option of deterministically choosing some parameters (sample lambda = 0.8 half of the time) :)
 double sampleHyperParameter(const string HyperParamName, std::mt19937_64& generator)
 {
-	uniform_real_distribution<double> uni_dist;		// will be initialized later according to the hyperparameter type
-	vector<double> predefined_values;				// will be initialized later according to the hyperparameter type
+	uniform_real_distribution<double> uni_dist;
+	vector<double> predefined_values;
 
 	if (HyperParamName == "alpha" || HyperParamName == "beta") {
 		predefined_values = { 0.1, 0.01, 0.001, 0.0001, 0.00001 };
@@ -113,16 +114,14 @@ double sampleHyperParameter(const string HyperParamName, std::mt19937_64& genera
 		uni_dist = uniform_real_distribution<double>(0.0, 1.0);
 	}
 
-	// Choose a random predefined value as the center of our sample range
+	// Sample a predefined value
 	uniform_int_distribution<size_t> index_dist(0, predefined_values.size() - 1);
-	double center = predefined_values[index_dist(generator)];
+	double sampledPredefinedValue = predefined_values[index_dist(generator)];
 
-	// Sample around the chosen predefined value
-	double variation = uni_dist(generator) * 0.1; // sampling up to 10% variation
-	double sampled_value = center + (uni_dist(generator) < 0.5 ? variation : -variation);
+	// Sample an offset (variation) for the predefined value (~10%)
+	double variation = uni_dist(generator) * 0.1;
+	double sampledHyperParameter = sampledPredefinedValue + (uni_dist(generator) < 0.5 ? variation : -variation);
 
-	// Clip the sampled value to be within the allowable range
-	double min_value = uni_dist.a();
-	double max_value = uni_dist.b();
-	return max(min_value,min(max_value, sampled_value));
+	// Make sure that the sample value is in range and return the sampled hyper parameter
+	return max(uni_dist.a(),min(uni_dist.b(), sampledHyperParameter));
 }
