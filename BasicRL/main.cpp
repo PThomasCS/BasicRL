@@ -31,6 +31,7 @@ vector<MatrixXd> run(vector<Agent*> agents, vector<Environment*> environments, V
 	{   
 		int numEpisodes = maxEpisodes[idxFirstTrialInExperiment];                           // The maximum number of episodes for the environment used in an experiment
 		MatrixXd experimentResult(numExperimentTrials[experimentIdx], numEpisodes);         // The matrix to store returns from an experiment; rows = number of trials in the experiment, cols = maximum number of episodes
+		//experimentResult.setConstant(-24623467); // @TODO: Alexandra, debug from here then remove this!
 		results.push_back(experimentResult);
 		idxFirstTrialInExperiment += numExperimentTrials[experimentIdx];                     // Update the index of the first trial in an experiment (to get the correct numEpisodes for the next experiment)
 	}
@@ -310,11 +311,11 @@ int main(int argc, char* argv[])
 	for (int trial = 0; trial < numTrialsInExperiment.size(); trial++)
 		numTrialsTotal += numTrialsInExperiment[trial];
 
-		///////////////////////////////////////////////////
-		// Create environment objects
-		///////////////////////////////////////////////////
+	///////////////////////////////////////////////////
+	// Create environment objects
+	///////////////////////////////////////////////////
 
-		cout << "Creating environments..." << endl;
+	cout << "Creating environments..." << endl;
 	vector<Environment*> environments(numTrialsTotal);
 	for (int trial = 0; trial < numTrialsTotal; trial++)
 	{
@@ -349,6 +350,7 @@ int main(int argc, char* argv[])
 		maxEpisodeLengths[trial] = environments[trial]->getRecommendedEpisodeLength();
 		observationLowerBounds[trial] = environments[trial]->getObservationLowerBound();
 		observationUpperBounds[trial] = environments[trial]->getObservationUpperBound();
+		gammas[trial] = environments[trial]->getGamma();
 	}
 
 	///////////////////////////////////////////////////
@@ -414,7 +416,7 @@ int main(int argc, char* argv[])
 //        string fullFilePath = path + "full-" + to_string(numTrialsInExperiment[idx]) + "_trials_" + envName + "_" + featureGenFullName + "_" + agentFullName + ".csv";
 //        ofstream outFullResults(fullFilePath);
 
-        string summaryFilePath = path + "summary_" + to_string(numTrialsInExperiment[trialIdx]) + "_trials_" + envName + "_" + featureGenFullName + "_" + agentFullName + ".csv";
+        string summaryFilePath = path + "summary_" + to_string(numTrialsInExperiment[experiment]) + "_trials_" + envName + "_" + featureGenFullName + "_" + agentFullName + ".csv";
 		ofstream outSummaryResults(summaryFilePath);
 
   //      outSummaryResults << "Episode,Average Discounted Return,Standard Error" << endl;
@@ -755,5 +757,5 @@ int main(int argc, char* argv[])
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-*\
+*/
 
