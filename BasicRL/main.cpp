@@ -31,7 +31,7 @@ vector<MatrixXd> run(vector<Agent*> agents, vector<Environment*> environments, V
 	{   
 		int numEpisodes = maxEpisodes[idxFirstTrialInExperiment];                           // The maximum number of episodes for the environment used in an experiment
 		MatrixXd experimentResult(numExperimentTrials[experimentIdx], numEpisodes);         // The matrix to store returns from an experiment; rows = number of trials in the experiment, cols = maximum number of episodes
-		//experimentResult.setConstant(-24623467); // @TODO: Alexandra, debug from here then remove this!
+		experimentResult.setConstant(-24623467); // @TODO: Alexandra, debug from here then remove this!
 		results.push_back(experimentResult);
 		idxFirstTrialInExperiment += numExperimentTrials[experimentIdx];                     // Update the index of the first trial in an experiment (to get the correct numEpisodes for the next experiment)
 	}
@@ -202,19 +202,40 @@ int main(int argc, char* argv[])
 	// Set parameters for experiments
 	////////////////////////////////
 
-    // Sarsa-Lambda on Gridworld687
-	numHyperParamExperiments.push_back(3);
+ //   // Sarsa-Lambda on Gridworld687
+	//numHyperParamExperiments.push_back(3);
+	//for (int hyperParamExp = 0; hyperParamExp < numHyperParamExperiments.back(); hyperParamExp++)
+	//{
+	//	numTrialsInExperiment.push_back(2);
+	//	push_back_n((string)"Sarsa(Lambda)", numTrialsInExperiment.back(), agentNames);
+	//	push_back_n((string)"Gridworld687", numTrialsInExperiment.back(), envNames);
+	//	push_back_n((string)"Fourier Basis", numTrialsInExperiment.back(), featureGenNames);
+	//	push_back_n({ {"iOrder", 0}, {"dOrder", 0} }, numTrialsInExperiment.back(), featureGenParameters);
+
+	//	if (hyperParamExp < 1)
+	//	{
+	//		push_back_n({ {"alpha", 0.01}, {"lambda", 0.8}, {"epsilon", 0.05} }, numTrialsInExperiment.back(), hyperParameters);
+	//	}
+	//	else
+	//	{
+	//		push_back_n({ {"alpha", sampleHyperParameter((string)"alpha", generator)}, {"lambda", sampleHyperParameter((string)"lambda", generator)},
+	//			{"epsilon", sampleHyperParameter((string)"epsilon", generator)} }, numTrialsInExperiment.back(), hyperParameters);
+	//	}
+	//}
+
+    // Q(lambda) on Mountain Car
+    numHyperParamExperiments.push_back(2);
 	for (int hyperParamExp = 0; hyperParamExp < numHyperParamExperiments.back(); hyperParamExp++)
 	{
 		numTrialsInExperiment.push_back(2);
-		push_back_n((string)"Sarsa(Lambda)", numTrialsInExperiment.back(), agentNames);
-		push_back_n((string)"Gridworld687", numTrialsInExperiment.back(), envNames);
+		push_back_n((string)"Q(Lambda)", numTrialsInExperiment.back(), agentNames);
+		push_back_n((string)"Mountain Car", numTrialsInExperiment.back(), envNames);
 		push_back_n((string)"Fourier Basis", numTrialsInExperiment.back(), featureGenNames);
-		push_back_n({ {"iOrder", 0}, {"dOrder", 0} }, numTrialsInExperiment.back(), featureGenParameters);
+		push_back_n({ {"iOrder", 3}, {"dOrder", 3} }, numTrialsInExperiment.back(), featureGenParameters);
 
 		if (hyperParamExp < 1)
 		{
-			push_back_n({ {"alpha", 0.01}, {"lambda", 0.8}, {"epsilon", 0.05} }, numTrialsInExperiment.back(), hyperParameters);
+			push_back_n({ {"alpha", 0.0001}, {"lambda", 0.8}, {"epsilon", 0.05} }, numTrialsInExperiment.back(), hyperParameters);
 		}
 		else
 		{
@@ -222,27 +243,6 @@ int main(int argc, char* argv[])
 				{"epsilon", sampleHyperParameter((string)"epsilon", generator)} }, numTrialsInExperiment.back(), hyperParameters);
 		}
 	}
-
-//    // Q(lambda) on Mountain Car
-//    numHyperParamExperiments.push_back(2);
-//	for (int hyperParamExp = 0; hyperParamExp < numHyperParamExperiments.back(); hyperParamExp++)
-//	{
-//		numTrialsInExperiment.push_back(2);
-//		push_back_n((string)"Q(lambda)", numTrialsInExperiment.back(), agentNames);
-//		push_back_n((string)"Mountain Car", numTrialsInExperiment.back(), envNames);
-//		push_back_n((string)"Fourier Basis", numTrialsInExperiment.back(), featureGenNames);
-//		push_back_n({ {"iOrder", 3}, {"dOrder", 3} }, numTrialsInExperiment.back(), featureGenParameters);
-//
-//		if (hyperParamExp < 1)
-//		{
-//			push_back_n({ {"alpha", 0.0001}, {"lambda", 0.8}, {"epsilon", 0.05} }, numTrialsInExperiment.back(), hyperParameters);
-//		}
-//		else
-//		{
-//			push_back_n({ {"alpha", sampleHyperParameter((string)"alpha", generator)}, {"lambda", sampleHyperParameter((string)"lambda", generator)},
-//				{"epsilon", sampleHyperParameter((string)"epsilon", generator)} }, numTrialsInExperiment.back(), hyperParameters);
-//		}
-//	}
 //
 //	// Actor-Critic on Cart-Pole
 //	numHyperParamExperiments.push_back(2);
@@ -437,7 +437,8 @@ int main(int argc, char* argv[])
 		{
 			outSummaryResults << epCount << ",";
 			for (int trialCount = 0; trialCount < numTrialsInExperiment[experiment]; trialCount++)
-			{
+			{   
+				cout << "Printing " << rawResults[experiment](trialCount, epCount) << endl;
 				outSummaryResults << rawResults[experiment](trialCount, epCount) << ",";
 			}
 			outSummaryResults << endl;
