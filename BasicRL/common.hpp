@@ -164,6 +164,9 @@ void push_back_n(const T& value, const int n, std::vector<T>& buff)
 		buff.push_back(value);
 }
 
+// Pushes back n elements from 0 to n 
+void push_back_0_n(const int n, std::vector<int>& buff);
+
 // Samples hyper parameters around pre-defined values: :)
 // Alpha: samples from range [0.000001, 0.1] around values 0.1, 0.01, 0.001, etc. (with some variation)
 // Beta: samples from range [0.000001, 0.1] around values 0.1, 0.01, 0.001, etc. (with some variation)

@@ -13,7 +13,8 @@ using namespace Eigen;
 
 // Run numTrials agent lifetimes on the provided environment. The entry in position (i,j) of the resulting matrix is the return from the j'th episode in the i'th trial.
 
-vector<MatrixXd> run(vector<Agent*> agents, vector<Environment*> environments, VectorXi maxEpisodes, VectorXi maxEpisodeLengths, mt19937_64& generator, vector<int> numExperimentTrials, int numTrialsTotal)
+vector<MatrixXd> run(vector<Agent*> agents, vector<Environment*> environments, VectorXi maxEpisodes, VectorXi maxEpisodeLengths, mt19937_64& generator, 
+	vector<int> numExperimentTrials, int numTrialsTotal, vector<int> experimentIDs, vector<int> trialCounts)
 {
 	// Ensure that agents and environments are of length numTrialsTotal
 	if ((agents.size() != numTrialsTotal) || (environments.size() != numTrialsTotal))
@@ -36,8 +37,8 @@ vector<MatrixXd> run(vector<Agent*> agents, vector<Environment*> environments, V
 		idxFirstTrialInExperiment += numExperimentTrials[experimentIdx];                     // Update the index of the first trial in an experiment (to get the correct numEpisodes for the next experiment)
 	}
 
-	int experimentIdx = 0;      // The ndex of the result matrix in the vector of results
-	int trialCount = 0;         // The index for a trial in an experiment
+	//int experimentIdx = 0;      // The ndex of the result matrix in the vector of results
+	//int trialCount = 0;         // The index for a trial in an experiment
 
 	// Each thread has its own random number generator, since generators are not thread safe
 	vector<mt19937_64> generators(numTrialsTotal);
@@ -108,7 +109,8 @@ vector<MatrixXd> run(vector<Agent*> agents, vector<Environment*> environments, V
 				}
 				// End of episode
 				// Save G to the correct place in the correct result matrix
-				results[experimentIdx](trialCount, epCount) = G;
+				//results[experimentIdx](trialCount, epCount) = G;
+				results[experimentIDs[trial]](trialCounts[trial], epCount) = G;
 			}
 			else
 			{
@@ -160,18 +162,19 @@ vector<MatrixXd> run(vector<Agent*> agents, vector<Environment*> environments, V
 				}
 				// End of episode
 				// Save G to the correct place in the correct result matrix
-				results[experimentIdx](trialCount, epCount) = G;
+				//results[experimentIdx](trialCount, epCount) = G;
+				results[experimentIDs[trial]](trialCounts[trial], epCount) = G;
 			}
 		}
 		// End of trial
-		// Update indices
-		if (trialCount == (numExperimentTrials[experimentIdx] - 1))
-		{
-			experimentIdx += 1; // In the last trial we update this to be out of range (it's fine)
-			trialCount = 0;
-		}
-		else
-			trialCount += 1;
+		//// Update indices
+		//if (trialCount == (numExperimentTrials[experimentIdx] - 1))
+		//{
+		//	experimentIdx += 1; // In the last trial we update this to be out of range (it's fine)
+		//	trialCount = 0;
+		//}
+		//else
+		//	trialCount += 1;
 
 		// End of a trial - print a star
 		cout.put('*');
@@ -192,6 +195,8 @@ int main(int argc, char* argv[])
 
 	vector<int> numHyperParamExperiments;                       // Length = total number of sets of hyperparameters
 	vector<int> numTrialsInExperiment;							// Length = total number of agent-environment pairs.   numTrialsInExperiment[i] is the number of trials to run for the i'th agent-environment pair.
+	vector<int> experimentIDs;									// Length = total number of trials (sum of elements in numTrialsInExperiment)
+	vector<int> trialCounts;									// Length = total number of trials (sum of elements in numTrialsInExperiment)
 	vector<string> agentNames;									// Length = total number of trials (sum of elements in numTrialsInExperiment)
 	vector<string> envNames;									// Length = total number of trials (sum of elements in numTrialsInExperiment)
 	vector<string> featureGenNames;								// Length = total number of trials (sum of elements in numTrialsInExperiment)																										
@@ -202,32 +207,34 @@ int main(int argc, char* argv[])
 	// Set parameters for experiments
 	////////////////////////////////
 
- //   // Sarsa-Lambda on Gridworld687
-	//numHyperParamExperiments.push_back(3);
-	//for (int hyperParamExp = 0; hyperParamExp < numHyperParamExperiments.back(); hyperParamExp++)
-	//{
-	//	numTrialsInExperiment.push_back(2);
-	//	push_back_n((string)"Sarsa(Lambda)", numTrialsInExperiment.back(), agentNames);
-	//	push_back_n((string)"Gridworld687", numTrialsInExperiment.back(), envNames);
-	//	push_back_n((string)"Fourier Basis", numTrialsInExperiment.back(), featureGenNames);
-	//	push_back_n({ {"iOrder", 0}, {"dOrder", 0} }, numTrialsInExperiment.back(), featureGenParameters);
+    // Sarsa-Lambda on Gridworld687
+	numHyperParamExperiments.push_back(3);
+	for (int hyperParamExp = 0; hyperParamExp < numHyperParamExperiments.back(); hyperParamExp++)
+	{
+		numTrialsInExperiment.push_back(2);
+		push_back_0_n(numTrialsInExperiment.back(), trialCounts);
+		push_back_n((string)"Sarsa(Lambda)", numTrialsInExperiment.back(), agentNames);
+		push_back_n((string)"Gridworld687", numTrialsInExperiment.back(), envNames);
+		push_back_n((string)"Fourier Basis", numTrialsInExperiment.back(), featureGenNames);
+		push_back_n({ {"iOrder", 0}, {"dOrder", 0} }, numTrialsInExperiment.back(), featureGenParameters);
 
-	//	if (hyperParamExp < 1)
-	//	{
-	//		push_back_n({ {"alpha", 0.01}, {"lambda", 0.8}, {"epsilon", 0.05} }, numTrialsInExperiment.back(), hyperParameters);
-	//	}
-	//	else
-	//	{
-	//		push_back_n({ {"alpha", sampleHyperParameter((string)"alpha", generator)}, {"lambda", sampleHyperParameter((string)"lambda", generator)},
-	//			{"epsilon", sampleHyperParameter((string)"epsilon", generator)} }, numTrialsInExperiment.back(), hyperParameters);
-	//	}
-	//}
+		if (hyperParamExp < 1)
+		{
+			push_back_n({ {"alpha", 0.01}, {"lambda", 0.8}, {"epsilon", 0.05} }, numTrialsInExperiment.back(), hyperParameters);
+		}
+		else
+		{
+			push_back_n({ {"alpha", sampleHyperParameter((string)"alpha", generator)}, {"lambda", sampleHyperParameter((string)"lambda", generator)},
+				{"epsilon", sampleHyperParameter((string)"epsilon", generator)} }, numTrialsInExperiment.back(), hyperParameters);
+		}
+	}
 
     // Q(lambda) on Mountain Car
     numHyperParamExperiments.push_back(2);
 	for (int hyperParamExp = 0; hyperParamExp < numHyperParamExperiments.back(); hyperParamExp++)
 	{
 		numTrialsInExperiment.push_back(2);
+		push_back_0_n(numTrialsInExperiment.back(), trialCounts);
 		push_back_n((string)"Q(Lambda)", numTrialsInExperiment.back(), agentNames);
 		push_back_n((string)"Mountain Car", numTrialsInExperiment.back(), envNames);
 		push_back_n((string)"Fourier Basis", numTrialsInExperiment.back(), featureGenNames);
@@ -243,27 +250,28 @@ int main(int argc, char* argv[])
 				{"epsilon", sampleHyperParameter((string)"epsilon", generator)} }, numTrialsInExperiment.back(), hyperParameters);
 		}
 	}
-//
-//	// Actor-Critic on Cart-Pole
-//	numHyperParamExperiments.push_back(2);
-//	for (int hyperParamExp = 0; hyperParamExp < numHyperParamExperiments.back(); hyperParamExp++)
-//	{
-//		numTrialsInExperiment.push_back(2);
-//		push_back_n((string)"Actor-Critic", numTrialsInExperiment.back(), agentNames);
-//		push_back_n((string)"Cart-Pole", numTrialsInExperiment.back(), envNames);
-//		push_back_n((string)"Fourier Basis", numTrialsInExperiment.back(), featureGenNames);
-//		push_back_n({ {"iOrder", 3}, {"dOrder", 3} }, numTrialsInExperiment.back(), featureGenParameters);
-//
-//		if (hyperParamExp < 1)
-//		{
-//			push_back_n({ {"alpha", 0.001}, {"beta", 0.001}, {"lambda", 0.8} }, numTrialsInExperiment.back(), hyperParameters);
-//		}
-//		else
-//		{
-//			push_back_n({ {"alpha", sampleHyperParameter((string)"alpha", generator)}, {"beta", sampleHyperParameter((string)"beta", generator)},
-//				{"lambda", sampleHyperParameter((string)"lambda", generator)} }, numTrialsInExperiment.back(), hyperParameters);
-//		}
-//	}
+
+	// Actor-Critic on Cart-Pole
+	numHyperParamExperiments.push_back(2);
+	for (int hyperParamExp = 0; hyperParamExp < numHyperParamExperiments.back(); hyperParamExp++)
+	{
+		numTrialsInExperiment.push_back(2);
+		push_back_0_n(numTrialsInExperiment.back(), trialCounts);
+		push_back_n((string)"Actor-Critic", numTrialsInExperiment.back(), agentNames);
+		push_back_n((string)"Cart-Pole", numTrialsInExperiment.back(), envNames);
+		push_back_n((string)"Fourier Basis", numTrialsInExperiment.back(), featureGenNames);
+		push_back_n({ {"iOrder", 3}, {"dOrder", 3} }, numTrialsInExperiment.back(), featureGenParameters);
+
+		if (hyperParamExp < 1)
+		{
+			push_back_n({ {"alpha", 0.001}, {"beta", 0.001}, {"lambda", 0.8} }, numTrialsInExperiment.back(), hyperParameters);
+		}
+		else
+		{
+			push_back_n({ {"alpha", sampleHyperParameter((string)"alpha", generator)}, {"beta", sampleHyperParameter((string)"beta", generator)},
+				{"lambda", sampleHyperParameter((string)"lambda", generator)} }, numTrialsInExperiment.back(), hyperParameters);
+		}
+	}
 //
 //    // Expected Sarsa on Mountain Car
 //	numHyperParamExperiments.push_back(2);
@@ -308,8 +316,14 @@ int main(int argc, char* argv[])
 
 	// Calculate the total number of trials
 	int numTrialsTotal = 0;
-	for (int trial = 0; trial < numTrialsInExperiment.size(); trial++)
-		numTrialsTotal += numTrialsInExperiment[trial];
+	for (int experiment = 0; experiment < numTrialsInExperiment.size(); experiment++)
+		numTrialsTotal += numTrialsInExperiment[experiment];
+
+	// Initialize the vector contating experimentIDs
+	for (int experimentID = 0; experimentID < numTrialsInExperiment.size(); experimentID++)
+	{
+		push_back_n(experimentID, numTrialsInExperiment[experimentID], experimentIDs);
+	}
 
 	///////////////////////////////////////////////////
 	// Create environment objects
@@ -392,7 +406,7 @@ int main(int argc, char* argv[])
 	// Actually run the trials - this function is threaded!
 	cout << "Running trials..." << endl;
 	// Changed var type
-	vector<MatrixXd> rawResults = run(agents, environments, maxEpisodes, maxEpisodeLengths, generator, numTrialsInExperiment, numTrialsTotal);
+	vector<MatrixXd> rawResults = run(agents, environments, maxEpisodes, maxEpisodeLengths, generator, numTrialsInExperiment, numTrialsTotal, experimentIDs, trialCounts);
 	cout << "\tTrials completed." << endl;
 
 	// Print the results to a file.
@@ -405,46 +419,41 @@ int main(int argc, char* argv[])
 	string path = "../out/results_";	// Otherwise, use this path
 #endif
 	// TO-DO: instead of using numSamples to write the results to CSV, write all results (so that CSV contains all results) and use numSaples parameter only for plotting
-    int trialIdx = 0;
+    int trialID = 0;
 	for (int experiment = 0; experiment < (int)numTrialsInExperiment.size(); experiment++)
 	{
-		string envName = envNames[trialIdx];
-		string agentFullName = agents[trialIdx]->getName();
-		string featureGenFullName = phis[trialIdx]->getName();
-		int maxEps = maxEpisodes[trialIdx];
+		string envName = envNames[trialID];
+		string agentFullName = agents[trialID]->getName();
+		string featureGenFullName = phis[trialID]->getName();
+		int maxEps = maxEpisodes[trialID];
 
-//        string fullFilePath = path + "full-" + to_string(numTrialsInExperiment[idx]) + "_trials_" + envName + "_" + featureGenFullName + "_" + agentFullName + ".csv";
-//        ofstream outFullResults(fullFilePath);
-
-        string summaryFilePath = path + "summary_" + to_string(numTrialsInExperiment[experiment]) + "_trials_" + envName + "_" + featureGenFullName + "_" + agentFullName + ".csv";
-		ofstream outSummaryResults(summaryFilePath);
-
-  //      outSummaryResults << "Episode,Average Discounted Return,Standard Error" << endl;
-
-		//for (int epCount = 0; epCount < maxEps; epCount++)
-		//{
-		//	double meanResult = rawResults[experiment].col(epCount).mean();
-		//	double standardError = sampleStandardError(rawResults[experiment].col(epCount));
-
-  //          outSummaryResults << epCount << "," << meanResult << "," << standardError << endl;
-		//}
-
-        // !!! Below prints all returns for all episodes and all trials in csv files, where rows = episodes and cols = trials (for readability since trials << episodes)
-
-		outSummaryResults << fixed << setprecision(6);
-
+		// Print full results to csv file (rows: episodes, cols: trials); first col is episode number
+        string fullFilePath = path + "full_" + to_string(numTrialsInExperiment[experiment]) + "_trials_" + envName + "_" + featureGenFullName + "_" + agentFullName + ".csv";
+        ofstream outFullResults(fullFilePath);
+		outFullResults << fixed << setprecision(5);
 		for (int epCount = 0; epCount < maxEps; epCount++)
 		{
-			outSummaryResults << epCount << ",";
+			outFullResults << epCount << ",";
 			for (int trialCount = 0; trialCount < numTrialsInExperiment[experiment]; trialCount++)
-			{   
-				cout << "Printing " << rawResults[experiment](trialCount, epCount) << endl;
-				outSummaryResults << rawResults[experiment](trialCount, epCount) << ",";
+			{
+				outFullResults << rawResults[experiment](trialCount, epCount) << ",";
 			}
-			outSummaryResults << endl;
+			outFullResults << endl;
 		}
 
-        trialIdx += numTrialsInExperiment[experiment];
+		// Print summary results (for plots)
+		string summaryFilePath = path + "summary_" + to_string(numTrialsInExperiment[experiment]) + "_trials_" + envName + "_" + featureGenFullName + "_" + agentFullName + ".csv";
+		ofstream outSummaryResults(summaryFilePath);
+		outSummaryResults << "Episode,Average Discounted Return,Standard Error" << endl;
+		for (int epCount = 0; epCount < maxEps; epCount++)
+		{
+			double meanResult = rawResults[experiment].col(epCount).mean();
+			double standardError = sampleStandardError(rawResults[experiment].col(epCount));
+
+			outSummaryResults << epCount << "," << meanResult << "," << standardError << endl;
+		}
+
+		trialID += numTrialsInExperiment[experiment];
 	}
 
 	// Clean up memory. Everything that we called "new" for, we need to call "delete" for.
@@ -455,13 +464,12 @@ int main(int argc, char* argv[])
 		delete agents[i];
 	}
 
-	//system("learning_curves.py");
+	system("learning_curves.py");
 
 	// Print message indicating that the program has finished
 	cout << "Done. Press enter to exit." << endl;
 	return 0; // No error.
 }
-
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////

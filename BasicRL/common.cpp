@@ -87,6 +87,12 @@ void softmaxDebug(const Eigen::VectorXd& x, Eigen::VectorXd& buff)
 	buff /= buff.sum();
 }
 
+void push_back_0_n(const int n, std::vector<int>& buff)
+{
+	for (int i = 0; i < n; i++)
+		buff.push_back(i);
+}
+
 // Dummy function for framework test
 
 // Samples hyper parameters around pre-defined values:
