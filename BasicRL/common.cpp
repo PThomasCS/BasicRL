@@ -131,3 +131,55 @@ double sampleHyperParameter(const string HyperParamName, std::mt19937_64& genera
 	// Make sure that the sample value is in range and return the sampled hyper parameter
 	return max(uni_dist.a(),min(uni_dist.b(), sampledHyperParameter));
 }
+
+double sampleParameter(const string HyperParamName, mt19937_64& generator)
+{
+    double sample;
+    if (HyperParamName == "alpha" || HyperParamName == "beta")
+    {
+        bernoulli_distribution b(0.2);
+        bool useSetLambda = b(generator);
+
+        if (useSetLambda)
+        {
+            uniform_real_distribution<double> u(0.01, 0.001);
+            sample = u(generator);
+        }
+
+        uniform_real_distribution<double> u(log10(0.000001), log10(1.0));
+        sample = pow(10.0, u(generator));
+    }
+    else if (HyperParamName == "epsilon")
+    {
+        bernoulli_distribution b(0.5);
+        bool useSetLambda = b(generator);
+
+        if (useSetLambda)
+        {
+            uniform_real_distribution<double> u(0.05, 0.01);
+            sample = u(generator);
+        }
+
+        uniform_real_distribution<double> u(0, 1);
+        sample = u(generator);
+    }
+    else if (HyperParamName == "lambda")
+    {
+        bernoulli_distribution b(0.3);
+        bool useSetLambda = b(generator);
+
+        if (useSetLambda)
+        {
+            uniform_real_distribution<double> u(0.8, 0.9);
+            sample = u(generator);
+        }
+
+        uniform_real_distribution<double> u(0, 1);
+        sample = u(generator);
+    }
+
+    assert(false);
+    errorExit("Error in sampleParameter - unknown parameter name");
+
+    return sample;
+}

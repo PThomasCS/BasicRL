@@ -174,3 +174,5 @@ void push_back_0_n(const int n, std::vector<int>& buff);
 // Lambda: samples from range (0,1] around values 0.1, 0.2, 0.3, etc. (with some variation)
 
 double sampleHyperParameter(const std::string HyperParamName, std::mt19937_64& gen);
+
+double sampleParameter(const std::string HyperParamName, std::mt19937_64& gen);

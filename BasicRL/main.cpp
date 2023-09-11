@@ -189,8 +189,31 @@ int main(int argc, char* argv[])
 {
 	// Comment out the line below if you don't want to run other random experiments first!
 	//sandbox();
+    mt19937_64 g;
 
-	// Default random number generator
+    ofstream outAlpha("out/alpha_sample.txt");
+    for (int i = 0; i < 100; i++)
+        outAlpha << sampleParameter("alpha", g) << endl;
+    outAlpha.close();
+
+    ofstream outBeta("out/beta_sample.txt");
+    for (int i = 0; i < 100; i++)
+        outBeta << sampleParameter("beta", g) << endl;
+    outBeta.close();
+
+    ofstream outEpsilon("out/epsilon_sample.txt");
+    for (int i = 0; i < 100; i++)
+        outEpsilon << sampleParameter("epsilon", g) << endl;
+    outEpsilon.close();
+
+    ofstream outLambda("out/lambda_sample.txt");
+    for (int i = 0; i < 100; i++)
+        outLambda << sampleParameter("lambda", g) << endl;
+    outLambda.close();
+
+    system("python sandbox_plots.py");
+
+    // Default random number generator
 	mt19937_64 generator;
 
 	vector<int> numHyperParamExperiments;                       // Length = total number of sets of hyperparameters
@@ -208,7 +231,7 @@ int main(int argc, char* argv[])
 	////////////////////////////////
 
     // Sarsa-Lambda on Gridworld687
-	numHyperParamExperiments.push_back(3);
+	numHyperParamExperiments.push_back(10);
 	for (int hyperParamExp = 0; hyperParamExp < numHyperParamExperiments.back(); hyperParamExp++)
 	{
 		numTrialsInExperiment.push_back(2);
