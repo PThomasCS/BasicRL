@@ -141,6 +141,7 @@
     <ClInclude Include="Agent.hpp" />
     <ClInclude Include="ActorCritic.hpp" />
     <ClInclude Include="ExpectedSarsaLambda.hpp" />
+    <ClInclude Include="Experiment.hpp" />
     <ClInclude Include="Gridworld687.hpp" />
     <ClInclude Include="IdentityBasis.hpp" />
     <ClInclude Include="MountainCar.hpp" />
@@ -160,6 +161,7 @@
     <ClCompile Include="Acrobot.cpp" />
     <ClCompile Include="ActorCritic.cpp" />
     <ClCompile Include="ExpectedSarsaLambda.cpp" />
+    <ClCompile Include="Experiment.cpp" />
     <ClCompile Include="Gridworld687.cpp" />
     <ClCompile Include="IdentityBasis.cpp" />
     <ClCompile Include="mainUpdates.cpp">
@@ -182,6 +184,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="learning_curves.py" />
+    <None Include="sandbox_plots.py" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -191,27 +191,27 @@ int main(int argc, char* argv[])
 	//sandbox();
     mt19937_64 g;
 
-    ofstream outAlpha("out/alpha_sample.txt");
-    for (int i = 0; i < 100; i++)
+    ofstream outAlpha("out/alpha_samples.txt");
+    for (int i = 0; i < 10000; i++)
         outAlpha << sampleParameter("alpha", g) << endl;
     outAlpha.close();
 
-    ofstream outBeta("out/beta_sample.txt");
-    for (int i = 0; i < 100; i++)
+    ofstream outBeta("out/beta_samples.txt");
+    for (int i = 0; i < 10000; i++)
         outBeta << sampleParameter("beta", g) << endl;
     outBeta.close();
 
-    ofstream outEpsilon("out/epsilon_sample.txt");
-    for (int i = 0; i < 100; i++)
+    ofstream outEpsilon("out/epsilon_samples.txt");
+    for (int i = 0; i < 10000; i++)
         outEpsilon << sampleParameter("epsilon", g) << endl;
     outEpsilon.close();
 
-    ofstream outLambda("out/lambda_sample.txt");
-    for (int i = 0; i < 100; i++)
+    ofstream outLambda("out/lambda_samples.txt");
+    for (int i = 0; i < 10000; i++)
         outLambda << sampleParameter("lambda", g) << endl;
     outLambda.close();
 
-    system("python sandbox_plots.py");
+    system("sandbox_plots.py");
 
     // Default random number generator
 	mt19937_64 generator;
@@ -252,49 +252,49 @@ int main(int argc, char* argv[])
 		}
 	}
 
-    // Q(lambda) on Mountain Car
-    numHyperParamExperiments.push_back(2);
-	for (int hyperParamExp = 0; hyperParamExp < numHyperParamExperiments.back(); hyperParamExp++)
-	{
-		numTrialsInExperiment.push_back(2);
-		push_back_0_n(numTrialsInExperiment.back(), trialCounts);
-		push_back_n((string)"Q(Lambda)", numTrialsInExperiment.back(), agentNames);
-		push_back_n((string)"Mountain Car", numTrialsInExperiment.back(), envNames);
-		push_back_n((string)"Fourier Basis", numTrialsInExperiment.back(), featureGenNames);
-		push_back_n({ {"iOrder", 3}, {"dOrder", 3} }, numTrialsInExperiment.back(), featureGenParameters);
+ //   // Q(lambda) on Mountain Car
+ //   numHyperParamExperiments.push_back(2);
+	//for (int hyperParamExp = 0; hyperParamExp < numHyperParamExperiments.back(); hyperParamExp++)
+	//{
+	//	numTrialsInExperiment.push_back(2);
+	//	push_back_0_n(numTrialsInExperiment.back(), trialCounts);
+	//	push_back_n((string)"Q(Lambda)", numTrialsInExperiment.back(), agentNames);
+	//	push_back_n((string)"Mountain Car", numTrialsInExperiment.back(), envNames);
+	//	push_back_n((string)"Fourier Basis", numTrialsInExperiment.back(), featureGenNames);
+	//	push_back_n({ {"iOrder", 3}, {"dOrder", 3} }, numTrialsInExperiment.back(), featureGenParameters);
 
-		if (hyperParamExp < 1)
-		{
-			push_back_n({ {"alpha", 0.0001}, {"lambda", 0.8}, {"epsilon", 0.05} }, numTrialsInExperiment.back(), hyperParameters);
-		}
-		else
-		{
-			push_back_n({ {"alpha", sampleHyperParameter((string)"alpha", generator)}, {"lambda", sampleHyperParameter((string)"lambda", generator)},
-				{"epsilon", sampleHyperParameter((string)"epsilon", generator)} }, numTrialsInExperiment.back(), hyperParameters);
-		}
-	}
+	//	if (hyperParamExp < 1)
+	//	{
+	//		push_back_n({ {"alpha", 0.0001}, {"lambda", 0.8}, {"epsilon", 0.05} }, numTrialsInExperiment.back(), hyperParameters);
+	//	}
+	//	else
+	//	{
+	//		push_back_n({ {"alpha", sampleHyperParameter((string)"alpha", generator)}, {"lambda", sampleHyperParameter((string)"lambda", generator)},
+	//			{"epsilon", sampleHyperParameter((string)"epsilon", generator)} }, numTrialsInExperiment.back(), hyperParameters);
+	//	}
+	//}
 
-	// Actor-Critic on Cart-Pole
-	numHyperParamExperiments.push_back(2);
-	for (int hyperParamExp = 0; hyperParamExp < numHyperParamExperiments.back(); hyperParamExp++)
-	{
-		numTrialsInExperiment.push_back(2);
-		push_back_0_n(numTrialsInExperiment.back(), trialCounts);
-		push_back_n((string)"Actor-Critic", numTrialsInExperiment.back(), agentNames);
-		push_back_n((string)"Cart-Pole", numTrialsInExperiment.back(), envNames);
-		push_back_n((string)"Fourier Basis", numTrialsInExperiment.back(), featureGenNames);
-		push_back_n({ {"iOrder", 3}, {"dOrder", 3} }, numTrialsInExperiment.back(), featureGenParameters);
+	//// Actor-Critic on Cart-Pole
+	//numHyperParamExperiments.push_back(2);
+	//for (int hyperParamExp = 0; hyperParamExp < numHyperParamExperiments.back(); hyperParamExp++)
+	//{
+	//	numTrialsInExperiment.push_back(2);
+	//	push_back_0_n(numTrialsInExperiment.back(), trialCounts);
+	//	push_back_n((string)"Actor-Critic", numTrialsInExperiment.back(), agentNames);
+	//	push_back_n((string)"Cart-Pole", numTrialsInExperiment.back(), envNames);
+	//	push_back_n((string)"Fourier Basis", numTrialsInExperiment.back(), featureGenNames);
+	//	push_back_n({ {"iOrder", 3}, {"dOrder", 3} }, numTrialsInExperiment.back(), featureGenParameters);
 
-		if (hyperParamExp < 1)
-		{
-			push_back_n({ {"alpha", 0.001}, {"beta", 0.001}, {"lambda", 0.8} }, numTrialsInExperiment.back(), hyperParameters);
-		}
-		else
-		{
-			push_back_n({ {"alpha", sampleHyperParameter((string)"alpha", generator)}, {"beta", sampleHyperParameter((string)"beta", generator)},
-				{"lambda", sampleHyperParameter((string)"lambda", generator)} }, numTrialsInExperiment.back(), hyperParameters);
-		}
-	}
+	//	if (hyperParamExp < 1)
+	//	{
+	//		push_back_n({ {"alpha", 0.001}, {"beta", 0.001}, {"lambda", 0.8} }, numTrialsInExperiment.back(), hyperParameters);
+	//	}
+	//	else
+	//	{
+	//		push_back_n({ {"alpha", sampleHyperParameter((string)"alpha", generator)}, {"beta", sampleHyperParameter((string)"beta", generator)},
+	//			{"lambda", sampleHyperParameter((string)"lambda", generator)} }, numTrialsInExperiment.back(), hyperParameters);
+	//	}
+	//}
 //
 //    // Expected Sarsa on Mountain Car
 //	numHyperParamExperiments.push_back(2);

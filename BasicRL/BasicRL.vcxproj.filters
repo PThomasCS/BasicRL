@@ -69,6 +69,9 @@
     <ClInclude Include="IdentityBasis.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Experiment.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="common.cpp">
@@ -119,11 +122,15 @@
     <ClCompile Include="IdentityBasis.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Experiment.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Notes.txt" />
   </ItemGroup>
   <ItemGroup>
     <None Include="learning_curves.py" />
+    <None Include="sandbox_plots.py" />
   </ItemGroup>
 </Project>

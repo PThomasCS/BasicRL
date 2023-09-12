@@ -138,48 +138,58 @@ double sampleParameter(const string HyperParamName, mt19937_64& generator)
     if (HyperParamName == "alpha" || HyperParamName == "beta")
     {
         bernoulli_distribution b(0.2);
-        bool useSetLambda = b(generator);
+        bool userecommendedalpha = b(generator);
 
-        if (useSetLambda)
+        if (userecommendedalpha)
         {
-            uniform_real_distribution<double> u(0.01, 0.001);
+            uniform_real_distribution<double> u(0.001, 0.1);
             sample = u(generator);
         }
-
-        uniform_real_distribution<double> u(log10(0.000001), log10(1.0));
-        sample = pow(10.0, u(generator));
+		else
+		{
+			uniform_real_distribution<double> u(log10(0.000001), log10(1.0));
+			sample = pow(10.0, u(generator));
+		}
+		//uniform_real_distribution<double> u(log10(0.000001), log10(1.0));
+		//sample = pow(10.0, u(generator));
     }
     else if (HyperParamName == "epsilon")
     {
         bernoulli_distribution b(0.5);
-        bool useSetLambda = b(generator);
+        bool useRecommendedEpsilon = b(generator);
 
-        if (useSetLambda)
+        if (useRecommendedEpsilon)
         {
-            uniform_real_distribution<double> u(0.05, 0.01);
+            uniform_real_distribution<double> u(0, 0.1);
             sample = u(generator);
         }
-
-        uniform_real_distribution<double> u(0, 1);
-        sample = u(generator);
+		else
+		{
+			uniform_real_distribution<double> u(0, 1.0);
+			sample = u(generator);
+		}
     }
     else if (HyperParamName == "lambda")
     {
         bernoulli_distribution b(0.3);
-        bool useSetLambda = b(generator);
+        bool useRecommendedLambda = b(generator);
 
-        if (useSetLambda)
+        if (useRecommendedLambda)
         {
             uniform_real_distribution<double> u(0.8, 0.9);
             sample = u(generator);
         }
-
-        uniform_real_distribution<double> u(0, 1);
-        sample = u(generator);
+		else
+		{
+			uniform_real_distribution<double> u(0, 1);
+			sample = u(generator);
+		}
     }
-
-    assert(false);
-    errorExit("Error in sampleParameter - unknown parameter name");
+	else
+	{
+        assert(false);
+		errorExit("Error in sampleParameter - unknown parameter name");
+	}
 
     return sample;
 }
