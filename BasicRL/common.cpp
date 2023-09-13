@@ -143,9 +143,9 @@ double sampleParameter(const string HyperParamName, mt19937_64& generator)
 		// With some probability, sample alpha or beta from default range (do we need this for step-sizes?)
 		// Else sample from [0.000001,1], with log scale
         bernoulli_distribution b(0.1);
-        bool useDefaultAlpha = b(generator);
+        bool useDefaultAlphaBeta = b(generator);
 
-        if (useDefaultAlpha)
+        if (useDefaultAlphaBeta)
         {
             uniform_real_distribution<double> u(0.001, 0.1);
             sample = u(generator);
@@ -163,9 +163,9 @@ double sampleParameter(const string HyperParamName, mt19937_64& generator)
     else if (HyperParamName == "epsilon")
     {
         bernoulli_distribution b(0.5);						// Is this reasonable? Are there a lot of environments/agents where we need to explore more then 10% of the time?
-        bool useRecommendedEpsilon = b(generator);
+        bool useDefaultEpsilon = b(generator);
 
-        if (useRecommendedEpsilon)
+        if (useDefaultEpsilon)
         {
             uniform_real_distribution<double> u(0, 0.1);
             sample = u(generator);
@@ -179,9 +179,9 @@ double sampleParameter(const string HyperParamName, mt19937_64& generator)
     else if (HyperParamName == "lambda")
     {
         bernoulli_distribution b(0.3);
-        bool useRecommendedLambda = b(generator);
+        bool useDefaultLambda = b(generator);
 
-        if (useRecommendedLambda)
+        if (useDefaultLambda)
         {
             uniform_real_distribution<double> u(0.8, 0.9);
             sample = u(generator);
