@@ -132,22 +132,29 @@ double sampleHyperParameter(const string HyperParamName, std::mt19937_64& genera
 	return max(uni_dist.a(),min(uni_dist.b(), sampledHyperParameter));
 }
 
+// Will scrap the function above after the below is fully done
+
 double sampleParameter(const string HyperParamName, mt19937_64& generator)
 {
     double sample;
-    if (HyperParamName == "alpha" || HyperParamName == "beta")
-    {
-        bernoulli_distribution b(0.2);
-        bool userecommendedalpha = b(generator);
 
-        if (userecommendedalpha)
+    if (HyperParamName == "alpha" || HyperParamName == "beta")
+    {   
+		// With some probability, sample alpha or beta from default range (do we need this for step-sizes?)
+		// Else sample from [0.000001,1], with log scale
+        bernoulli_distribution b(0.1);
+        bool useDefaultAlpha = b(generator);
+
+        if (useDefaultAlpha)
         {
             uniform_real_distribution<double> u(0.001, 0.1);
             sample = u(generator);
         }
 		else
-		{
-			uniform_real_distribution<double> u(log10(0.000001), log10(1.0));
+		{   
+			// Sample real from [-6, 0]
+			uniform_real_distribution<double> u(log10(0.000001), log10(1.0)); // Check if we need to explicitly include bounds
+			// Compute 10^(sampled real); e.g., could be 10^(-3.67) = 0.00021...
 			sample = pow(10.0, u(generator));
 		}
 		//uniform_real_distribution<double> u(log10(0.000001), log10(1.0));
@@ -155,7 +162,7 @@ double sampleParameter(const string HyperParamName, mt19937_64& generator)
     }
     else if (HyperParamName == "epsilon")
     {
-        bernoulli_distribution b(0.5);
+        bernoulli_distribution b(0.5);						// Is this reasonable? Are there a lot of environments/agents where we need to explore more then 10% of the time?
         bool useRecommendedEpsilon = b(generator);
 
         if (useRecommendedEpsilon)
@@ -165,7 +172,7 @@ double sampleParameter(const string HyperParamName, mt19937_64& generator)
         }
 		else
 		{
-			uniform_real_distribution<double> u(0, 1.0);
+			uniform_real_distribution<double> u(0, 1.0);	// Is it better to exclude (0, 0.1] from this range?
 			sample = u(generator);
 		}
     }
