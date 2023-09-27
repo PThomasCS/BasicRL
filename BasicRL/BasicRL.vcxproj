@@ -184,6 +184,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="learning_curves.py" />
+    <None Include="rank_params.py" />
     <None Include="sandbox_plots.py" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

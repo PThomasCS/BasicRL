@@ -59,7 +59,7 @@ def plot(num_samples):
         plt.savefig(output_path, format='jpeg')
         plt.close()  # Close the plot to free up memory
         
-        print('Plot saved for file:', file)
+        # print('Plot saved for file:', file)
     
 
 if __name__ == "__main__":

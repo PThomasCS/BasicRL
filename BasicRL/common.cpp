@@ -140,25 +140,26 @@ double sampleParameter(const string HyperParamName, mt19937_64& generator)
 
     if (HyperParamName == "alpha" || HyperParamName == "beta")
     {   
-		// With some probability, sample alpha or beta from default range (do we need this for step-sizes?)
-		// Else sample from [0.000001,1], with log scale
-        bernoulli_distribution b(0.1);
-        bool useDefaultAlphaBeta = b(generator);
+		//// with some probability, sample alpha or beta from default range (do we need this for step-sizes?)
+		//// else sample from [0.000001,1], with log scale
+  //      bernoulli_distribution b(0.1);
+  //      bool usedefaultalphabeta = b(generator);
 
-        if (useDefaultAlphaBeta)
-        {
-            uniform_real_distribution<double> u(0.001, 0.1);
-            sample = u(generator);
-        }
-		else
-		{   
-			// Sample real from [-6, 0]
-			uniform_real_distribution<double> u(log10(0.000001), log10(1.0)); // Check if we need to explicitly include bounds
-			// Compute 10^(sampled real); e.g., could be 10^(-3.67) = 0.00021...
-			sample = pow(10.0, u(generator));
-		}
-		//uniform_real_distribution<double> u(log10(0.000001), log10(1.0));
-		//sample = pow(10.0, u(generator));
+  //      if (usedefaultalphabeta)
+  //      {
+  //          uniform_real_distribution<double> u(0.001, 0.1);
+  //          sample = u(generator);
+  //      }
+		//else
+		//{   
+		//	// sample real from [-6, 0]
+		//	uniform_real_distribution<double> u(log10(0.000001), log10(1.0)); // check if we need to explicitly include bounds
+		//	// compute 10^(sampled real); e.g., could be 10^(-3.67) = 0.00021...
+		//	sample = pow(10.0, u(generator));
+		//}
+
+		uniform_real_distribution<double> u(log10(0.000001), log10(1.0));
+		sample = pow(10.0, u(generator));
     }
     else if (HyperParamName == "epsilon")
     {

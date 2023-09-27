@@ -2,6 +2,7 @@
 
 import matplotlib.pyplot as plt
 import pandas as pd
+import numpy as np
 import seaborn as sns
 import os
 
@@ -16,8 +17,13 @@ def plot_distribution(filename, plot_log=True):
     if plot_log and ('alpha' in filename or 'beta' in filename):
         plt.xscale('log')
 
-    # Plotting the histogram
-    plt.hist(numbers, bins='auto', edgecolor='black', alpha=0.7)
+        # Create logarithmic bins
+        bin_edges = np.logspace(np.log10(min(numbers)), np.log10(max(numbers)), num=50)
+        plt.hist(numbers, bins=bin_edges, edgecolor='black', alpha=0.7)
+
+    else:
+        # Plotting the histogram
+        plt.hist(numbers, bins='auto', edgecolor='black', alpha=0.7)
 
     plt.xlabel('Sampled Parameter Value')
     plt.ylabel('Frequency')

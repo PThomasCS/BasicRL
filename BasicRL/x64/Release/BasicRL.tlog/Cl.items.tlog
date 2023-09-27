@@ -1,6 +1,7 @@
 C:\Data\BasicRL\BasicRL\Acrobot.cpp;C:\Data\BasicRL\BasicRL\x64\Release\Acrobot.obj
 C:\Data\BasicRL\BasicRL\ActorCritic.cpp;C:\Data\BasicRL\BasicRL\x64\Release\ActorCritic.obj
 C:\Data\BasicRL\BasicRL\ExpectedSarsaLambda.cpp;C:\Data\BasicRL\BasicRL\x64\Release\ExpectedSarsaLambda.obj
+C:\Data\BasicRL\BasicRL\Experiment.cpp;C:\Data\BasicRL\BasicRL\x64\Release\Experiment.obj
 C:\Data\BasicRL\BasicRL\Gridworld687.cpp;C:\Data\BasicRL\BasicRL\x64\Release\Gridworld687.obj
 C:\Data\BasicRL\BasicRL\IdentityBasis.cpp;C:\Data\BasicRL\BasicRL\x64\Release\IdentityBasis.obj
 C:\Data\BasicRL\BasicRL\MountainCar.cpp;C:\Data\BasicRL\BasicRL\x64\Release\MountainCar.obj
