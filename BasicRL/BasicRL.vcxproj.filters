@@ -72,6 +72,9 @@
     <ClInclude Include="Experiment.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Sepsis.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="common.cpp">
@@ -123,6 +126,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Experiment.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Sepsis.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

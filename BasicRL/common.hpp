@@ -176,3 +176,5 @@ void push_back_0_n(const int n, std::vector<int>& buff);
 double sampleHyperParameter(const std::string HyperParamName, std::mt19937_64& gen);
 
 double sampleParameter(const std::string HyperParamName, std::mt19937_64& gen);
+
+// Function to read an CSV file and return an Eigen matrix
