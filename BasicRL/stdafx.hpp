@@ -47,6 +47,7 @@
 #include "MountainCar.hpp"			// Mountain Car
 #include "CartPole.hpp"             // CartPole (from 2019 Course Notes)
 #include "Acrobot.hpp"				// Acrobot domain
+#include "Sepsis.hpp"				// Sepsis domain
 
 ////////////////////////////////////////////////////////////////
 // Agent files
