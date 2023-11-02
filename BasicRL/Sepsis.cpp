@@ -5,9 +5,9 @@ using namespace Eigen;
 
 Sepsis::Sepsis()
 {
-    MatrixXd transitionProbabilities = readCSVToEigenMatrix("icu-sepsis_params/tx_mat.csv");
-    MatrixXd rewards = readCSVToEigenMatrix("icu-sepsis_params/r_mat.csv");
-    VectorXd initialStateDistribution = readCSVToEigenMatrix("icu-sepsis_params/d_0.csv");
+    transitionProbabilities = readCSVToMatrix("icu-sepsis_params/tx_mat.csv"); // Matrix with shape (numStates*numActions, numStates)
+    rewards = readCSVToMatrix("icu-sepsis_params/r_mat.csv");                  // Matrix with shape (numStates*numActions, numStates)
+    initialStateDistribution = readCSVToMatrix("icu-sepsis_params/d_0.csv");   // Vector with shape (numStates)
 }
 
 int Sepsis::getObservationDimension() const
@@ -42,24 +42,24 @@ string Sepsis::getName() const
 
 VectorXd Sepsis::getObservationLowerBound() const
 {
-    return VectorXd::Zero(24);
+    return VectorXd::Zero(747);
 }
 
 VectorXd Sepsis::getObservationUpperBound() const
 {
-    return VectorXd::Ones(24);
+    return VectorXd::Ones(747);
 }
 
 void Sepsis::newEpisode(mt19937_64& generator)
 {
-    state = randp(transitionProbabilities, generator);
+    //state = randp(initialStateDistribution, generator);
+    state = 0;
 }
 
 void Sepsis::getObservation(mt19937_64& generator, VectorXd& buff) const
 {
-    //buff = VectorXd::Zero(24);
-    //buff(y * 5 + x) = 1.0;
-    buff = state;                        
+    buff = VectorXd::Zero(747);
+    buff(state) = 1.0;               
 }
 
 double Sepsis::step(int action, mt19937_64& generator) {
@@ -71,9 +71,10 @@ double Sepsis::step(int action, mt19937_64& generator) {
     }
 
     // Handle the action
-    int sPrime = randp(transitionProbabilities.row(state));
+    //int sPrime = randp(transitionProbabilities.row(state*25 + action), generator);
+    int sPrime = 0;
     // Return a reward for entering sPrime:
-    double reward = rewards(state * action, sPrime);
+    double reward = rewards[state*25 + action][sPrime];
     state = sPrime;
     return reward;
 }

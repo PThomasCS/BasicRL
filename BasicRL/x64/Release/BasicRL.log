@@ -1,8 +1,54 @@
-﻿  Experiment.cpp
+﻿  Acrobot.cpp
+  ActorCritic.cpp
+  ExpectedSarsaLambda.cpp
+  Gridworld687.cpp
+  IdentityBasis.cpp
+  MountainCar.cpp
+  QLambda.cpp
+  CartPole.cpp
+  common.cpp
+  FourierBasis.cpp
+  Gridworld.cpp
+  June16_2023.cpp
   main.cpp
-  Generating code
-  1 of 3247 functions (<0.1%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
-    62 functions had inline decision re-evaluated but remain unchanged
-  Finished generating code
-  BasicRL.vcxproj -> C:\Data\BasicRL\x64\Release\BasicRL.exe
+  Reinforce.cpp
+  SarsaLambda.cpp
+  Sepsis.cpp
+C:\Data\BasicRL\BasicRL\lib\Eigen\src\Core\DenseCoeffsBase.h(161,7): error C2338: static_assert failed: 'THE_BRACKET_OPERATOR_IS_ONLY_FOR_VECTORS__USE_THE_PARENTHESIS_OPERATOR_INSTEAD'
+C:\Data\BasicRL\BasicRL\lib\Eigen\src\Core\DenseCoeffsBase.h(159,5): message : while compiling class template member function 'const double &Eigen::DenseCoeffsBase<Derived,0>::operator [](Eigen::Index) const'
+          with
+          [
+              Derived=Eigen::Matrix<double,-1,-1,0,-1,-1>
+          ]
+C:\Data\BasicRL\BasicRL\common.hpp(34,7): message : see the first reference to 'Eigen::DenseCoeffsBase<Derived,0>::operator []' in 'randp'
+          with
+          [
+              Derived=Eigen::Matrix<double,-1,-1,0,-1,-1>
+          ]
+C:\Data\BasicRL\BasicRL\lib\Eigen\src\Core\DenseCoeffsBase.h(302,57): message : see reference to class template instantiation 'Eigen::DenseCoeffsBase<Derived,0>' being compiled
+          with
+          [
+              Derived=Eigen::Matrix<double,-1,-1,0,-1,-1>
+          ]
+C:\Data\BasicRL\BasicRL\lib\Eigen\src\Core\DenseCoeffsBase.h(556,12): message : see reference to class template instantiation 'Eigen::DenseCoeffsBase<Derived,1>' being compiled
+          with
+          [
+              Derived=Eigen::Matrix<double,-1,-1,0,-1,-1>
+          ]
+C:\Data\BasicRL\BasicRL\lib\Eigen\src\Core\DenseBase.h(43,12): message : see reference to class template instantiation 'Eigen::DenseCoeffsBase<Derived,3>' being compiled
+          with
+          [
+              Derived=Eigen::Matrix<double,-1,-1,0,-1,-1>
+          ]
+C:\Data\BasicRL\BasicRL\lib\Eigen\src\Core\MatrixBase.h(49,12): message : see reference to class template instantiation 'Eigen::DenseBase<Derived>' being compiled
+          with
+          [
+              Derived=Eigen::Matrix<double,-1,-1,0,-1,-1>
+          ]
+C:\Data\BasicRL\BasicRL\lib\Eigen\src\Core\PlainObjectBase.h(98,67): message : see reference to class template instantiation 'Eigen::MatrixBase<Derived>' being compiled
+          with
+          [
+              Derived=Eigen::Matrix<double,-1,-1,0,-1,-1>
+          ]
+C:\Data\BasicRL\BasicRL\lib\Eigen\src\Core\Matrix.h(179,12): message : see reference to class template instantiation 'Eigen::PlainObjectBase<Eigen::Matrix<double,-1,-1,0,-1,-1>>' being compiled
+C:\Data\BasicRL\BasicRL\FourierBasis.hpp(25,18): message : see reference to class template instantiation 'Eigen::Matrix<double,-1,-1,0,-1,-1>' being compiled

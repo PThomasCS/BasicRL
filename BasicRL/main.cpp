@@ -237,16 +237,16 @@ int main(int argc, char* argv[])
 	//	}
 	//}
 
-    // Q(lambda) on Mountain Car
-    numHyperParamExperiments.push_back(10);
+	// Q(lambda) on Sepsis
+	numHyperParamExperiments.push_back(10);
 	for (int hyperParamExp = 0; hyperParamExp < numHyperParamExperiments.back(); hyperParamExp++)
 	{
 		numTrialsInExperiment.push_back(10);
 		push_back_0_n(numTrialsInExperiment.back(), trialCounts);
 		push_back_n((string)"Q(Lambda)", numTrialsInExperiment.back(), agentNames);
-		push_back_n((string)"Mountain Car", numTrialsInExperiment.back(), envNames);
+		push_back_n((string)"Sepsis", numTrialsInExperiment.back(), envNames);
 		push_back_n((string)"Fourier Basis", numTrialsInExperiment.back(), featureGenNames);
-		push_back_n({ {"iOrder", 3}, {"dOrder", 3} }, numTrialsInExperiment.back(), featureGenParameters);
+		push_back_n({ {"iOrder", 0}, {"dOrder", 0} }, numTrialsInExperiment.back(), featureGenParameters);
 
 		if (hyperParamExp < 1)
 		{
@@ -258,6 +258,28 @@ int main(int argc, char* argv[])
 				{"epsilon", sampleHyperParameter((string)"epsilon", generator)} }, numTrialsInExperiment.back(), hyperParameters);
 		}
 	}
+
+ //   // Q(lambda) on Mountain Car
+ //   numHyperParamExperiments.push_back(10);
+	//for (int hyperParamExp = 0; hyperParamExp < numHyperParamExperiments.back(); hyperParamExp++)
+	//{
+	//	numTrialsInExperiment.push_back(10);
+	//	push_back_0_n(numTrialsInExperiment.back(), trialCounts);
+	//	push_back_n((string)"Q(Lambda)", numTrialsInExperiment.back(), agentNames);
+	//	push_back_n((string)"Mountain Car", numTrialsInExperiment.back(), envNames);
+	//	push_back_n((string)"Fourier Basis", numTrialsInExperiment.back(), featureGenNames);
+	//	push_back_n({ {"iOrder", 3}, {"dOrder", 3} }, numTrialsInExperiment.back(), featureGenParameters);
+
+	//	if (hyperParamExp < 1)
+	//	{
+	//		push_back_n({ {"alpha", 0.0001}, {"lambda", 0.8}, {"epsilon", 0.05} }, numTrialsInExperiment.back(), hyperParameters);
+	//	}
+	//	else
+	//	{
+	//		push_back_n({ {"alpha", sampleHyperParameter((string)"alpha", generator)}, {"lambda", sampleHyperParameter((string)"lambda", generator)},
+	//			{"epsilon", sampleHyperParameter((string)"epsilon", generator)} }, numTrialsInExperiment.back(), hyperParameters);
+	//	}
+	//}
 
 	//// Actor-Critic on Cart-Pole
 	//numHyperParamExperiments.push_back(2);

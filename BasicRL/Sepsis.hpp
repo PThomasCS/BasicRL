@@ -33,4 +33,7 @@ public:
 
 private:
     int state;
+    std::vector<std::vector<double>> transitionProbabilities;
+    std::vector<std::vector<double>> rewards;
+    std::vector<double> initialStateDistribution;
 };
