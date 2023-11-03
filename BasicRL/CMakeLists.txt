@@ -406,4 +406,4 @@ add_executable(BasicRL
         main.cpp
         SarsaLambda.cpp
         SarsaLambda.hpp
-        stdafx.hpp CartPole.hpp CartPole.cpp Acrobot.hpp Acrobot.cpp IdentityBasis.hpp IdentityBasis.cpp)
+        stdafx.hpp CartPole.hpp CartPole.cpp Acrobot.hpp Acrobot.cpp IdentityBasis.hpp IdentityBasis.cpp Sepsis.cpp ExpectedSarsaLambda.cpp Reinforce.cpp)

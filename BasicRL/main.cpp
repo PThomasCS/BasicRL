@@ -48,6 +48,8 @@ vector<MatrixXd> run(vector<Agent*> agents, vector<Environment*> environments, V
 #pragma omp parallel for	// This line instructs the compiler to parallelize the following for-loop. This uses openmp.
 	for (int trial = 0; trial < numTrialsTotal; trial++)
 	{
+        int stepCount = 0;
+
 		// Run an agent lifetime
 		double gamma = environments[trial]->getGamma(); // Or pass the gammas vector as an argument and use it?
 
@@ -80,6 +82,9 @@ vector<MatrixXd> run(vector<Agent*> agents, vector<Environment*> environments, V
 
 					// Take the action, observe resulting reward
 					reward = environments[trial]->step(act, generators[trial]);
+
+                    // Increment stepCount
+                    stepCount += 1;
 
 					// Update the return
 					G += curGamma * reward;
@@ -129,6 +134,9 @@ vector<MatrixXd> run(vector<Agent*> agents, vector<Environment*> environments, V
 					// Take the action, observe resulting reward
 					reward = environments[trial]->step(curAct, generators[trial]);
 
+                    // Increment stepCount
+                    stepCount += 1;
+
 					// Update the return
 					G += curGamma * reward;
 
@@ -164,6 +172,9 @@ vector<MatrixXd> run(vector<Agent*> agents, vector<Environment*> environments, V
 		// End of a trial - print a star
 		cout.put('*');
 		cout.flush();
+
+        // Print stepCount
+        cout << stepCount << endl;
 	}
 	cout << endl; // We just printed a bunch of *'s. Put a newline so anything that prints after this starts on a new line.
 	//return result;
@@ -349,7 +360,7 @@ int main(int argc, char* argv[])
 	for (int experiment = 0; experiment < numTrialsInExperiment.size(); experiment++)
 		numTrialsTotal += numTrialsInExperiment[experiment];
 
-	// Initialize the vector contating experimentIDs
+	// Initialize the vector containing experimentIDs
 	for (int experimentID = 0; experimentID < numTrialsInExperiment.size(); experimentID++)
 	{
 		push_back_n(experimentID, numTrialsInExperiment[experimentID], experimentIDs);
@@ -371,6 +382,8 @@ int main(int argc, char* argv[])
 			environments[trial] = new MountainCar();
 		else if (envNames[trial] == "Cart-Pole")
 			environments[trial] = new CartPole();
+        else if (envNames[trial] == "Sepsis")
+            environments[trial] = new Sepsis();
 	}
 	cout << "\tEnvironments created." << endl;
 
@@ -496,7 +509,6 @@ int main(int argc, char* argv[])
 	}
 
 	system("rank_params.py");
-
 	system("learning_curves.py");
 
 	// Print message indicating that the program has finished

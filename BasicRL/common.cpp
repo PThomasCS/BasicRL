@@ -202,62 +202,43 @@ double sampleParameter(const string HyperParamName, mt19937_64& generator)
     return sample;
 }
 
-//Eigen::MatrixXd readCSVToEigenMatrix(const std::string& filename) 
-//{
-//	std::ifstream data(filename);
-//
-//	// Check if file is open
-//	if (!data.is_open()) {
-//		std::cerr << "Could not open file " << filename << std::endl;
-//		exit(EXIT_FAILURE);
-//	}
-//
-//	// Read data line by line
-//	std::vector<std::vector<double>> matrixEntries;
-//	std::string line;
-//	while (std::getline(data, line)) {
-//		std::stringstream lineStream(line);
-//		std::string cell;
-//		std::vector<double> rowEntries;
-//		while (std::getline(lineStream, cell, ',')) {
-//			rowEntries.push_back(std::stod(cell));
-//		}
-//		matrixEntries.push_back(rowEntries);
-//	}
-//
-//	// Convert vector of vectors to Eigen matrix
-//	Eigen::MatrixXd matrix(matrixEntries.size(), matrixEntries[0].size());
-//	for (int i = 0; i < matrix.rows(); ++i) {
-//		for (int j = 0; j < matrix.cols(); ++j) {
-//			matrix(i, j) = matrixEntries[i][j];
-//		}
-//	}
-//
-//	return matrix;
-//}
-
+// Function to read CSV into a 2D matrix
 std::vector<std::vector<double>> readCSVToMatrix(const std::string& filename)
 {
-	std::ifstream data(filename);
+    std::ifstream data(filename);
 
-	// Check if file is open
-	if (!data.is_open()) {
-		std::cerr << "Could not open file " << filename << std::endl;
-		exit(EXIT_FAILURE);
-	}
+    // Check if file is open
+    if (!data.is_open()) {
+        std::cerr << "Could not open file " << filename << std::endl;
+        exit(EXIT_FAILURE);
+    }
 
-	// Read data line by line
-	std::vector<std::vector<double>> matrixEntries;
-	std::string line;
-	while (std::getline(data, line)) {
-		std::stringstream lineStream(line);
-		std::string cell;
-		std::vector<double> rowEntries;
-		while (std::getline(lineStream, cell, ',')) {
-			rowEntries.push_back(std::stod(cell));
-		}
-		matrixEntries.push_back(rowEntries);
-	}
+    std::vector<std::vector<double>> matrixEntries;
+    std::string line;
+    while (std::getline(data, line)) {
+        std::stringstream lineStream(line);
+        std::string cell;
+        std::vector<double> rowEntries;
+        while (std::getline(lineStream, cell, ',')) {
+            rowEntries.push_back(std::stod(cell));
+        }
+        matrixEntries.push_back(rowEntries);
+    }
 
-	return matrixEntries;
+    return matrixEntries;
 }
+
+// Function to convert a 2D matrix to a 1D vector if possible
+std::vector<double> convertTo1D(const std::vector<std::vector<double>>& matrix) {
+    if (matrix.size() == 1) {
+        return matrix[0];
+    } else if (matrix.size() > 1 && matrix[0].size() == 1) {
+        std::vector<double> singleColumn;
+        for (const auto& row : matrix) {
+            singleColumn.push_back(row[0]);
+        }
+        return singleColumn;
+    }
+    return {}; // Return empty vector if matrix isn't convertible to 1D
+}
+

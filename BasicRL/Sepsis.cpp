@@ -5,9 +5,9 @@ using namespace Eigen;
 
 Sepsis::Sepsis()
 {
-    transitionProbabilities = readCSVToMatrix("icu-sepsis_params/tx_mat.csv"); // Matrix with shape (numStates*numActions, numStates)
-    rewards = readCSVToMatrix("icu-sepsis_params/r_mat.csv");                  // Matrix with shape (numStates*numActions, numStates)
-    initialStateDistribution = readCSVToMatrix("icu-sepsis_params/d_0.csv");   // Vector with shape (numStates)
+    transitionProbabilities = readCSVToMatrix("/Users/alexandraburushkina/Desktop/Data/Code/BasicRL/BasicRL/icu-sepsis_params/tx_mat.csv");                      // Matrix with shape (numStates*numActions, numStates)
+    rewards = readCSVToMatrix("/Users/alexandraburushkina/Desktop/Data/Code/BasicRL/BasicRL/icu-sepsis_params/r_mat.csv");                                       // Matrix with shape (numStates*numActions, numStates)
+    initialStateDistribution = convertTo1D(readCSVToMatrix("/Users/alexandraburushkina/Desktop/Data/Code/BasicRL/BasicRL/icu-sepsis_params/d_0.csv"));    // Vector with shape (numStates)
 }
 
 int Sepsis::getObservationDimension() const
@@ -27,12 +27,12 @@ double Sepsis::getGamma() const
 
 int Sepsis::getRecommendedEpisodeLength() const
 {
-    return 10000; //  was 10000
+    return 1000; //  was 10000
 }
 
 int Sepsis::getRecommendedMaxEpisodes() const
 {
-    return 1000; // was 1000
+    return 3; // was 1000
 }
 
 string Sepsis::getName() const
@@ -52,8 +52,7 @@ VectorXd Sepsis::getObservationUpperBound() const
 
 void Sepsis::newEpisode(mt19937_64& generator)
 {
-    //state = randp(initialStateDistribution, generator);
-    state = 0;
+    state = randp(initialStateDistribution, generator);
 }
 
 void Sepsis::getObservation(mt19937_64& generator, VectorXd& buff) const
@@ -71,8 +70,7 @@ double Sepsis::step(int action, mt19937_64& generator) {
     }
 
     // Handle the action
-    //int sPrime = randp(transitionProbabilities.row(state*25 + action), generator);
-    int sPrime = 0;
+    int sPrime = randp(transitionProbabilities[state*25 + action], generator);
     // Return a reward for entering sPrime:
     double reward = rewards[state*25 + action][sPrime];
     state = sPrime;

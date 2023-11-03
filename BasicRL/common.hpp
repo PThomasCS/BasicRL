@@ -177,5 +177,8 @@ double sampleHyperParameter(const std::string HyperParamName, std::mt19937_64& g
 
 double sampleParameter(const std::string HyperParamName, std::mt19937_64& gen);
 
-// Reads an CSV file and returns an Eigen matrix
-Eigen::MatrixXd readCSVToEigenMatrix(const std::string& filename);
+// Reads an CSV file and returns a matrix
+std::vector<std::vector<double>> readCSVToMatrix(const std::string& filename);
+
+// Converts a 2D matrix to a 1D vector if possible
+std::vector<double> convertTo1D(const std::vector<std::vector<double>>& matrix);
