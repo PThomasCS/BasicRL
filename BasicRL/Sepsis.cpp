@@ -3,11 +3,23 @@
 using namespace std;
 using namespace Eigen;
 
-Sepsis::Sepsis()
+Sepsis::Sepsis(vector<vector<double>> transitionProbabilities, vector<vector<double>> rewards, vector<double> initialStateDistribution)
 {
-    transitionProbabilities = readCSVToMatrix("/Users/alexandraburushkina/Desktop/Data/Code/BasicRL/BasicRL/icu-sepsis_params/tx_mat.csv");                      // Matrix with shape (numStates*numActions, numStates)
-    rewards = readCSVToMatrix("/Users/alexandraburushkina/Desktop/Data/Code/BasicRL/BasicRL/icu-sepsis_params/r_mat.csv");                                       // Matrix with shape (numStates*numActions, numStates)
-    initialStateDistribution = convertTo1D(readCSVToMatrix("/Users/alexandraburushkina/Desktop/Data/Code/BasicRL/BasicRL/icu-sepsis_params/d_0.csv"));    // Vector with shape (numStates)
+    //transitionProbabilities = readCSVToMatrix("/Users/alexandraburushkina/Desktop/Data/Code/BasicRL/BasicRL/icu-sepsis_params/tx_mat.csv");                      // Matrix with shape (numStates*numActions, numStates)
+    //rewards = readCSVToMatrix("/Users/alexandraburushkina/Desktop/Data/Code/BasicRL/BasicRL/icu-sepsis_params/r_mat.csv");                                       // Matrix with shape (numStates*numActions, numStates)
+    //initialStateDistribution = convertTo1D(readCSVToMatrix("/Users/alexandraburushkina/Desktop/Data/Code/BasicRL/BasicRL/icu-sepsis_params/d_0.csv"));           // Vector with shape (numStates)
+
+    //transitionProbabilities = readCSVToMatrix(R"(C:\Data\BasicRL\BasicRL\icu - sepsis_params\tx_mat.csv)");                                                         // Matrix with shape (numStates*numActions, numStates)
+    //rewards = readCSVToMatrix(R"(C:\Data\BasicRL\BasicRL\icu - sepsis_params\r_mat.csv)");                                                                          // Matrix with shape (numStates*numActions, numStates)
+    //initialStateDistribution = convertTo1D(readCSVToMatrix(R"(C:\Data\BasicRL\BasicRL\icu - sepsis_params\d_0.csv)"));                                              // Vector with shape (numStates)
+
+    //transitionProbabilities = readCSVToMatrix("tx_mat.csv");                                                         // Matrix with shape (numStates*numActions, numStates)
+    //rewards = readCSVToMatrix("r_mat.csv");                                                                          // Matrix with shape (numStates*numActions, numStates)
+    //initialStateDistribution = convertTo1D(readCSVToMatrix("d_0.csv"));                                              // Vector with shape (numStates)
+
+    this->transitionProbabilities = transitionProbabilities;
+    this->rewards = rewards;
+    this->initialStateDistribution = initialStateDistribution;
 }
 
 int Sepsis::getObservationDimension() const
@@ -27,12 +39,12 @@ double Sepsis::getGamma() const
 
 int Sepsis::getRecommendedEpisodeLength() const
 {
-    return 1000; //  was 10000
+    return 10000; //  was 10000
 }
 
 int Sepsis::getRecommendedMaxEpisodes() const
 {
-    return 3; // was 1000
+    return 1000; // was 1000
 }
 
 string Sepsis::getName() const

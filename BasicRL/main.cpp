@@ -32,7 +32,7 @@ vector<MatrixXd> run(vector<Agent*> agents, vector<Environment*> environments, V
 	{   
 		int numEpisodes = maxEpisodes[idxFirstTrialInExperiment];                           // The maximum number of episodes for the environment used in an experiment
 		MatrixXd experimentResult(numExperimentTrials[experimentIdx], numEpisodes);         // The matrix to store returns from an experiment; rows = number of trials in the experiment, cols = maximum number of episodes
-		experimentResult.setConstant(-24623467); // @TODO: Alexandra, debug from here then remove this!
+		//experimentResult.setConstant(-24623467); // @TODO: Alexandra, debug from here then remove this!
 		results.push_back(experimentResult);
 		idxFirstTrialInExperiment += numExperimentTrials[experimentIdx];                     // Update the index of the first trial in an experiment (to get the correct numEpisodes for the next experiment)
 	}
@@ -112,6 +112,7 @@ vector<MatrixXd> run(vector<Agent*> agents, vector<Environment*> environments, V
 				// End of episode
 				// Save G to the correct place in the correct result matrix
 				results[experimentIDs[trial]](trialCounts[trial], epCount) = G;
+				//resultsEpisodeLengths[experimentIDs[trial]](trialCounts[trial], epCount) = stepCount;
 			}
 			else
 			{
@@ -167,14 +168,15 @@ vector<MatrixXd> run(vector<Agent*> agents, vector<Environment*> environments, V
 				// End of episode
 				// Save G to the correct place in the correct result matrix
 				results[experimentIDs[trial]](trialCounts[trial], epCount) = G;
+				//resultsEpisodeLengths[experimentIDs[trial]](trialCounts[trial], epCount) = stepCount;
 			}
 		}
 		// End of a trial - print a star
 		cout.put('*');
 		cout.flush();
 
-        // Print stepCount
-        cout << stepCount << endl;
+        //// Print stepCount
+        //cout << stepCount << endl;
 	}
 	cout << endl; // We just printed a bunch of *'s. Put a newline so anything that prints after this starts on a new line.
 	//return result;
@@ -222,6 +224,9 @@ int main(int argc, char* argv[])
 	vector<unordered_map<string, int>> featureGenParameters;	// Length = total number of trials (sum of elements in numTrialsInExperiment). i'th element is a map of parameters for this agent-environment pair's feature generator
 	vector<unordered_map<string, double>> hyperParameters;		// Length = total number of trials (sum of elements in numTrialsInExperiment). i'th element is a map of hyperparameters for this agent-environment pair
 
+	// Temporary solution to store the length of an episode
+
+	
 	////////////////////////////////
 	// Set parameters for experiments
 	////////////////////////////////
@@ -249,10 +254,10 @@ int main(int argc, char* argv[])
 	//}
 
 	// Q(lambda) on Sepsis
-	numHyperParamExperiments.push_back(10);
+	numHyperParamExperiments.push_back(5);
 	for (int hyperParamExp = 0; hyperParamExp < numHyperParamExperiments.back(); hyperParamExp++)
 	{
-		numTrialsInExperiment.push_back(10);
+		numTrialsInExperiment.push_back(3);
 		push_back_0_n(numTrialsInExperiment.back(), trialCounts);
 		push_back_n((string)"Q(Lambda)", numTrialsInExperiment.back(), agentNames);
 		push_back_n((string)"Sepsis", numTrialsInExperiment.back(), envNames);
@@ -370,6 +375,11 @@ int main(int argc, char* argv[])
 	// Create environment objects
 	///////////////////////////////////////////////////
 
+	// Pre-process Sepsis data
+	std::vector<std::vector<double>> transitionProbabilities = readCSVToMatrix("tx_mat.csv");    // Matrix with shape (numStates*numActions, numStates)
+	std::vector<std::vector<double>> rewards = readCSVToMatrix("r_mat.csv");                      // Matrix with shape (numStates*numActions, numStates)
+	std::vector<double>initialStateDistribution = convertTo1D(readCSVToMatrix("d_0.csv"));       // Vector with shape (numStates)
+
 	cout << "Creating environments..." << endl;
 	vector<Environment*> environments(numTrialsTotal);
 	for (int trial = 0; trial < numTrialsTotal; trial++)
@@ -382,8 +392,10 @@ int main(int argc, char* argv[])
 			environments[trial] = new MountainCar();
 		else if (envNames[trial] == "Cart-Pole")
 			environments[trial] = new CartPole();
-        else if (envNames[trial] == "Sepsis")
-            environments[trial] = new Sepsis();
+		else if (envNames[trial] == "Sepsis")
+		{
+			environments[trial] = new Sepsis(transitionProbabilities, rewards, initialStateDistribution);
+		}
 	}
 	cout << "\tEnvironments created." << endl;
 
@@ -446,6 +458,23 @@ int main(int argc, char* argv[])
             agents[trial] = new Reinforce(observationDimensions[trial], numActions[trial], hyperParameters[trial]["alpha"], gammas[trial], phis[trial]);
 	}
 
+
+	//// Temporary solution to store the length of an episode (if it works, use a similar solution to collect all data?)
+	//int numExperiments = (int)numTrialsInExperiment.size();   // The total number of experiments
+	//int idxFirstTrialInExperiment = 0;                        // The index of the first trial in the current experiment
+
+	//// Create a vector of matrices to store returns from all experiments; each matrix stores returns from one experiment
+	//vector<MatrixXd> episodeLengthsResults;                               // Length = the total number of experiments
+
+	//for (int experimentIdx = 0; experimentIdx < numExperiments; experimentIdx++)
+	//{
+	//	int numEpisodes = maxEpisodes[idxFirstTrialInExperiment];                           // The maximum number of episodes for the environment used in an experiment
+	//	MatrixXd experimentResult(numTrialsInExperiment[experimentIdx], numEpisodes);         // The matrix to store returns from an experiment; rows = number of trials in the experiment, cols = maximum number of episodes
+	//	//experimentResult.setConstant(-24623467); // @TODO: Alexandra, debug from here then remove this!
+	//	episodeLengthsResults.push_back(experimentResult);
+	//	idxFirstTrialInExperiment += numTrialsInExperiment[experimentIdx];                     // Update the index of the first trial in an experiment (to get the correct numEpisodes for the next experiment)
+	//}
+
 	// Actually run the trials - this function is threaded!
 	cout << "Running trials..." << endl;
 	// Changed var type
@@ -497,7 +526,19 @@ int main(int argc, char* argv[])
 			outSummaryResults << epCount << "," << meanResult << "," << standardError << endl;
 		}
 
-		trialID += numTrialsInExperiment[experiment];
+		//// Print summary episodeLengths results (for plots)
+		//string summaryEpiLengthFilePath = path + "episode_lengths_summary_" + to_string(numTrialsInExperiment[experiment]) + "_trials_" + envName + "_" + featureGenFullName + "_" + agentFullName + ".csv";
+		//ofstream outSummaryEpiLengthResults(summaryEpiLengthFilePath);
+		//outSummaryEpiLengthResults << "Episode,Average Episode Length,Standard Error" << endl;
+		//for (int epCount = 0; epCount < maxEps; epCount++)
+		//{
+		//	double meanResult = episodeLengthsResults[experiment].col(epCount).mean();
+		//	double standardError = sampleStandardError(episodeLengthsResults[experiment].col(epCount));
+
+		//	outSummaryResults << epCount << "," << meanResult << "," << standardError << endl;
+		//}
+
+		//trialID += numTrialsInExperiment[experiment];
 	}
 
 	// Clean up memory. Everything that we called "new" for, we need to call "delete" for.

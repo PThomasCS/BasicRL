@@ -8,7 +8,7 @@ public:
     ////////////////////////////////////////////////////////////////
     // Constructor
     ////////////////////////////////////////////////////////////////
-    Sepsis();			// Default
+    Sepsis(std::vector<std::vector<double>> transitionProbabilities, std::vector<std::vector<double>> rewards, std::vector<double> initialStateDistribution);			// Default
 
     ////////////////////////////////////////////////////////////////
     // Functions for getting properties of the environment
