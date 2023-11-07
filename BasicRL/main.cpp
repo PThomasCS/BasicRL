@@ -225,7 +225,6 @@ int main(int argc, char* argv[])
 	vector<unordered_map<string, double>> hyperParameters;		// Length = total number of trials (sum of elements in numTrialsInExperiment). i'th element is a map of hyperparameters for this agent-environment pair
 
 	// Temporary solution to store the length of an episode
-
 	
 	////////////////////////////////
 	// Set parameters for experiments
@@ -254,7 +253,7 @@ int main(int argc, char* argv[])
 	//}
 
 	// Q(lambda) on Sepsis
-	numHyperParamExperiments.push_back(5);
+	numHyperParamExperiments.push_back(20);
 	for (int hyperParamExp = 0; hyperParamExp < numHyperParamExperiments.back(); hyperParamExp++)
 	{
 		numTrialsInExperiment.push_back(3);
@@ -272,7 +271,7 @@ int main(int argc, char* argv[])
 		{
 			push_back_n({ {"alpha", sampleHyperParameter((string)"alpha", generator)}, {"lambda", sampleHyperParameter((string)"lambda", generator)},
 				{"epsilon", sampleHyperParameter((string)"epsilon", generator)} }, numTrialsInExperiment.back(), hyperParameters);
-		}
+        }
 	}
 
  //   // Q(lambda) on Mountain Car
@@ -376,11 +375,15 @@ int main(int argc, char* argv[])
 	///////////////////////////////////////////////////
 
 	// Pre-process Sepsis data
-	std::vector<std::vector<double>> transitionProbabilities = readCSVToMatrix("tx_mat.csv");    // Matrix with shape (numStates*numActions, numStates)
-	std::vector<std::vector<double>> rewards = readCSVToMatrix("r_mat.csv");                      // Matrix with shape (numStates*numActions, numStates)
-	std::vector<double>initialStateDistribution = convertTo1D(readCSVToMatrix("d_0.csv"));       // Vector with shape (numStates)
+    cout << "Reading data..." << endl;
+//	vector<vector<double>> transitionProbabilities = readCSVToMatrix("tx_mat.csv");    // Matrix with shape (numStates*numActions, numStates)
+//  vector<vector<double>> rewards = readCSVToMatrix("r_mat.csv");                      // Matrix with shape (numStates*numActions, numStates)
+//	vector<double>initialStateDistribution = convertTo1D(readCSVToMatrix("d_0.csv"));       // Vector with shape (numStates)
+    vector<vector<double>> transitionProbabilities = readCSVToMatrix("/Users/alexandraburushkina/Desktop/Data/Code/BasicRL/BasicRL/icu-sepsis_params/tx_mat.csv");                      // Matrix with shape (numStates*numActions, numStates)
+    vector<vector<double>> rewards = readCSVToMatrix("/Users/alexandraburushkina/Desktop/Data/Code/BasicRL/BasicRL/icu-sepsis_params/r_mat.csv");                                       // Matrix with shape (numStates*numActions, numStates)
+    vector<double>initialStateDistribution = convertTo1D(readCSVToMatrix("/Users/alexandraburushkina/Desktop/Data/Code/BasicRL/BasicRL/icu-sepsis_params/d_0.csv"));
 
-	cout << "Creating environments..." << endl;
+    cout << "Creating environments..." << endl;
 	vector<Environment*> environments(numTrialsTotal);
 	for (int trial = 0; trial < numTrialsTotal; trial++)
 	{
@@ -458,6 +461,7 @@ int main(int argc, char* argv[])
             agents[trial] = new Reinforce(observationDimensions[trial], numActions[trial], hyperParameters[trial]["alpha"], gammas[trial], phis[trial]);
 	}
 
+    cout << "\tAgents created." << endl;
 
 	//// Temporary solution to store the length of an episode (if it works, use a similar solution to collect all data?)
 	//int numExperiments = (int)numTrialsInExperiment.size();   // The total number of experiments
@@ -538,13 +542,13 @@ int main(int argc, char* argv[])
 		//	outSummaryResults << epCount << "," << meanResult << "," << standardError << endl;
 		//}
 
-		//trialID += numTrialsInExperiment[experiment];
+		trialID += numTrialsInExperiment[experiment];
 	}
 
 	// Clean up memory. Everything that we called "new" for, we need to call "delete" for.
 	for (int i = 0; i < numTrialsTotal; i++)
 	{
-		delete environments[i];	// This call the deconstructor for environmnets[i], and then frees up the memory in the OS.
+		delete environments[i];	// This calls the deconstructor for environmnets[i], and then frees up the memory in the OS.
 		delete phis[i];
 		delete agents[i];
 	}

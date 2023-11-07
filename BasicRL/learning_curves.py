@@ -19,6 +19,7 @@ def plot():
 
 def plot(num_samples):
     # Make a list of CSV files with results
+    print(f"Working directory: {os.getcwd()}")
     csv_files = [file for file in os.listdir('out/') if file.endswith('.csv') and file.startswith('results_summary')]
     
     for file in csv_files:

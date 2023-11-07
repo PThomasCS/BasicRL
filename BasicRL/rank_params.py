@@ -7,6 +7,17 @@ import os
 import numpy as np
 
 def rank(weight_area=0.5, weight_last_avg_return=0.5):
+    # # Get the absolute path to the directory where the script is located
+    # script_dir = os.path.dirname(os.path.abspath(__file__))
+    #
+    # # Define the relative path to the 'out/' directory from the script's directory
+    # out_directory_path = os.path.join(script_dir, 'out/')
+    #
+    # # Print working directory
+    # print(f"Script directory: {script_dir}")
+    print(f"Working directory: {os.getcwd()}")
+    # print(f"Out directory: {out_directory_path}")
+
     # Make a list of all "results_summary" csv files
     csv_files = [file for file in os.listdir('out/') if file.endswith('.csv') and file.startswith('results_summary')]
 
