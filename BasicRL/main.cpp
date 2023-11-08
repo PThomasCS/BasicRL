@@ -187,29 +187,29 @@ int main(int argc, char* argv[])
 {
 	// Comment out the line below if you don't want to run other random experiments first!
 	//sandbox();
-    mt19937_64 g;
-
-    ofstream outAlpha("out/alpha_samples.txt");
-    for (int i = 0; i < 10000; i++)
-        outAlpha << sampleParameter("alpha", g) << endl;
-    outAlpha.close();
-
-    ofstream outBeta("out/beta_samples.txt");
-    for (int i = 0; i < 10000; i++)
-        outBeta << sampleParameter("beta", g) << endl;
-    outBeta.close();
-
-    ofstream outEpsilon("out/epsilon_samples.txt");
-    for (int i = 0; i < 10000; i++)
-        outEpsilon << sampleParameter("epsilon", g) << endl;
-    outEpsilon.close();
-
-    ofstream outLambda("out/lambda_samples.txt");
-    for (int i = 0; i < 10000; i++)
-        outLambda << sampleParameter("lambda", g) << endl;
-    outLambda.close();
-
-    system("sandbox_plots.py");
+//    mt19937_64 g;
+//
+//    ofstream outAlpha("out/alpha_samples.txt");
+//    for (int i = 0; i < 10000; i++)
+//        outAlpha << sampleParameter("alpha", g) << endl;
+//    outAlpha.close();
+//
+//    ofstream outBeta("out/beta_samples.txt");
+//    for (int i = 0; i < 10000; i++)
+//        outBeta << sampleParameter("beta", g) << endl;
+//    outBeta.close();
+//
+//    ofstream outEpsilon("out/epsilon_samples.txt");
+//    for (int i = 0; i < 10000; i++)
+//        outEpsilon << sampleParameter("epsilon", g) << endl;
+//    outEpsilon.close();
+//
+//    ofstream outLambda("out/lambda_samples.txt");
+//    for (int i = 0; i < 10000; i++)
+//        outLambda << sampleParameter("lambda", g) << endl;
+//    outLambda.close();
+//
+//    system("sandbox_plots.py");
 
     // Default random number generator
 	mt19937_64 generator;
@@ -256,7 +256,7 @@ int main(int argc, char* argv[])
 	numHyperParamExperiments.push_back(20);
 	for (int hyperParamExp = 0; hyperParamExp < numHyperParamExperiments.back(); hyperParamExp++)
 	{
-		numTrialsInExperiment.push_back(3);
+		numTrialsInExperiment.push_back(5);
 		push_back_0_n(numTrialsInExperiment.back(), trialCounts);
 		push_back_n((string)"Q(Lambda)", numTrialsInExperiment.back(), agentNames);
 		push_back_n((string)"Sepsis", numTrialsInExperiment.back(), envNames);
@@ -269,8 +269,12 @@ int main(int argc, char* argv[])
 		}
 		else
 		{
+            // Sample hyperparameters (Q(lambda) on Sepsis)
 			push_back_n({ {"alpha", sampleHyperParameter((string)"alpha", generator)}, {"lambda", sampleHyperParameter((string)"lambda", generator)},
 				{"epsilon", sampleHyperParameter((string)"epsilon", generator)} }, numTrialsInExperiment.back(), hyperParameters);
+            // Sample hyperparameters (Q(lambda=0) on Sepsis)
+//            push_back_n({ {"alpha", sampleHyperParameter((string)"alpha", generator)}, {"lambda", 0},
+//                          {"epsilon", sampleHyperParameter((string)"epsilon", generator)} }, numTrialsInExperiment.back(), hyperParameters);
         }
 	}
 

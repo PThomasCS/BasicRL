@@ -202,25 +202,25 @@ double sampleParameter(const string HyperParamName, mt19937_64& generator)
     return sample;
 }
 
-// Function to read CSV into a 2D matrix
-std::vector<std::vector<double>> readCSVToMatrix(const std::string& filename)
+// Reads the CSV into a 2D matrix
+vector<vector<double>> readCSVToMatrix(const string& filename)
 {
-    std::ifstream data(filename);
+    ifstream data(filename);
 
-    // Check if file is open
+    // Check if the file is open
     if (!data.is_open()) {
-        std::cerr << "Could not open file " << filename << std::endl;
+        cerr << "Could not open the file " << filename << endl;
         exit(EXIT_FAILURE);
     }
 
-    std::vector<std::vector<double>> matrixEntries;
-    std::string line;
-    while (std::getline(data, line)) {
-        std::stringstream lineStream(line);
-        std::string cell;
-        std::vector<double> rowEntries;
-        while (std::getline(lineStream, cell, ',')) {
-            rowEntries.push_back(std::stod(cell));
+    vector<vector<double>> matrixEntries;
+    string line;
+    while (getline(data, line)) {
+        stringstream lineStream(line);
+        string cell;
+        vector<double> rowEntries;
+        while (getline(lineStream, cell, ',')) {
+            rowEntries.push_back(stod(cell));
         }
         matrixEntries.push_back(rowEntries);
     }
@@ -228,17 +228,17 @@ std::vector<std::vector<double>> readCSVToMatrix(const std::string& filename)
     return matrixEntries;
 }
 
-// Function to convert a 2D matrix to a 1D vector if possible
-std::vector<double> convertTo1D(const std::vector<std::vector<double>>& matrix) {
+// Converts a 2D matrix to a 1D vector if possible
+vector<double> convertTo1D(const vector<vector<double>>& matrix) {
     if (matrix.size() == 1) {
         return matrix[0];
     } else if (matrix.size() > 1 && matrix[0].size() == 1) {
-        std::vector<double> singleColumn;
+        vector<double> singleColumn;
         for (const auto& row : matrix) {
             singleColumn.push_back(row[0]);
         }
         return singleColumn;
     }
-    return {}; // Return empty vector if matrix isn't convertible to 1D
+    return {}; // Return empty vector if matrix isn't convertible to 1D (check if needed)
 }
 
